@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'models/product.dart';
+import 'providers/cart_provider.dart';
+import 'cart_screen.dart';
 
 class ProductDetailsScreen extends StatelessWidget {
   final String name;
@@ -14,6 +18,17 @@ class ProductDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Note: In a real app, we'd pass the Product object directly.
+    // For now, I'll create a dummy Product based on the passed name/price to make it functional.
+    final product = Product(
+      id: name.toLowerCase().replaceAll(' ', '-'),
+      name: name,
+      price: double.tryParse(price.replaceAll('₹', '')) ?? 0.0,
+      description: description ?? 'High-quality product.',
+      imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', // Dummy
+      category: 'General',
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Product Details'),
@@ -36,7 +51,7 @@ class ProductDetailsScreen extends StatelessWidget {
               height: 300,
               width: double.infinity,
               color: Colors.grey[100],
-              child: const Icon(Icons.image, size: 150, color: Colors.grey),
+              child: Image.network(product.imageUrl, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.image, size: 150, color: Colors.grey)),
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -46,8 +61,8 @@ class ProductDetailsScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Brand Name',
+                      const Text(
+                        'ShopVerse Premium',
                         style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
                       ),
                       const Row(
@@ -78,8 +93,8 @@ class ProductDetailsScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 10),
                       Text(
-                        '₹499',
-                        style: TextStyle(
+                        '₹${(product.price * 1.4).toStringAsFixed(0)}',
+                        style: const TextStyle(
                           fontSize: 16,
                           color: Colors.grey,
                           decoration: TextDecoration.lineThrough,
@@ -148,7 +163,15 @@ class ProductDetailsScreen extends StatelessWidget {
           children: [
             Expanded(
               child: OutlinedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Provider.of<CartProvider>(context, listen: false).addItem(product);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${product.name} added to cart!'),
+                      duration: const Duration(seconds: 1),
+                    ),
+                  );
+                },
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   side: const BorderSide(color: Colors.deepPurple),
@@ -160,7 +183,10 @@ class ProductDetailsScreen extends StatelessWidget {
             const SizedBox(width: 16),
             Expanded(
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Provider.of<CartProvider>(context, listen: false).addItem(product);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const CartScreen()));
+                },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   backgroundColor: Colors.deepPurple,

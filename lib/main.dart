@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'login_screen.dart';
+import 'providers/cart_provider.dart';
 
 void main() {
-  runApp(const ShopVerseApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => CartProvider()),
+      ],
+      child: const ShopVerseApp(),
+    ),
+  );
 }
 
 class ShopVerseApp extends StatelessWidget {

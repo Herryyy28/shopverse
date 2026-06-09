@@ -1,8 +1,48 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'models/product.dart';
+import 'providers/cart_provider.dart';
 import 'product_details_screen.dart';
+import 'search_screen.dart';
+import 'cart_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
+
+  static final List<Product> _dummyProducts = [
+    Product(
+      id: 'p1',
+      name: 'Organic Apples',
+      description: 'Fresh organic apples from the farm.',
+      price: 199.0,
+      imageUrl: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6bcd6?w=400',
+      category: 'Grocery',
+    ),
+    Product(
+      id: 'p2',
+      name: 'Sneakers',
+      description: 'Comfortable and stylish sneakers.',
+      price: 2499.0,
+      imageUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400',
+      category: 'Fashion',
+    ),
+    Product(
+      id: 'p3',
+      name: 'Headphones',
+      description: 'High-quality noise-canceling headphones.',
+      price: 4999.0,
+      imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400',
+      category: 'Electronics',
+    ),
+    Product(
+      id: 'p4',
+      name: 'Coffee Mug',
+      description: 'Sleek ceramic coffee mug.',
+      price: 499.0,
+      imageUrl: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400',
+      category: 'Home',
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -42,9 +82,21 @@ class HomeScreen extends StatelessWidget {
             onPressed: () {},
             icon: const Icon(Icons.notifications_none_outlined, color: Colors.black),
           ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.shopping_cart_outlined, color: Colors.black),
+          Consumer<CartProvider>(
+            builder: (_, cart, ch) => Badge(
+              label: Text(cart.itemCount.toString()),
+              isLabelVisible: cart.itemCount > 0,
+              child: ch!,
+            ),
+            child: IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const CartScreen()),
+                );
+              },
+              icon: const Icon(Icons.shopping_cart_outlined, color: Colors.black),
+            ),
           ),
         ],
       ),
@@ -55,26 +107,35 @@ class HomeScreen extends StatelessWidget {
             // Search Bar Section
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: const TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Search "Milk", "Bread", "Shoes"...',
-                    prefixIcon: Icon(Icons.search, color: Colors.deepPurple),
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(vertical: 15),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SearchScreen()),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.search, color: Colors.deepPurple),
+                      SizedBox(width: 12),
+                      Text(
+                        'Search "Milk", "Bread", "Shoes"...',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -152,9 +213,9 @@ class HomeScreen extends StatelessWidget {
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
               ),
-              itemCount: 4,
+              itemCount: _dummyProducts.length,
               itemBuilder: (context, index) {
-                return _buildProductCard(context, index);
+                return _buildProductCard(context, _dummyProducts[index]);
               },
             ),
             const SizedBox(height: 20),
@@ -248,18 +309,15 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProductCard(BuildContext context, int index) {
-    final productName = 'Premium Product ${index + 1}';
-    final productPrice = '₹${299 + (index * 50)}';
-
+  Widget _buildProductCard(BuildContext context, Product product) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => ProductDetailsScreen(
-              name: productName,
-              price: productPrice,
+              name: product.name,
+              price: '₹${product.price}',
             ),
           ),
         );
@@ -286,7 +344,11 @@ class HomeScreen extends StatelessWidget {
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                 ),
                 width: double.infinity,
-                child: const Icon(Icons.image, size: 50, color: Colors.grey),
+                child: Image.network(
+                  product.imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const Icon(Icons.image, size: 50, color: Colors.grey),
+                ),
               ),
             ),
             Padding(
@@ -295,40 +357,57 @@ class HomeScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    productName,
+                    product.name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    '500g',
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                  Text(
+                    product.category,
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
                   ),
                   const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        productPrice,
+                        '₹${product.price}',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                           color: Colors.black87,
                         ),
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.deepPurple.withOpacity(0.5)),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: const Text(
-                          'ADD',
-                          style: TextStyle(
-                            color: Colors.deepPurple,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
+                      InkWell(
+                        onTap: () {
+                          Provider.of<CartProvider>(context, listen: false).addItem(product);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('${product.name} added to cart!'),
+                              duration: const Duration(seconds: 1),
+                              action: SnackBarAction(
+                                label: 'VIEW',
+                                onPressed: () {
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => const CartScreen()));
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.deepPurple.withOpacity(0.5)),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Text(
+                            'ADD',
+                            style: TextStyle(
+                              color: Colors.deepPurple,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       ),
