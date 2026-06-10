@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
+import 'package:provider/provider.dart';
+import 'providers/auth_provider.dart';
 import 'signup_screen.dart';
 import 'main_screen.dart';
 
@@ -15,12 +16,39 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _login() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+      
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final error = await authProvider.signIn(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+      );
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        if (error != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(error), backgroundColor: Colors.red),
+          );
+        }
+      }
+    }
   }
 
   @override
@@ -107,30 +135,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 12),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {
-                      // Handle forgot password
-                    },
-                    child: const Text('Forgot Password?'),
-                  ),
-                ),
                 const SizedBox(height: 32),
                 ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => const HomeScreen()),
-                      );
-                    }
-                  },
-                  child: const Text(
-                    'Login',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
+                  onPressed: _isLoading ? null : _login,
+                  child: _isLoading 
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : const Text(
+                        'Login',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
                 ),
                 const SizedBox(height: 24),
                 Row(

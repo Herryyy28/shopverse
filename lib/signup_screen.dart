@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'providers/auth_provider.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -15,12 +17,57 @@ class _SignupScreenState extends State<SignupScreen> {
   final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  void _signup() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final error = await authProvider.signUp(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+        _nameController.text.trim(),
+      );
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        if (error == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Account created successfully! Please login.'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(error), backgroundColor: Colors.red),
+          );
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sign Up'),
+        title: const Text('Sign Up', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         foregroundColor: Colors.deepPurple,
@@ -56,7 +103,6 @@ class _SignupScreenState extends State<SignupScreen> {
                     decoration: const InputDecoration(
                       labelText: 'Full Name',
                       prefixIcon: Icon(Icons.person_outline),
-                      border: OutlineInputBorder(),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -71,7 +117,6 @@ class _SignupScreenState extends State<SignupScreen> {
                     decoration: const InputDecoration(
                       labelText: 'Email',
                       prefixIcon: Icon(Icons.email_outlined),
-                      border: OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
@@ -100,7 +145,6 @@ class _SignupScreenState extends State<SignupScreen> {
                           });
                         },
                       ),
-                      border: const OutlineInputBorder(),
                     ),
                     obscureText: _obscurePassword,
                     validator: (value) {
@@ -129,7 +173,6 @@ class _SignupScreenState extends State<SignupScreen> {
                           });
                         },
                       ),
-                      border: const OutlineInputBorder(),
                     ),
                     obscureText: _obscureConfirmPassword,
                     validator: (value) {
@@ -144,16 +187,10 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        // Implement signup logic
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Account created! Please login.')),
-                        );
-                        Navigator.pop(context);
-                      }
-                    },
-                    child: const Text('Sign Up', style: TextStyle(fontSize: 18)),
+                    onPressed: _isLoading ? null : _signup,
+                    child: _isLoading 
+                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      : const Text('Sign Up', style: TextStyle(fontSize: 18)),
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -175,14 +212,5 @@ class _SignupScreenState extends State<SignupScreen> {
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
-    super.dispose();
   }
 }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'providers/auth_provider.dart';
 import 'orders_screen.dart';
 import 'wishlist_screen.dart';
 import 'notifications_screen.dart';
@@ -8,6 +10,8 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Profile', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -24,11 +28,11 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'John Doe',
+              authProvider.userEmail ?? 'User',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             Text(
-              'johndoe@example.com',
+              authProvider.userEmail ?? 'user@example.com',
               style: TextStyle(color: Colors.grey[600]),
             ),
             const SizedBox(height: 30),
@@ -47,7 +51,7 @@ class ProfileScreen extends StatelessWidget {
             _buildProfileItem(Icons.help_outline, 'Help Center', () {}),
             const Divider(height: 32),
             _buildProfileItem(Icons.logout, 'Logout', () {
-              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+              authProvider.logout();
             }, textColor: Colors.red),
             const SizedBox(height: 40),
           ],

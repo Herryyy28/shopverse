@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'providers/cart_provider.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -12,6 +14,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cart = Provider.of<CartProvider>(context);
+    final totalToPay = cart.totalAmount + 40 + (cart.totalAmount * 0.05);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Checkout', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -41,26 +46,31 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             const SizedBox(height: 24),
             _buildSectionTitle('Order Summary'),
             const SizedBox(height: 12),
-            const Card(
+            Card(
               child: Padding(
-                padding: EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [Text('Items Total'), Text('₹998')],
+                      children: [const Text('Items Total'), Text('₹${cart.totalAmount.toStringAsFixed(2)}')],
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [Text('Delivery Fee'), Text('₹40.00')],
+                    ),
+                    const SizedBox(height: 8),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [Text('Delivery Fee'), Text('₹40')],
+                      children: [const Text('Govt Taxes (5%)'), Text('₹${(cart.totalAmount * 0.05).toStringAsFixed(2)}')],
                     ),
-                    Divider(height: 24),
+                    const Divider(height: 24),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Total Amount', style: TextStyle(fontWeight: FontWeight.bold)),
-                        Text('₹1,038', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                        const Text('Total Amount', style: TextStyle(fontWeight: FontWeight.bold)),
+                        Text('₹${totalToPay.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.deepPurple)),
                       ],
                     ),
                   ],
@@ -73,8 +83,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       ),
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))],
+        ),
         child: ElevatedButton(
-          onPressed: () => _showSuccessDialog(context),
+          onPressed: () {
+            _showSuccessDialog(context);
+            cart.clear();
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.deepPurple,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
           child: const Text('Place Order', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         ),
       ),
