@@ -1,6 +1,7 @@
 class Product {
   final String id;
   final String name;
+  final String brand;
   final String description;
   final double price;
   final double oldPrice;
@@ -14,6 +15,7 @@ class Product {
   Product({
     required this.id,
     required this.name,
+    this.brand = 'ShopVerse',
     required this.description,
     required this.price,
     this.oldPrice = 0,

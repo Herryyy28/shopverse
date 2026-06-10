@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'home_screen.dart';
 import 'search_screen.dart';
-import 'cart_screen.dart';
+import 'print_screen.dart';
 import 'profile_screen.dart';
 import 'providers/cart_provider.dart';
+import 'cart_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -15,50 +16,93 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
+  final Color themeColor = const Color(0xFFFF3232);
 
   final List<Widget> _screens = [
     const HomeScreen(),
     const SearchScreen(),
-    const CartScreen(),
+    const PrintScreen(),
     const ProfileScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_selectedIndex],
+      body: Stack(
+        children: [
+          _screens[_selectedIndex],
+          _buildFloatingCartStrip(context),
+        ],
+      ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(color: Colors.black12, blurRadius: 10),
-          ],
+          color: Colors.white,
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
         ),
         child: BottomNavigationBar(
           currentIndex: _selectedIndex,
           onTap: (index) => setState(() => _selectedIndex = index),
           type: BottomNavigationBarType.fixed,
-          selectedItemColor: Colors.red,
+          selectedItemColor: themeColor,
           unselectedItemColor: Colors.black54,
-          showSelectedLabels: true,
-          showUnselectedLabels: true,
-          items: [
-            const BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Home'),
-            const BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-            BottomNavigationBarItem(
-              icon: Consumer<CartProvider>(
-                builder: (context, cart, _) => Badge(
-                  label: Text(cart.itemCount.toString()),
-                  isLabelVisible: cart.itemCount > 0,
-                  child: const Icon(Icons.shopping_cart_outlined),
-                ),
-              ),
-              activeIcon: const Icon(Icons.shopping_cart),
-              label: 'Cart',
-            ),
-            const BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Profile'),
+          backgroundColor: Colors.white,
+          elevation: 0,
+          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Home'),
+            BottomNavigationBarItem(icon: Icon(Icons.search), activeIcon: Icon(Icons.manage_search), label: 'Browse'),
+            BottomNavigationBarItem(icon: Icon(Icons.print_outlined), activeIcon: Icon(Icons.print), label: 'Print'),
+            BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Profile'),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildFloatingCartStrip(BuildContext context) {
+    return Consumer<CartProvider>(
+      builder: (context, cart, _) {
+        if (cart.itemCount == 0) return const SizedBox.shrink();
+        
+        return Positioned(
+          bottom: 16,
+          left: 16,
+          right: 16,
+          child: GestureDetector(
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen())),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: themeColor,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [BoxShadow(color: themeColor.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 5))],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(4)),
+                    child: const Icon(Icons.shopping_bag, color: Colors.white, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('${cart.itemCount} ITEMS', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12)),
+                      Text('₹${cart.totalAmount.toInt()}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                    ],
+                  ),
+                  const Spacer(),
+                  const Text('View Cart', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16)),
+                  const Icon(Icons.arrow_right, color: Colors.white),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

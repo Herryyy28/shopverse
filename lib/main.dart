@@ -6,6 +6,8 @@ import 'main_screen.dart';
 import 'providers/cart_provider.dart';
 import 'providers/wishlist_provider.dart';
 import 'providers/auth_provider.dart';
+import 'providers/location_provider.dart';
+import 'providers/order_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,6 +18,8 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
         ChangeNotifierProvider(create: (_) => WishlistProvider()),
+        ChangeNotifierProvider(create: (_) => LocationProvider()),
+        ChangeNotifierProvider(create: (_) => OrderProvider()),
       ],
       child: const ShopVerseApp(),
     ),
@@ -27,29 +31,35 @@ class ShopVerseApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const Color brandRed = Color(0xFFFF3232);
+    
     return MaterialApp(
       title: 'ShopVerse',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.red,
-          primary: Colors.red,
-          secondary: Colors.redAccent,
+          seedColor: brandRed,
+          primary: brandRed,
+          secondary: const Color(0xFFFFC107), // Blinkit yellow
         ),
         useMaterial3: true,
-        textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme),
+        textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: Colors.grey[100],
+          fillColor: Colors.white,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
+            borderSide: BorderSide(color: Colors.grey[300]!),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey[200]!),
+          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
+            backgroundColor: brandRed,
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
@@ -58,7 +68,6 @@ class ShopVerseApp extends StatelessWidget {
           ),
         ),
       ),
-      // Automatically check if user is logged in
       home: Consumer<AuthProvider>(
         builder: (context, auth, _) {
           return auth.isAuthenticated ? const MainScreen() : const LoginScreen();

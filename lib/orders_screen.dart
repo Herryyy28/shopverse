@@ -1,109 +1,166 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shopverse/providers/order_provider.dart';
+import 'package:intl/intl.dart';
+import 'tracking_screen.dart';
 
 class OrdersScreen extends StatelessWidget {
   const OrdersScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final orderProv = Provider.of<OrderProvider>(context);
+    final orders = orderProv.orders;
+    const Color brandRed = Color(0xFFFF3232);
+
     return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FB),
       appBar: AppBar(
-        title: const Text('My Orders', style: TextStyle(fontWeight: FontWeight.bold)),
-        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: const Text(
+          'Orders History',
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 20),
+        ),
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: 5,
-        itemBuilder: (context, index) {
-          return Card(
-            margin: const EdgeInsets.only(bottom: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Order #SV1234${index}',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: index == 0 ? Colors.orange[100] : Colors.green[100],
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          index == 0 ? 'In Transit' : 'Delivered',
-                          style: TextStyle(
-                            color: index == 0 ? Colors.orange[800] : Colors.green[800],
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+      body: orders.isEmpty
+          ? _buildEmptyState()
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: orders.length,
+              itemBuilder: (context, index) {
+                final order = orders[index];
+                final isLive = index == 0 && DateTime.now().difference(order.dateTime).inMinutes < 15;
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      )
                     ],
                   ),
-                  const Divider(height: 24),
-                  Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(Icons.shopping_bag_outlined, color: Colors.grey),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
-                              'Premium Wireless Headphones',
-                              style: TextStyle(fontWeight: FontWeight.w500),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  DateFormat('dd MMM yyyy, hh:mm a').format(order.dateTime),
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                ),
+                                Text(
+                                  'ID: ORD-${order.id.substring(order.id.length - 6).toUpperCase()}',
+                                  style: TextStyle(color: Colors.grey[600], fontSize: 11),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Ordered on: 12 Oct 2023',
-                              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: isLive ? const Color(0xFFE8F5E9) : Colors.grey[100],
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                isLive ? 'LIVE' : order.status.toUpperCase(),
+                                style: TextStyle(
+                                  color: isLive ? const Color(0xFF2E7D32) : Colors.grey[700],
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 10,
+                                ),
+                              ),
                             ),
                           ],
                         ),
                       ),
-                      const Text(
-                        '₹1,299',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                      const Divider(height: 1),
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[50],
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.grey[100]!),
+                              ),
+                              child: const Icon(Icons.shopping_bag_outlined, color: Colors.grey),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${order.products.length} Items',
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                  ),
+                                  Text(
+                                    '₹${order.amount.toStringAsFixed(2)}',
+                                    style: TextStyle(color: brandRed, fontWeight: FontWeight.bold, fontSize: 13),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (isLive)
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => TrackingScreen(orderId: order.id),
+                                    ),
+                                  );
+                                },
+                                style: TextButton.styleFrom(
+                                  foregroundColor: brandRed,
+                                  textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                child: const Text('TRACK'),
+                              )
+                            else
+                              const Icon(Icons.chevron_right, color: Colors.grey),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () {},
-                          child: const Text('Track Order'),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {},
-                          child: const Text('Reorder'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                );
+              },
             ),
-          );
-        },
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.history_toggle_off, size: 80, color: Colors.grey[300]),
+          const SizedBox(height: 16),
+          const Text(
+            'No orders yet',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Place your first order now!',
+            style: TextStyle(color: Colors.grey[600]),
+          ),
+        ],
       ),
     );
   }
