@@ -7,101 +7,18 @@ import 'package:shopverse/providers/wishlist_provider.dart';
 import 'package:shopverse/providers/location_provider.dart';
 import 'package:shopverse/search_screen.dart';
 import 'package:shopverse/product_details_screen.dart';
+import 'package:shopverse/services/ai_service.dart';
+import 'package:shopverse/providers/product_provider.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  static final List<Product> _products = [
-    Product(
-      id: 'p0',
-      name: 'Neon Velocity G7 Pro',
-      brand: 'APEX FOOTWEAR',
-      description: 'Engineered for the neon-lit streets and high-velocity performance. The Velocity G7 Pro combines our proprietary Quantum-Foam™ technology with a glass-morphic TPU cage for unrivaled stability and aesthetic brilliance. Whether you’re navigating the urban jungle or hitting the treadmill, the G7 provides a ride that feels as fast as it looks.',
-      price: 189.0,
-      oldPrice: 245.0,
-      imageUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800',
-      category: 'Footwear',
-      rating: 4.9,
-      reviews: 2400,
-      isVeg: true,
-    ),
-    Product(
-      id: 'p1',
-      name: 'Amul Taaza Milk',
-      description: 'Fresh toned milk',
-      price: 27.0,
-      oldPrice: 30.0,
-      imageUrl: 'https://www.amul.com/files/products/Taaza_1L_Front.jpg',
-      category: 'Dairy',
-      unit: '500 ml',
-      rating: 4.8,
-      isVeg: true,
-    ),
-    Product(
-      id: 'p2',
-      name: 'Fortune Sunlite Sunflower Oil',
-      description: 'Refined sunflower oil',
-      price: 145.0,
-      oldPrice: 175.0,
-      imageUrl: 'https://m.media-amazon.com/images/I/71p0WfB6LHL._SL1500_.jpg',
-      category: 'Grocery',
-      unit: '1 L',
-      rating: 4.5,
-      isVeg: true,
-    ),
-    Product(
-      id: 'p3',
-      name: 'Aashirvaad Superior MP Atta',
-      description: 'Whole wheat flour',
-      price: 245.0,
-      oldPrice: 280.0,
-      imageUrl: 'https://m.media-amazon.com/images/I/81RAtC9zU2L._SL1500_.jpg',
-      category: 'Grocery',
-      unit: '5 kg',
-      rating: 4.9,
-      isVeg: true,
-    ),
-    Product(
-      id: 'p4',
-      name: 'Lay\'s India\'s Magic Masala',
-      description: 'Spicy potato chips',
-      price: 20.0,
-      oldPrice: 20.0,
-      imageUrl: 'https://m.media-amazon.com/images/I/71Yy3+M1vDL._SL1500_.jpg',
-      category: 'Snacks',
-      unit: '50 g',
-      rating: 4.2,
-      isVeg: true,
-    ),
-    Product(
-      id: 'p5',
-      name: 'Maggi 2-Minute Noodles',
-      description: 'Instant noodles',
-      price: 14.0,
-      oldPrice: 16.0,
-      imageUrl: 'https://m.media-amazon.com/images/I/81Xn9-iN9LL._SL1500_.jpg',
-      category: 'Munchies',
-      unit: '70 g',
-      rating: 4.7,
-      isVeg: true,
-    ),
-    Product(
-      id: 'p6',
-      name: 'Coca-Cola Soft Drink',
-      description: 'Cold drink',
-      price: 40.0,
-      oldPrice: 45.0,
-      imageUrl: 'https://m.media-amazon.com/images/I/51v8ny56SGL._SL1000_.jpg',
-      category: 'Cold Drinks',
-      unit: '750 ml',
-      rating: 4.4,
-      isVeg: true,
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
     const Color brandRed = Color(0xFFFF3232);
+    final productProv = Provider.of<ProductProvider>(context);
+    final allProducts = productProv.products;
+    final recommended = AIService.getRecommendations(allProducts);
     
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
@@ -116,16 +33,61 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   _buildPromotionBanner(),
                   _buildCategoryGrid(),
+
+                  // AI Recommendations Section
+                  _buildSectionHeader('Recommended for You', 'Picked by ShopVerse AI', brandRed, isAI: true),
+                  _buildHorizontalRecommendations(context, recommended),
+
                   _buildSectionHeader('Bestsellers', 'Trending items', brandRed),
-                  _buildHorizontalList(context),
+                  _buildHorizontalList(context, allProducts),
                   _buildSectionHeader('Daily Staples', 'Fresh & Essential', brandRed),
-                  _buildVerticalGrid(context),
+                  _buildVerticalGrid(context, allProducts),
                   const SizedBox(height: 100),
                 ],
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title, String subtitle, Color brandRed, {bool isAI = false}) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  if (isAI) ...[
+                    const Icon(Icons.auto_awesome, color: Colors.amber, size: 18),
+                    const SizedBox(width: 6),
+                  ],
+                  Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
+                ],
+              ),
+              Text(subtitle, style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+            ],
+          ),
+          const Spacer(),
+          Text('See all', style: TextStyle(color: brandRed, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHorizontalRecommendations(BuildContext context, List<Product> recommendations) {
+    return SizedBox(
+      height: 200,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        itemCount: recommendations.length,
+        itemBuilder: (context, i) => _AiProductCard(product: recommendations[i]),
       ),
     );
   }
@@ -488,39 +450,19 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title, String subtitle, Color brandRed) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
-              Text(subtitle, style: TextStyle(color: Colors.grey[600], fontSize: 13)),
-            ],
-          ),
-          const Spacer(),
-          Text('See all', style: TextStyle(color: brandRed, fontWeight: FontWeight.bold)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHorizontalList(BuildContext context) {
+  Widget _buildHorizontalList(BuildContext context, List<Product> products) {
     return SizedBox(
       height: 280,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 12),
-        itemCount: _products.length,
-        itemBuilder: (context, i) => _ProductCard(product: _products[i]),
+        itemCount: products.length,
+        itemBuilder: (context, i) => _ProductCard(product: products[i]),
       ),
     );
   }
 
-  Widget _buildVerticalGrid(BuildContext context) {
+  Widget _buildVerticalGrid(BuildContext context, List<Product> products) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: GridView.builder(
@@ -532,8 +474,67 @@ class HomeScreen extends StatelessWidget {
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
         ),
-        itemCount: _products.length,
-        itemBuilder: (context, i) => _ProductCard(product: _products[i]),
+        itemCount: products.length,
+        itemBuilder: (context, i) => _ProductCard(product: products[i]),
+      ),
+    );
+  }
+}
+
+class _AiProductCard extends StatelessWidget {
+  final Product product;
+  const _AiProductCard({required this.product});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetailsScreen(product: product))),
+      child: Container(
+        width: 140,
+        margin: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.amber.withValues(alpha: 0.1),
+              blurRadius: 8,
+              spreadRadius: 1,
+            )
+          ],
+          border: Border.all(color: Colors.amber.withValues(alpha: 0.2)),
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: CachedNetworkImage(
+                  imageUrl: product.imageUrl,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+              child: Column(
+                children: [
+                  Text(
+                    product.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '₹${product.price.toInt()}',
+                    style: const TextStyle(fontWeight: FontWeight.w900, color: Colors.black),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

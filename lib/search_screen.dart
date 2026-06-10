@@ -101,7 +101,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final themeColor = const Color(0xFF6200EE);
+    const themeColor = Color(0xFFFF3232);
     
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FD),
@@ -113,9 +113,9 @@ class _SearchScreenState extends State<SearchScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('ShopVerse', style: TextStyle(color: Color(0xFF6200EE), fontWeight: FontWeight.bold)),
+        title: const Text('ShopVerse', style: TextStyle(color: themeColor, fontWeight: FontWeight.bold)),
         actions: [
-          IconButton(icon: const Icon(Icons.search, color: Colors.black87), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.mic, color: Colors.black87), onPressed: () {}),
         ],
       ),
       body: Column(
@@ -166,7 +166,7 @@ class _SearchScreenState extends State<SearchScreen> {
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
-                  Icon(Icons.trending_up, color: Color(0xFF6200EE), size: 20),
+                  Icon(Icons.trending_up, color: Color(0xFFFF3232), size: 20),
                   SizedBox(width: 8),
                   Text('Trending Searches', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                 ],
@@ -305,7 +305,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   children: [
                     Text(
                       '₹${product.price.toInt()}',
-                      style: const TextStyle(color: Color(0xFF6200EE), fontWeight: FontWeight.w900, fontSize: 18),
+                      style: const TextStyle(color: Color(0xFFFF3232), fontWeight: FontWeight.w900, fontSize: 18),
                     ),
                     const SizedBox(width: 4),
                     if (product.oldPrice > product.price)

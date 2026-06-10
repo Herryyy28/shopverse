@@ -15,13 +15,15 @@ class CheckoutScreen extends StatefulWidget {
 }
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
-  int _selectedPaymentMethod = 1; // 0: UPI, 1: Card, 2: Cash
+  int _selectedPaymentMethod = 0; // 0: Wallet, 1: UPI, 2: Card, 3: Cash
   final Color brandRed = const Color(0xFFFF3232);
+  bool _isProcessing = false;
 
   @override
   Widget build(BuildContext context) {
     final cart = Provider.of<CartProvider>(context);
     final locationProv = Provider.of<LocationProvider>(context);
+    final walletProv = Provider.of<WalletProvider>(context);
     final address = locationProv.selectedAddress;
 
     const double deliveryFee = 5.0;
@@ -243,43 +245,32 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
             // Payment Method Section
             _buildSectionHeader('PAYMENT METHOD'),
-            Container(
-              margin: const EdgeInsets.only(left: 16, right: 16, bottom: 32),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: brandRed.withValues(alpha: 0.5), width: 1.5),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: const Icon(Icons.credit_card, color: Colors.white, size: 20),
-                  ),
-                  const SizedBox(width: 12),
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Personal Card',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                      ),
-                      Text(
-                        '**** **** **** 9012',
-                        style: TextStyle(color: Colors.grey, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  Icon(Icons.check_circle, color: brandRed),
-                ],
-              ),
+            _buildPaymentOption(
+              index: 0,
+              icon: Icons.account_balance_wallet_outlined,
+              title: 'ShopVerse Wallet',
+              subtitle: 'Balance: ₹${walletProv.balance.toStringAsFixed(2)}',
+              isEnabled: walletProv.balance >= totalAmount,
             ),
+            _buildPaymentOption(
+              index: 1,
+              icon: Icons.account_balance_outlined,
+              title: 'UPI',
+              subtitle: 'Google Pay, PhonePe, Paytm',
+            ),
+            _buildPaymentOption(
+              index: 2,
+              icon: Icons.credit_card_outlined,
+              title: 'Credit / Debit Card',
+              subtitle: 'Visa, Mastercard, RuPay',
+            ),
+            _buildPaymentOption(
+              index: 3,
+              icon: Icons.money_outlined,
+              title: 'Cash on Delivery',
+              subtitle: 'Pay at your doorstep',
+            ),
+            const SizedBox(height: 32),
           ],
         ),
       ),
@@ -348,32 +339,120 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: () {
-                        _showSuccessDialog(context, totalAmount, cart.items.values.toList());
-                        cart.clear();
-                      },
+                      onPressed: _isProcessing 
+                        ? null 
+                        : () => _handlePayment(context, totalAmount, cart, walletProv),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: brandRed,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         elevation: 0,
+                        disabledBackgroundColor: brandRed.withValues(alpha: 0.5),
                       ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Proceed to Pay',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      child: _isProcessing
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          )
+                        : const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Proceed to Pay',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(width: 8),
+                              Icon(Icons.chevron_right),
+                            ],
                           ),
-                          SizedBox(width: 8),
-                          Icon(Icons.chevron_right),
-                        ],
-                      ),
                     ),
                   ),
                 ],
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPaymentOption({
+    required int index,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    bool isEnabled = true,
+  }) {
+    final isSelected = _selectedPaymentMethod == index;
+    return GestureDetector(
+      onTap: isEnabled ? () => setState(() => _selectedPaymentMethod = index) : null,
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isEnabled ? Colors.white : Colors.grey[50],
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? brandRed : Colors.transparent,
+            width: 1.5,
+          ),
+          boxShadow: isSelected ? [
+            BoxShadow(
+              color: brandRed.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            )
+          ] : null,
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: (isSelected ? brandRed : Colors.grey[100])?.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                icon, 
+                color: isSelected ? brandRed : Colors.grey[600],
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: isEnabled ? Colors.black : Colors.grey,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: Colors.grey[500],
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (!isEnabled)
+              Text(
+                'Insufficient',
+                style: TextStyle(color: brandRed, fontSize: 10, fontWeight: FontWeight.bold),
+              )
+            else
+              Icon(
+                isSelected ? Icons.check_circle : Icons.radio_button_off,
+                color: isSelected ? brandRed : Colors.grey[300],
+                size: 22,
+              ),
           ],
         ),
       ),
@@ -434,9 +513,36 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
 
+  void _handlePayment(BuildContext context, double total, CartProvider cart, WalletProvider wallet) async {
+    setState(() => _isProcessing = true);
+
+    // Simulate payment processing delay
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (!mounted) return;
+
+    if (_selectedPaymentMethod == 0) { // Wallet
+      if (wallet.balance >= total) {
+        wallet.pay(total, 'ORD-${DateTime.now().millisecond}');
+      } else {
+        setState(() => _isProcessing = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Insufficient Wallet Balance')),
+        );
+        return;
+      }
+    }
+
+    // Success flow
+    _showSuccessDialog(context, total, cart.items.values.toList());
+    cart.clear();
+    setState(() => _isProcessing = false);
+  }
+
   void _showSuccessDialog(BuildContext context, double total, List cartItems) {
     final orderProv = Provider.of<OrderProvider>(context, listen: false);
-    orderProv.addOrder(total, cartItems);
+    final orderId = orderProv.addOrder(total, cartItems);
+    final shortId = 'ORD-${orderId.substring(orderId.length - 6).toUpperCase()}';
 
     showDialog(
       context: context,
@@ -453,10 +559,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            const Text(
-              'Your order has been placed successfully. You can track it in the orders section.',
+            Text(
+              'Your order $shortId has been placed successfully. You can track it in the orders section.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey),
+              style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 24),
             SizedBox(
@@ -468,7 +574,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   Navigator.of(context).pop(); // Close cart
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const TrackingScreen(orderId: 'ORD-5521')),
+                    MaterialPageRoute(builder: (_) => TrackingScreen(orderId: shortId)),
                   );
                 },
                 child: const Text('Track Order'),

@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'models/product.dart';
 import 'providers/cart_provider.dart';
 import 'providers/wishlist_provider.dart';
+import 'services/ai_service.dart';
 
 class ProductDetailsScreen extends StatelessWidget {
   final Product product;
@@ -19,6 +20,50 @@ class ProductDetailsScreen extends StatelessWidget {
     const cardColor = Color(0xFF161D29);
     const accentGreen = Color(0xFF00E676);
     const accentPurple = Color(0xFFD1C4E9);
+
+    // Mock all products for AI service (In real app, this would come from a ProductProvider)
+    final List<Product> allProducts = [
+      product, // Include current product
+      Product(
+        id: 'p0',
+        name: 'Neon Velocity G7 Pro',
+        brand: 'APEX FOOTWEAR',
+        description: 'Engineered for the neon-lit streets...',
+        price: 189.0,
+        oldPrice: 245.0,
+        imageUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800',
+        category: 'Footwear',
+      ),
+      Product(
+        id: 'p2',
+        name: 'Fortune Sunlite Sunflower Oil',
+        description: 'Refined sunflower oil',
+        price: 145.0,
+        oldPrice: 175.0,
+        imageUrl: 'https://m.media-amazon.com/images/I/71p0WfB6LHL._SL1500_.jpg',
+        category: 'Grocery',
+      ),
+      Product(
+        id: 'p3',
+        name: 'Aashirvaad Superior MP Atta',
+        description: 'Whole wheat flour',
+        price: 245.0,
+        oldPrice: 280.0,
+        imageUrl: 'https://m.media-amazon.com/images/I/81RAtC9zU2L._SL1500_.jpg',
+        category: 'Grocery',
+      ),
+      Product(
+        id: 'p5',
+        name: 'Maggi 2-Minute Noodles',
+        description: 'Instant noodles',
+        price: 14.0,
+        oldPrice: 16.0,
+        imageUrl: 'https://m.media-amazon.com/images/I/81Xn9-iN9LL._SL1500_.jpg',
+        category: 'Munchies',
+      ),
+    ];
+
+    final recommended = AIService.getFrequentlyBoughtTogether(product, allProducts);
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -252,6 +297,71 @@ class ProductDetailsScreen extends StatelessWidget {
                     product.description,
                     style: const TextStyle(color: Colors.white54, height: 1.6, fontSize: 14),
                   ),
+
+                  if (recommended.isNotEmpty) ...[
+                    const SizedBox(height: 32),
+                    Row(
+                      children: [
+                        const Icon(Icons.auto_awesome, color: Colors.amber, size: 20),
+                        const SizedBox(width: 8),
+                        const Text('AI Recommended Pairings', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      height: 120,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: recommended.length,
+                        itemBuilder: (context, index) {
+                          final p = recommended[index];
+                          return GestureDetector(
+                            onTap: () => Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (_) => ProductDetailsScreen(product: p)),
+                            ),
+                            child: Container(
+                              width: 280,
+                              margin: const EdgeInsets.only(right: 12),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: cardColor,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.white10),
+                              ),
+                              child: Row(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: CachedNetworkImage(
+                                      imageUrl: p.imageUrl,
+                                      width: 80,
+                                      height: 80,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(p.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                        Text('₹${p.price.toInt()}', style: const TextStyle(color: accentGreen, fontWeight: FontWeight.bold)),
+                                        const SizedBox(height: 4),
+                                        Text('Frequently bought with this', style: TextStyle(color: Colors.white38, fontSize: 10)),
+                                      ],
+                                    ),
+                                  ),
+                                  const Icon(Icons.add_circle_outline, color: Colors.white54),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
 
                   const SizedBox(height: 32),
                   Container(

@@ -23,7 +23,6 @@ class _PrintScreenState extends State<PrintScreen> {
 
   Future<void> _pickFile() async {
     try {
-      // Use the static pickFiles method directly as per file_picker 8.x+ / 11.x API
       final result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf', 'doc', 'docx', 'png', 'jpg'],
@@ -43,24 +42,6 @@ class _PrintScreenState extends State<PrintScreen> {
           const SnackBar(content: Text('Failed to pick file. Please try again.')),
         );
       }
-    }
-  }
-
-  // Fallback if .platform is indeed missing (some versions use static directly)
-  Future<void> _pickFileFallback() async {
-    try {
-      final result = await FilePicker.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['pdf', 'doc', 'docx', 'png', 'jpg'],
-      );
-      if (result != null && result.files.isNotEmpty) {
-        setState(() {
-          _selectedFile = result.files.first;
-          _pageCount = (_selectedFile!.size / 500000).ceil().clamp(1, 50);
-        });
-      }
-    } catch (e) {
-      debugPrint("Fallback error: $e");
     }
   }
 
@@ -221,7 +202,44 @@ class _PrintScreenState extends State<PrintScreen> {
 
   Widget _buildSectionHeader(String title) => Padding(padding: const EdgeInsets.all(16), child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)));
 
-  Widget _buildStationeryList() => const SizedBox.shrink(); // Simplified for now
+  Widget _buildStationeryList() {
+    final List<Map<String, dynamic>> stationeryItems = [
+      {'name': 'A4 Paper (100 Sheets)', 'price': 150, 'icon': Icons.description_outlined},
+      {'name': 'Stapler Small', 'price': 45, 'icon': Icons.architecture},
+      {'name': 'Permanent Marker', 'price': 20, 'icon': Icons.edit},
+      {'name': 'Clear Folder', 'price': 10, 'icon': Icons.folder_open},
+    ];
+
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: stationeryItems.length,
+      separatorBuilder: (context, index) => const Divider(height: 1),
+      itemBuilder: (context, index) {
+        final item = stationeryItems[index];
+        return ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(8)),
+            child: Icon(item['icon'], color: Colors.black54),
+          ),
+          title: Text(item['name'], style: const TextStyle(fontWeight: FontWeight.w500)),
+          subtitle: Text('₹${item['price']}'),
+          trailing: OutlinedButton(
+            onPressed: () {},
+            style: OutlinedButton.styleFrom(
+              foregroundColor: brandRed,
+              side: BorderSide(color: brandRed),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('ADD'),
+          ),
+        );
+      },
+    );
+  }
 
   Widget _buildCheckoutBar() {
     return Container(

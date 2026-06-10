@@ -21,16 +21,18 @@ class OrderProvider with ChangeNotifier {
 
   List<OrderItem> get orders => [..._orders];
 
-  void addOrder(double total, List<dynamic> cartProducts) {
+  String addOrder(double total, List<dynamic> cartProducts) {
+    final newId = DateTime.now().millisecondsSinceEpoch.toString();
     _orders.insert(
       0,
       OrderItem(
-        id: DateTime.now().toString(),
+        id: newId,
         amount: total,
         products: cartProducts,
         dateTime: DateTime.now(),
       ),
     );
     notifyListeners();
+    return newId;
   }
 }

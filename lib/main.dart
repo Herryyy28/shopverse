@@ -8,9 +8,14 @@ import 'providers/wishlist_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/location_provider.dart';
 import 'providers/order_provider.dart';
+import 'providers/wallet_provider.dart';
+import 'providers/admin_provider.dart';
+import 'providers/product_provider.dart';
+import 'services/firebase_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await FirebaseService.initialize();
   
   runApp(
     MultiProvider(
@@ -20,6 +25,9 @@ void main() async {
         ChangeNotifierProvider(create: (_) => WishlistProvider()),
         ChangeNotifierProvider(create: (_) => LocationProvider()),
         ChangeNotifierProvider(create: (_) => OrderProvider()),
+        ChangeNotifierProvider(create: (_) => WalletProvider()),
+        ChangeNotifierProvider(create: (_) => AdminProvider()),
+        ChangeNotifierProvider(create: (_) => ProductProvider()),
       ],
       child: const ShopVerseApp(),
     ),

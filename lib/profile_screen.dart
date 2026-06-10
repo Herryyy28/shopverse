@@ -4,6 +4,9 @@ import 'providers/auth_provider.dart';
 import 'orders_screen.dart';
 import 'wishlist_screen.dart';
 import 'notifications_screen.dart';
+import 'wallet_screen.dart';
+import 'admin_dashboard.dart';
+import 'providers/admin_provider.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -80,6 +83,11 @@ class ProfileScreen extends StatelessWidget {
             ),
             
             const SizedBox(height: 24),
+            
+            // Verse Points Card
+            _buildWalletQuickView(context),
+
+            const SizedBox(height: 12),
             
             // Verse Points Card
             Container(
@@ -198,6 +206,8 @@ class ProfileScreen extends StatelessWidget {
 
             const SizedBox(height: 16),
 
+            _buildAdminTile(context),
+
             // Logout Button
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -273,6 +283,58 @@ class ProfileScreen extends StatelessWidget {
       title: Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textColor ?? Colors.black87)),
       trailing: const Icon(Icons.chevron_right, size: 20, color: Colors.black26),
       onTap: onTap,
+    );
+  }
+
+  Widget _buildAdminTile(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+      ),
+      child: ListTile(
+        leading: const Icon(Icons.admin_panel_settings, color: Colors.amber),
+        title: const Text('Admin Dashboard', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+        subtitle: const Text('Manage store & view analytics', style: TextStyle(fontSize: 12)),
+        trailing: const Icon(Icons.chevron_right, size: 20),
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminDashboard())),
+      ),
+    );
+  }
+
+  Widget _buildWalletQuickView(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+      ),
+      child: Row(
+        children: [
+          const CircleAvatar(
+            backgroundColor: Color(0xFFE8F5E9),
+            child: Icon(Icons.account_balance_wallet, color: Color(0xFF2E7D32)),
+          ),
+          const SizedBox(width: 16),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('ShopVerse Wallet', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text('Manage balance & refunds', style: TextStyle(color: Colors.grey, fontSize: 12)),
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WalletScreen())),
+            child: const Text('VIEW', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFFF3232))),
+          ),
+        ],
+      ),
     );
   }
 }
