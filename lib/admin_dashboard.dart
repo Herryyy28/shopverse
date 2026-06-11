@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shopverse/providers/admin_provider.dart';
 import 'package:shopverse/add_product_screen.dart';
+import 'package:shopverse/manage_products_screen.dart';
+import 'package:shopverse/admin_orders_screen.dart';
+import 'package:shopverse/categories_screen.dart';
+import 'package:shopverse/notifications_screen.dart';
 
 class AdminDashboard extends StatelessWidget {
   const AdminDashboard({super.key});
@@ -20,7 +24,12 @@ class AdminDashboard extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_none),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+              );
+            },
           ),
         ],
       ),
@@ -54,16 +63,33 @@ class AdminDashboard extends StatelessWidget {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            _buildActionTile(Icons.add_box, 'Add New Product', () {
+            _buildActionTile(Icons.inventory_2_outlined, 'Manage Products', () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => AddProductScreen()),
+                MaterialPageRoute(builder: (_) => const ManageProductsScreen()),
               );
             }),
-            _buildActionTile(Icons.category, 'Manage Categories', () {}),
-            _buildActionTile(Icons.local_shipping, 'Manage Orders', () {}),
-            _buildActionTile(Icons.campaign, 'Send Push Notifications', () {}),
-            _buildActionTile(Icons.analytics, 'Sales Reports', () {}),
+            _buildActionTile(Icons.add_box_outlined, 'Add New Product', () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AddProductScreen()),
+              );
+            }),
+            _buildActionTile(Icons.category_outlined, 'Manage Categories', () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CategoriesScreen()),
+              );
+            }),
+            _buildActionTile(Icons.local_shipping_outlined, 'Manage Orders', () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AdminOrdersScreen()),
+              );
+            }),
+            _buildActionTile(Icons.campaign_outlined, 'Send Push Notifications', () {
+               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Notification feature coming soon!')));
+            }),
             const SizedBox(height: 40),
           ],
         ),
@@ -79,7 +105,7 @@ class AdminDashboard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

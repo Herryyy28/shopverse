@@ -30,9 +30,24 @@ class OrderProvider with ChangeNotifier {
         amount: total,
         products: cartProducts,
         dateTime: DateTime.now(),
+        status: 'Pending', // Changed default to Pending for better admin flow
       ),
     );
     notifyListeners();
     return newId;
+  }
+
+  void updateOrderStatus(String orderId, String newStatus) {
+    final index = _orders.indexWhere((o) => o.id == orderId);
+    if (index >= 0) {
+      _orders[index] = OrderItem(
+        id: _orders[index].id,
+        amount: _orders[index].amount,
+        products: _orders[index].products,
+        dateTime: _orders[index].dateTime,
+        status: newStatus,
+      );
+      notifyListeners();
+    }
   }
 }

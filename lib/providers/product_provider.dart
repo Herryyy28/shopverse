@@ -54,6 +54,11 @@ class ProductProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void deleteProduct(String id) {
+    _products.removeWhere((p) => p.id == id);
+    notifyListeners();
+  }
+
   Future<void> fetchProducts() async {
     // Fetch from Firebase if needed
     // final data = await FirebaseService.fetchProducts();
