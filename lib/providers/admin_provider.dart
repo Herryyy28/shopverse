@@ -16,15 +16,30 @@ class AdminStats {
 
 class AdminProvider with ChangeNotifier {
   AdminStats _stats = AdminStats(
-    totalUsers: 1250,
-    totalOrders: 4500,
-    totalRevenue: 854000.50,
-    totalProducts: 320,
+    totalUsers: 0,
+    totalOrders: 0,
+    totalRevenue: 0.0,
+    totalProducts: 0,
   );
 
   AdminStats get stats => _stats;
 
-  bool _isAdmin = false;
+  void updateStats({
+    required int totalUsers,
+    required int totalOrders,
+    required double totalRevenue,
+    required int totalProducts,
+  }) {
+    _stats = AdminStats(
+      totalUsers: totalUsers,
+      totalOrders: totalOrders,
+      totalRevenue: totalRevenue,
+      totalProducts: totalProducts,
+    );
+    notifyListeners();
+  }
+
+  bool _isAdmin = true; // Set to true for admin access during development
   bool get isAdmin => _isAdmin;
 
   void toggleAdminMode() {

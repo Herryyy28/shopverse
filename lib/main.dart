@@ -11,6 +11,9 @@ import 'providers/order_provider.dart';
 import 'providers/wallet_provider.dart';
 import 'providers/admin_provider.dart';
 import 'providers/product_provider.dart';
+import 'providers/category_provider.dart';
+import 'providers/user_provider.dart';
+import 'providers/notification_provider.dart';
 import 'services/firebase_service.dart';
 
 void main() async {
@@ -28,6 +31,9 @@ void main() async {
         ChangeNotifierProvider(create: (_) => WalletProvider()),
         ChangeNotifierProvider(create: (_) => AdminProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
+        ChangeNotifierProvider(create: (_) => CategoryProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
       child: const ShopVerseApp(),
     ),

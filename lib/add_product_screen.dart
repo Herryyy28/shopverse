@@ -79,129 +79,138 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Add Product', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        foregroundColor: Colors.black,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Image Picker
-              GestureDetector(
-                onTap: _pickImage,
-                child: Container(
-                  height: 200,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey[300]!),
-                  ),
-                  child: _imageFile != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: const Icon(Icons.check_circle, color: Colors.green, size: 50), // Simplified preview
-                        )
-                      : const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.add_a_photo_outlined, size: 40, color: Colors.grey),
-                            SizedBox(height: 8),
-                            Text('Select Product Image', style: TextStyle(color: Colors.grey)),
-                          ],
-                        ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Product Name', border: OutlineInputBorder()),
-                validator: (v) => v!.isEmpty ? 'Enter name' : null,
-              ),
-              const SizedBox(height: 16),
-              
-              TextFormField(
-                controller: _descController,
-                maxLines: 3,
-                decoration: const InputDecoration(labelText: 'Description', border: OutlineInputBorder()),
-                validator: (v) => v!.isEmpty ? 'Enter description' : null,
-              ),
-              const SizedBox(height: 16),
-              
-              Row(
+    final categoryProv = Provider.of<CategoryProvider>(context);
+    
+    return StreamBuilder<List<CategoryItem>>(
+      stream: categoryProv.categoriesStream,
+      builder: (context, snapshot) {
+        final categories = snapshot.data ?? categoryProv.categories;
+        
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Add Product', style: TextStyle(fontWeight: FontWeight.bold)),
+            backgroundColor: Colors.white,
+            elevation: 0,
+            foregroundColor: Colors.black,
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _priceController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'Price (₹)', border: OutlineInputBorder()),
-                      validator: (v) => v!.isEmpty ? 'Enter price' : null,
+                  // Image Picker
+                  GestureDetector(
+                    onTap: _pickImage,
+                    child: Container(
+                      height: 200,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey[300]!),
+                      ),
+                      child: _imageFile != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: const Icon(Icons.check_circle, color: Colors.green, size: 50), // Simplified preview
+                            )
+                          : const Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.add_a_photo_outlined, size: 40, color: Colors.grey),
+                                SizedBox(height: 8),
+                                Text('Select Product Image', style: TextStyle(color: Colors.grey)),
+                              ],
+                            ),
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _oldPriceController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'MRP (₹)', border: OutlineInputBorder()),
+                  const SizedBox(height: 24),
+                  
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: const InputDecoration(labelText: 'Product Name', border: OutlineInputBorder()),
+                    validator: (v) => v!.isEmpty ? 'Enter name' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  TextFormField(
+                    controller: _descController,
+                    maxLines: 3,
+                    decoration: const InputDecoration(labelText: 'Description', border: OutlineInputBorder()),
+                    validator: (v) => v!.isEmpty ? 'Enter description' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _priceController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(labelText: 'Price (₹)', border: OutlineInputBorder()),
+                          validator: (v) => v!.isEmpty ? 'Enter price' : null,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: TextFormField(
+                          controller: _oldPriceController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(labelText: 'MRP (₹)', border: OutlineInputBorder()),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  DropdownButtonFormField<String>(
+                    value: categories.any((c) => c.name == _selectedCategory) ? _selectedCategory : (categories.isNotEmpty ? categories.first.name : null),
+                    items: categories.map((c) => DropdownMenuItem(value: c.name, child: Text(c.name))).toList(),
+                    onChanged: (v) => setState(() => _selectedCategory = v!),
+                    decoration: const InputDecoration(labelText: 'Category', border: OutlineInputBorder()),
+                  ),
+                  const SizedBox(height: 16),
+
+                  TextFormField(
+                    controller: _unitController,
+                    decoration: const InputDecoration(labelText: 'Unit (e.g. 500 ml, 1 kg)', border: OutlineInputBorder()),
+                    validator: (v) => v!.isEmpty ? 'Enter unit' : null,
+                  ),
+                  const SizedBox(height: 16),
+
+                  SwitchListTile(
+                    title: const Text('Is Vegetarian?'),
+                    value: _isVeg,
+                    activeColor: Colors.green,
+                    onChanged: (v) => setState(() => _isVeg = v),
+                  ),
+
+                  const SizedBox(height: 32),
+                  
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: _isUploading ? null : _submit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: brandRed,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: _isUploading 
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text('SAVE PRODUCT', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     ),
                   ),
+                  const SizedBox(height: 40),
                 ],
               ),
-              const SizedBox(height: 16),
-
-              DropdownButtonFormField<String>(
-                value: _selectedCategory,
-                items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-                onChanged: (v) => setState(() => _selectedCategory = v!),
-                decoration: const InputDecoration(labelText: 'Category', border: OutlineInputBorder()),
-              ),
-              const SizedBox(height: 16),
-
-              TextFormField(
-                controller: _unitController,
-                decoration: const InputDecoration(labelText: 'Unit (e.g. 500 ml, 1 kg)', border: OutlineInputBorder()),
-                validator: (v) => v!.isEmpty ? 'Enter unit' : null,
-              ),
-              const SizedBox(height: 16),
-
-              SwitchListTile(
-                title: const Text('Is Vegetarian?'),
-                value: _isVeg,
-                activeColor: Colors.green,
-                onChanged: (v) => setState(() => _isVeg = v),
-              ),
-
-              const SizedBox(height: 32),
-              
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: _isUploading ? null : _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: brandRed,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: _isUploading 
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('SAVE PRODUCT', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                ),
-              ),
-              const SizedBox(height: 40),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

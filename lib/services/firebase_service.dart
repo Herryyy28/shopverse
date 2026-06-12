@@ -1,16 +1,50 @@
 // Real Firebase integration logic (Simulated for this environment)
 // In a production app, you would add firebase_core, cloud_firestore, etc. to pubspec.yaml
 
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
 class FirebaseService {
   static bool _isInitialized = false;
 
   static Future<void> initialize() async {
     if (_isInitialized) return;
     
-    // Simulate network delay
-    await Future.delayed(const Duration(seconds: 1));
+    // In a real environment with google-services.json, we'd use:
+    // await Firebase.initializeApp();
+    
+    // For simulation but showing real imports:
+    print('Firebase initialized with Core and Messaging');
     _isInitialized = true;
-    print('Firebase initialized successfully');
+    
+    _setupFCM();
+  }
+
+  static Future<void> _setupFCM() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      print('User granted notification permission');
+      
+      // Subscribe to a topic for broadcast notifications
+      await messaging.subscribeToTopic('all_users');
+      
+      String? token = await messaging.getToken();
+      print('FCM Token: $token');
+    }
+  }
+
+  static Future<void> sendBroadcastNotification(String title, String body) async {
+    // In a real app, you'd call a Cloud Function or your own backend
+    // which then calls FCM Admin SDK to send to the 'all_users' topic.
+    print('Sending Broadcast: $title - $body');
+    await Future.delayed(const Duration(seconds: 1));
   }
 
   static Future<Map<String, dynamic>> getUserData(String uid) async {
