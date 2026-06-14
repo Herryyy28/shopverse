@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'utils/app_colors.dart';
+import 'widgets/custom_button.dart';
 
 class PrintScreen extends StatefulWidget {
   const PrintScreen({super.key});
@@ -12,7 +14,6 @@ class _PrintScreenState extends State<PrintScreen> {
   PlatformFile? _selectedFile;
   int _pageCount = 1;
   int _selectedPrintType = 0; // 0: B&W, 1: Color
-  final Color brandRed = const Color(0xFFFF3232);
 
   final List<Map<String, dynamic>> _printServices = [
     {'name': 'Black & White', 'icon': Icons.print_outlined, 'price': 3, 'unit': 'page'},
@@ -54,13 +55,11 @@ class _PrintScreenState extends State<PrintScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FB),
+      backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         title: const Text(
           'Print Store',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 20),
+          style: TextStyle(color: AppColors.brandRed, fontWeight: FontWeight.w900, fontSize: 20),
         ),
       ),
       body: SingleChildScrollView(
@@ -89,17 +88,17 @@ class _PrintScreenState extends State<PrintScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: brandRed.withValues(alpha: 0.1), width: 2),
+        border: Border.all(color: AppColors.brandRed.withValues(alpha: 0.1), width: 2),
       ),
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: brandRed.withValues(alpha: 0.1),
+              color: AppColors.brandRed.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.cloud_upload_outlined, color: brandRed, size: 32),
+            child: const Icon(Icons.cloud_upload_outlined, color: AppColors.brandRed, size: 32),
           ),
           const SizedBox(height: 16),
           const Text(
@@ -109,14 +108,9 @@ class _PrintScreenState extends State<PrintScreen> {
           const SizedBox(height: 24),
           SizedBox(
             width: 200,
-            child: ElevatedButton(
+            child: CustomButton(
+              text: 'SELECT FILES',
               onPressed: _pickFile,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: brandRed,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-              ),
-              child: const Text('SELECT FILES'),
             ),
           ),
         ],
@@ -181,14 +175,14 @@ class _PrintScreenState extends State<PrintScreen> {
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: isSelected ? brandRed.withValues(alpha: 0.05) : Colors.white,
+              color: isSelected ? AppColors.brandRed.withValues(alpha: 0.05) : Colors.white,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: isSelected ? brandRed : Colors.transparent),
+              border: Border.all(color: isSelected ? AppColors.brandRed : Colors.transparent),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(_printServices[i]['icon'], color: isSelected ? brandRed : Colors.black),
+                Icon(_printServices[i]['icon'], color: isSelected ? AppColors.brandRed : Colors.black),
                 const Spacer(),
                 Text(_printServices[i]['name'], style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
                 Text('₹${_printServices[i]['price']}/${_printServices[i]['unit']}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
@@ -230,8 +224,8 @@ class _PrintScreenState extends State<PrintScreen> {
           trailing: OutlinedButton(
             onPressed: () {},
             style: OutlinedButton.styleFrom(
-              foregroundColor: brandRed,
-              side: BorderSide(color: brandRed),
+              foregroundColor: AppColors.brandRed,
+              side: const BorderSide(color: AppColors.brandRed),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             child: const Text('ADD'),
@@ -256,10 +250,12 @@ class _PrintScreenState extends State<PrintScreen> {
             ],
           ),
           const Spacer(),
-          ElevatedButton(
-            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Added to Cart'))),
-            style: ElevatedButton.styleFrom(backgroundColor: brandRed, foregroundColor: Colors.white),
-            child: const Text('Add to Cart'),
+          SizedBox(
+            width: 150,
+            child: CustomButton(
+              text: 'Add to Cart',
+              onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Added to Cart'))),
+            ),
           ),
         ],
       ),

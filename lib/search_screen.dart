@@ -4,6 +4,13 @@ import 'models/product.dart';
 import 'product_details_screen.dart';
 import 'providers/cart_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shopverse/services/ai_service.dart';
+import 'package:shopverse/widgets/barcode_scanner_dialog.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'utils/app_colors.dart';
+import 'widgets/custom_button.dart';
 
 class SearchScreen extends StatefulWidget {
   final String? initialQuery;
@@ -17,13 +24,105 @@ class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   List<Product> _filteredProducts = [];
   bool _isSearching = false;
+  
+  // Advanced Search States
+  final stt.SpeechToText _speech = stt.SpeechToText();
+  bool _isListening = false;
+  List<String> _searchHistory = [];
+  List<String> _aiSuggestions = [];
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
+    _loadSearchHistory();
     if (widget.initialQuery != null) {
       _searchController.text = widget.initialQuery!;
       _onSearchChanged(widget.initialQuery!);
+    }
+  }
+
+  Future<void> _loadSearchHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _searchHistory = prefs.getStringList('search_history') ?? [];
+    });
+  }
+
+  Future<void> _saveSearchHistory(String query) async {
+    if (query.isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    _searchHistory.remove(query);
+    _searchHistory.insert(0, query);
+    if (_searchHistory.length > 10) _searchHistory.removeLast();
+    await prefs.setStringList('search_history', _searchHistory);
+    setState(() {});
+  }
+
+  void _onSearchChanged(String query) async {
+    setState(() {
+      _isSearching = query.isNotEmpty;
+    });
+
+    if (query.isNotEmpty) {
+      final suggestions = await AIService.getSearchSuggestions(query);
+      setState(() {
+        _aiSuggestions = suggestions;
+        _filteredProducts = _allProducts
+            .where((p) => p.name.toLowerCase().contains(query.toLowerCase()) || 
+                         p.category.toLowerCase().contains(query.toLowerCase()))
+            .toList();
+      });
+    }
+  }
+
+  Future<void> _startListening() async {
+    bool available = await _speech.initialize();
+    if (available) {
+      setState(() => _isListening = true);
+      _speech.listen(
+        onResult: (result) {
+          setState(() {
+            _searchController.text = result.recognizedWords;
+            _onSearchChanged(result.recognizedWords);
+            if (result.finalResult) {
+              _isListening = false;
+              _saveSearchHistory(result.recognizedWords);
+            }
+          });
+        },
+      );
+    }
+  }
+
+  Future<void> _scanBarcode() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const BarcodeScannerDialog()),
+    );
+    if (result != null) {
+      _searchController.text = result.toString();
+      _onSearchChanged(result.toString());
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      // Show analyzing loader
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => const Center(child: CircularProgressIndicator(color: AppColors.brandRed)),
+      );
+      
+      final tags = await AIService.analyzeImage(image.path);
+      if (mounted) Navigator.pop(context); // Close loader
+
+      if (tags.isNotEmpty) {
+        _searchController.text = tags.first;
+        _onSearchChanged(tags.first);
+      }
     }
   }
 
@@ -89,33 +188,33 @@ class _SearchScreenState extends State<SearchScreen> {
     ),
   ];
 
-  void _onSearchChanged(String query) {
+  void _onSearchChanged(String query) async {
     setState(() {
       _isSearching = query.isNotEmpty;
-      _filteredProducts = _allProducts
-          .where((p) => p.name.toLowerCase().contains(query.toLowerCase()) || 
-                       p.category.toLowerCase().contains(query.toLowerCase()))
-          .toList();
     });
+
+    if (query.isNotEmpty) {
+      final suggestions = await AIService.getSearchSuggestions(query);
+      setState(() {
+        _aiSuggestions = suggestions;
+        _filteredProducts = _allProducts
+            .where((p) => p.name.toLowerCase().contains(query.toLowerCase()) || 
+                         p.category.toLowerCase().contains(query.toLowerCase()))
+            .toList();
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    const themeColor = Color(0xFFFF3232);
-    
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FD),
+      backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        titleSpacing: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text('ShopVerse', style: TextStyle(color: themeColor, fontWeight: FontWeight.bold)),
+        title: const Text('ShopVerse', style: TextStyle(color: AppColors.brandRed, fontWeight: FontWeight.w900)),
         actions: [
-          IconButton(icon: const Icon(Icons.mic, color: Colors.black87), onPressed: () {}),
+          IconButton(icon: Icon(_isListening ? Icons.graphic_eq : Icons.mic, color: AppColors.brandRed), onPressed: _startListening),
+          IconButton(icon: const Icon(Icons.qr_code_scanner, color: AppColors.textPrimary), onPressed: _scanBarcode),
+          IconButton(icon: const Icon(Icons.image_outlined, color: AppColors.textPrimary), onPressed: _pickImage),
         ],
       ),
       body: Column(
@@ -128,32 +227,32 @@ class _SearchScreenState extends State<SearchScreen> {
               controller: _searchController,
               autofocus: true,
               onChanged: _onSearchChanged,
+              onSubmitted: _saveSearchHistory,
               decoration: InputDecoration(
-                hintText: 'Search products, brands...',
-                hintStyle: TextStyle(color: Colors.grey[400], fontSize: 16),
-                prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                suffixIcon: const Icon(Icons.mic, color: Colors.grey),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey[200]!),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey[200]!),
-                ),
-                fillColor: Colors.white,
-                filled: true,
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                hintText: _isListening ? 'Listening...' : 'Search products, brands...',
+                prefixIcon: const Icon(Icons.search, color: AppColors.textMuted),
+                suffixIcon: _searchController.text.isNotEmpty 
+                  ? IconButton(
+                      icon: const Icon(Icons.clear), 
+                      onPressed: () {
+                        _searchController.clear();
+                        _onSearchChanged('');
+                      }) 
+                  : IconButton(icon: const Icon(Icons.mic, color: AppColors.textMuted), onPressed: _startListening),
               ),
             ),
           ),
           
+          if (_isSearching && _aiSuggestions.isNotEmpty)
+            _buildAISuggestions(),
+          
           if (!_isSearching) ...[
+            if (_searchHistory.isNotEmpty) _buildSearchHistory(),
             Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  _buildFilterChip('Delivery Speed', themeColor, true, Icons.bolt),
+                  _buildFilterChip('Delivery Speed', AppColors.brandRed, true, Icons.bolt),
                   const SizedBox(width: 8),
                   _buildFilterChip('Price', Colors.grey[200]!, false, Icons.keyboard_arrow_down),
                   const SizedBox(width: 8),
@@ -166,9 +265,9 @@ class _SearchScreenState extends State<SearchScreen> {
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
-                  Icon(Icons.trending_up, color: Color(0xFFFF3232), size: 20),
+                  Icon(Icons.trending_up, color: AppColors.brandRed, size: 20),
                   SizedBox(width: 8),
-                  Text('Trending Searches', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                  Text('Trending Searches', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
                 ],
               ),
             ),
@@ -185,6 +284,83 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildAISuggestions() {
+    return Container(
+      color: Colors.white,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                Icon(Icons.auto_awesome, color: Colors.purple, size: 16),
+                SizedBox(width: 8),
+                Text('AI SUGGESTIONS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.purple)),
+              ],
+            ),
+          ),
+          ..._aiSuggestions.map((s) => ListTile(
+            leading: const Icon(Icons.search, size: 18, color: AppColors.textMuted),
+            title: Text(s, style: const TextStyle(fontSize: 14)),
+            dense: true,
+            onTap: () {
+              _searchController.text = s;
+              _onSearchChanged(s);
+              _saveSearchHistory(s);
+            },
+          )),
+          const Divider(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchHistory() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Recent Searches', style: TextStyle(fontWeight: FontWeight.bold)),
+              TextButton(
+                onPressed: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.remove('search_history');
+                  setState(() => _searchHistory = []);
+                },
+                child: const Text('Clear', style: TextStyle(fontSize: 12, color: AppColors.brandRed)),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 40,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            itemCount: _searchHistory.length,
+            itemBuilder: (context, i) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: ActionChip(
+                label: Text(_searchHistory[i], style: const TextStyle(fontSize: 12)),
+                backgroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide(color: Colors.grey[200]!)),
+                onPressed: () {
+                  _searchController.text = _searchHistory[i];
+                  _onSearchChanged(_searchHistory[i]);
+                },
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -305,36 +481,25 @@ class _SearchScreenState extends State<SearchScreen> {
                   children: [
                     Text(
                       '₹${product.price.toInt()}',
-                      style: const TextStyle(color: Color(0xFFFF3232), fontWeight: FontWeight.w900, fontSize: 18),
+                      style: const TextStyle(color: AppColors.brandRed, fontWeight: FontWeight.w900, fontSize: 18),
                     ),
                     const SizedBox(width: 4),
                     if (product.oldPrice > product.price)
                       Text(
                         '₹${product.oldPrice.toInt()}',
-                        style: const TextStyle(color: Colors.grey, decoration: TextDecoration.lineThrough, fontSize: 11),
+                        style: const TextStyle(color: AppColors.textMuted, decoration: TextDecoration.lineThrough, fontSize: 11),
                       ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
+                  height: 36,
+                  child: CustomButton(
+                    text: 'ADD',
                     onPressed: () {
                       Provider.of<CartProvider>(context, listen: false).addItem(product);
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00796B),
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.add, size: 16),
-                        SizedBox(width: 4),
-                        Text('Add to Cart', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                      ],
-                    ),
                   ),
                 ),
               ],

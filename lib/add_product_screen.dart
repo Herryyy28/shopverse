@@ -3,10 +3,12 @@ import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:shopverse/models/product.dart';
 import 'package:shopverse/providers/product_provider.dart';
+import 'package:shopverse/providers/category_provider.dart';
 import 'package:shopverse/services/firebase_service.dart';
 
 class AddProductScreen extends StatefulWidget {
-  const AddProductScreen({super.key});
+  final Product? product;
+  const AddProductScreen({super.key, this.product});
 
   @override
   State<AddProductScreen> createState() => _AddProductScreenState();
@@ -14,16 +16,30 @@ class AddProductScreen extends StatefulWidget {
 
 class _AddProductScreenState extends State<AddProductScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _descController = TextEditingController();
-  final _priceController = TextEditingController();
-  final _oldPriceController = TextEditingController();
-  final _unitController = TextEditingController();
+  late TextEditingController _nameController;
+  late TextEditingController _descController;
+  late TextEditingController _priceController;
+  late TextEditingController _oldPriceController;
+  late TextEditingController _unitController;
   
   String _selectedCategory = 'Grocery';
   bool _isVeg = true;
   PlatformFile? _imageFile;
   bool _isUploading = false;
+  String? _existingImageUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.product?.name ?? '');
+    _descController = TextEditingController(text: widget.product?.description ?? '');
+    _priceController = TextEditingController(text: widget.product?.price.toString() ?? '');
+    _oldPriceController = TextEditingController(text: widget.product?.oldPrice.toString() ?? '');
+    _unitController = TextEditingController(text: widget.product?.unit ?? '');
+    _selectedCategory = widget.product?.category ?? 'Grocery';
+    _isVeg = widget.product?.isVeg ?? true;
+    _existingImageUrl = widget.product?.imageUrl;
+  }
 
   final List<String> _categories = ['Grocery', 'Dairy', 'Snacks', 'Munchies', 'Cold Drinks', 'Footwear', 'Electronics'];
   final Color brandRed = const Color(0xFFFF3232);
@@ -37,7 +53,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_imageFile == null) {
+    if (_imageFile == null && _existingImageUrl == null) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select an image')));
       return;
     }
@@ -45,12 +61,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
     setState(() => _isUploading = true);
 
     try {
-      // 1. Upload to Firebase Storage
-      final imageUrl = await FirebaseService.uploadImage(_imageFile);
+      // 1. Upload to Firebase Storage if new image picked
+      String imageUrl = _existingImageUrl ?? '';
+      if (_imageFile != null) {
+        imageUrl = await FirebaseService.uploadImage(_imageFile);
+      }
 
       // 2. Create Product Object
       final newProduct = Product(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: widget.product?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
         name: _nameController.text,
         description: _descController.text,
         price: double.parse(_priceController.text),
@@ -62,11 +81,18 @@ class _AddProductScreenState extends State<AddProductScreen> {
       );
 
       // 3. Save to Firestore & Provider
-      await Provider.of<ProductProvider>(context, listen: false).addProduct(newProduct);
+      final productProv = Provider.of<ProductProvider>(context, listen: false);
+      if (widget.product == null) {
+        await productProv.addProduct(newProduct);
+      } else {
+        await productProv.updateProduct(newProduct);
+      }
 
       if (mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product added successfully!')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(widget.product == null ? 'Product added successfully!' : 'Product updated successfully!'),
+        ));
       }
     } catch (e) {
       if (mounted) {
@@ -116,14 +142,19 @@ class _AddProductScreenState extends State<AddProductScreen> {
                               borderRadius: BorderRadius.circular(16),
                               child: const Icon(Icons.check_circle, color: Colors.green, size: 50), // Simplified preview
                             )
-                          : const Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.add_a_photo_outlined, size: 40, color: Colors.grey),
-                                SizedBox(height: 8),
-                                Text('Select Product Image', style: TextStyle(color: Colors.grey)),
-                              ],
-                            ),
+                          : _existingImageUrl != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Image.network(_existingImageUrl!, fit: BoxFit.cover),
+                                )
+                              : const Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.add_a_photo_outlined, size: 40, color: Colors.grey),
+                                    SizedBox(height: 8),
+                                    Text('Select Product Image', style: TextStyle(color: Colors.grey)),
+                                  ],
+                                ),
                     ),
                   ),
                   const SizedBox(height: 24),

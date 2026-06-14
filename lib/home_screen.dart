@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -5,54 +6,133 @@ import 'package:shopverse/models/product.dart';
 import 'package:shopverse/providers/cart_provider.dart';
 import 'package:shopverse/providers/wishlist_provider.dart';
 import 'package:shopverse/providers/location_provider.dart';
+import 'package:shopverse/providers/recent_provider.dart';
 import 'package:shopverse/search_screen.dart';
 import 'package:shopverse/product_details_screen.dart';
 import 'package:shopverse/services/ai_service.dart';
+import 'package:shopverse/services/firebase_service.dart';
 import 'package:shopverse/providers/product_provider.dart';
+import 'package:shopverse/utils/app_colors.dart';
+import 'package:shopverse/widgets/custom_button.dart';
+import 'package:shopverse/widgets/custom_text_field.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  Timer? _timer;
+  Duration _timeLeft = Duration.zero;
+  StreamSubscription? _flashSaleSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _initFlashSaleSync();
+  }
+
+  void _initFlashSaleSync() {
+    _flashSaleSubscription = FirebaseService.getFlashSaleEndTime().listen((endTime) {
+      _startTimer(endTime);
+    });
+  }
+
+  void _startTimer(DateTime endTime) {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      final now = DateTime.now();
+      if (endTime.isAfter(now)) {
+        setState(() {
+          _timeLeft = endTime.difference(now);
+        });
+      } else {
+        setState(() {
+          _timeLeft = Duration.zero;
+        });
+        _timer?.cancel();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _flashSaleSubscription?.cancel();
+    super.dispose();
+  }
+
+  String _formatDuration(int value) => value.toString().padLeft(2, '0');
+
+  @override
   Widget build(BuildContext context) {
-    const Color brandRed = Color(0xFFFF3232);
     final productProv = Provider.of<ProductProvider>(context);
-    final allProducts = productProv.products;
-    final recommended = AIService.getRecommendations(allProducts);
     
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: AppColors.backgroundColor,
       body: SafeArea(
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            _buildBlinkitHeader(context, brandRed),
-            _buildStickySearch(context, brandRed),
-            SliverToBoxAdapter(
-              child: Column(
-                children: [
-                  _buildPromotionBanner(),
-                  _buildCategoryGrid(),
+        child: StreamBuilder<List<Product>>(
+          stream: productProv.productsStream,
+          builder: (context, snapshot) {
+            final allProducts = snapshot.data ?? productProv.products;
+            final recommended = AIService.getRecommendations(allProducts);
+            final newlyAdded = allProducts.reversed.take(5).toList();
 
-                  // AI Recommendations Section
-                  _buildSectionHeader('Recommended for You', 'Picked by ShopVerse AI', brandRed, isAI: true),
-                  _buildHorizontalRecommendations(context, recommended),
+            return CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                _buildBlinkitHeader(context),
+                _buildStickySearch(context),
+                SliverToBoxAdapter(
+                  child: Column(
+                    children: [
+                      _buildPromotionBanner(),
+                      _buildCategoryGrid(),
+                      _buildFlashSaleTimer(context),
 
-                  _buildSectionHeader('Bestsellers', 'Trending items', brandRed),
-                  _buildHorizontalList(context, allProducts),
-                  _buildSectionHeader('Daily Staples', 'Fresh & Essential', brandRed),
-                  _buildVerticalGrid(context, allProducts),
-                  const SizedBox(height: 100),
-                ],
-              ),
-            ),
-          ],
+                      if (newlyAdded.isNotEmpty) ...[
+                        _buildSectionHeader('Newly Added', 'Fresh in stock!'),
+                        _buildHorizontalList(context, newlyAdded),
+                      ],
+
+                      // Recently Viewed Section
+                      Consumer<RecentProvider>(
+                        builder: (context, recentProv, _) {
+                          if (recentProv.recentlyViewed.isEmpty) return const SizedBox.shrink();
+                          return Column(
+                            children: [
+                              _buildSectionHeader('Recently Viewed', 'Pick up where you left off'),
+                              _buildHorizontalList(context, recentProv.recentlyViewed),
+                            ],
+                          );
+                        },
+                      ),
+
+                      _buildSectionHeader('Recommended for You', 'Picked by ShopVerse AI', isAI: true),
+                      _buildHorizontalRecommendations(context, recommended),
+
+                      _buildSectionHeader('Daily Deals', 'Exclusive offers just for you'),
+                      _buildDailyDealsGrid(context, allProducts.take(4).toList()),
+
+                      _buildSectionHeader('Bestsellers', 'Trending items'),
+                      _buildHorizontalList(context, allProducts),
+                      _buildSectionHeader('Daily Staples', 'Fresh & Essential'),
+                      _buildVerticalGrid(context, allProducts),
+                      const SizedBox(height: 100),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          }
         ),
       ),
     );
   }
 
-  Widget _buildSectionHeader(String title, String subtitle, Color brandRed, {bool isAI = false}) {
+  Widget _buildSectionHeader(String title, String subtitle, {bool isAI = false}) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
       child: Row(
@@ -70,11 +150,11 @@ class HomeScreen extends StatelessWidget {
                   Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
                 ],
               ),
-              Text(subtitle, style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+              Text(subtitle, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
             ],
           ),
           const Spacer(),
-          Text('See all', style: TextStyle(color: brandRed, fontWeight: FontWeight.bold)),
+          const Text('See all', style: TextStyle(color: AppColors.brandRed, fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -92,7 +172,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBlinkitHeader(BuildContext context, Color brandRed) {
+  Widget _buildBlinkitHeader(BuildContext context) {
     return SliverToBoxAdapter(
       child: Consumer<LocationProvider>(
         builder: (context, locationProvider, _) {
@@ -101,7 +181,7 @@ class HomeScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [brandRed, brandRed.withValues(alpha: 0.8)],
+                colors: [AppColors.brandRed, AppColors.brandRed.withValues(alpha: 0.8)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -194,28 +274,28 @@ class HomeScreen extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFF3232).withValues(alpha: 0.05),
+                        color: AppColors.brandRed.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFFF3232).withValues(alpha: 0.2)),
+                        border: Border.all(color: AppColors.brandRed.withValues(alpha: 0.2)),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.my_location, color: Color(0xFFFF3232)),
+                          const Icon(Icons.my_location, color: AppColors.brandRed),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Use current location', style: TextStyle(color: Color(0xFFFF3232), fontWeight: FontWeight.bold)),
+                                const Text('Use current location', style: TextStyle(color: AppColors.brandRed, fontWeight: FontWeight.bold)),
                                 Text(
                                   provider.isFetchingLocation ? 'Detecting...' : 'Using GPS to find your address',
-                                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
                                 ),
                               ],
                             ),
                           ),
                           if (provider.isFetchingLocation)
-                            const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFFF3232))),
+                            const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.brandRed)),
                         ],
                       ),
                     ),
@@ -228,7 +308,7 @@ class HomeScreen extends StatelessWidget {
                         Expanded(child: Divider()),
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 16),
-                          child: Text('SAVED ADDRESSES', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1)),
+                          child: Text('SAVED ADDRESSES', style: TextStyle(color: AppColors.textMuted, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1)),
                         ),
                         Expanded(child: Divider()),
                       ],
@@ -251,17 +331,17 @@ class HomeScreen extends StatelessWidget {
                           child: Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: isSelected ? const Color(0xFFFF3232).withValues(alpha: 0.02) : Colors.white,
+                              color: isSelected ? AppColors.brandRed.withValues(alpha: 0.02) : Colors.white,
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: isSelected ? const Color(0xFFFF3232) : Colors.grey.withValues(alpha: 0.2),
+                                color: isSelected ? AppColors.brandRed : Colors.grey.withValues(alpha: 0.2),
                                 width: isSelected ? 1.5 : 1,
                               ),
                             ),
                             child: Row(
                               children: [
                                 CircleAvatar(
-                                  backgroundColor: isSelected ? const Color(0xFFFF3232) : Colors.grey[100],
+                                  backgroundColor: isSelected ? AppColors.brandRed : Colors.grey[100],
                                   child: Icon(
                                     address.label == 'Home' ? Icons.home : (address.label == 'Work' ? Icons.work : Icons.location_on),
                                     color: isSelected ? Colors.white : Colors.grey[600],
@@ -275,11 +355,11 @@ class HomeScreen extends StatelessWidget {
                                     children: [
                                       Text(
                                         address.label,
-                                        style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: isSelected ? const Color(0xFFFF3232) : Colors.black),
+                                        style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: isSelected ? AppColors.brandRed : AppColors.textPrimary),
                                       ),
                                       Text(
                                         '${address.addressLine}, ${address.area}',
-                                        style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                                        style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
                                         maxLines: 2,
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -287,7 +367,7 @@ class HomeScreen extends StatelessWidget {
                                   ),
                                 ),
                                 if (isSelected)
-                                  const Icon(Icons.check_circle, color: Color(0xFFFF3232)),
+                                  const Icon(Icons.check_circle, color: AppColors.brandRed),
                               ],
                             ),
                           ),
@@ -297,13 +377,9 @@ class HomeScreen extends StatelessWidget {
                   ),
                   
                   const SizedBox(height: 16),
-                  ElevatedButton.icon(
+                  CustomButton(
+                    text: 'ADD NEW ADDRESS',
                     onPressed: () => _showAddAddressDialog(context, provider),
-                    icon: const Icon(Icons.add_location_alt_outlined),
-                    label: const Text('ADD NEW ADDRESS', style: TextStyle(fontWeight: FontWeight.w900)),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 56),
-                    ),
                   ),
                 ],
               ),
@@ -326,34 +402,37 @@ class HomeScreen extends StatelessWidget {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(controller: labelController, decoration: const InputDecoration(labelText: 'Label (e.g. Other, Gym)')),
+            CustomTextField(controller: labelController, label: 'Label (e.g. Other, Gym)'),
             const SizedBox(height: 12),
-            TextField(controller: addressController, decoration: const InputDecoration(labelText: 'Address Line')),
+            CustomTextField(controller: addressController, label: 'Address Line'),
             const SizedBox(height: 12),
-            TextField(controller: areaController, decoration: const InputDecoration(labelText: 'Area/Sector')),
+            CustomTextField(controller: areaController, label: 'Area/Sector'),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('CANCEL')),
-          ElevatedButton(
-            onPressed: () {
-              if (labelController.text.isNotEmpty && addressController.text.isNotEmpty) {
-                provider.addAddress(labelController.text, addressController.text, areaController.text);
-                Navigator.pop(context); // Close dialog
-                Navigator.pop(context); // Close bottom sheet
-              }
-            },
-            child: const Text('SAVE'),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('CANCEL', style: TextStyle(color: AppColors.textSecondary))),
+          SizedBox(
+            width: 100,
+            child: CustomButton(
+              text: 'SAVE',
+              onPressed: () {
+                if (labelController.text.isNotEmpty && addressController.text.isNotEmpty) {
+                  provider.addAddress(labelController.text, addressController.text, areaController.text);
+                  Navigator.pop(context); // Close dialog
+                  Navigator.pop(context); // Close bottom sheet
+                }
+              },
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStickySearch(BuildContext context, Color brandRed) {
-    return SliverPersistentHeader(
+  Widget _buildStickySearch(BuildContext context) {
+    return const SliverPersistentHeader(
       pinned: true,
-      delegate: _StickySearchDelegate(brandRed),
+      delegate: _StickySearchDelegate(),
     );
   }
 
@@ -462,6 +541,78 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildDailyDealsGrid(BuildContext context, List<Product> deals) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 1.5,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+        ),
+        itemCount: deals.length,
+        itemBuilder: (context, i) {
+          return TweenAnimationBuilder(
+            duration: Duration(milliseconds: 400 + (i * 100)),
+            tween: Tween<double>(begin: 0, end: 1),
+            builder: (context, double value, child) {
+              return Transform.scale(
+                scale: value,
+                child: Opacity(
+                  opacity: value,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      gradient: LinearGradient(
+                        colors: [
+                          [Colors.blue, Colors.purple, Colors.orange, Colors.teal][i % 4].withValues(alpha: 0.1),
+                          [Colors.blue, Colors.purple, Colors.orange, Colors.teal][i % 4].withValues(alpha: 0.05),
+                        ],
+                      ),
+                      border: Border.all(color: [Colors.blue, Colors.purple, Colors.orange, Colors.teal][i % 4].withValues(alpha: 0.2)),
+                    ),
+                    child: Stack(
+                      children: [
+                        Positioned(
+                          right: -10,
+                          bottom: -10,
+                          child: Opacity(
+                            opacity: 0.5,
+                            child: CachedNetworkImage(imageUrl: deals[i].imageUrl, width: 80),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(deals[i].name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1),
+                              const SizedBox(height: 4),
+                              Text('Flat ₹${(deals[i].oldPrice - deals[i].price).toInt()} OFF', style: TextStyle(color: [Colors.blue, Colors.purple, Colors.orange, Colors.teal][i % 4], fontWeight: FontWeight.w900, fontSize: 12)),
+                              const Spacer(),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                                child: const Text('GRAB NOW', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
   Widget _buildVerticalGrid(BuildContext context, List<Product> products) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -476,6 +627,84 @@ class HomeScreen extends StatelessWidget {
         ),
         itemCount: products.length,
         itemBuilder: (context, i) => _ProductCard(product: products[i]),
+      ),
+    );
+  }
+
+  Widget _buildFlashSaleTimer(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFF416C), Color(0xFFFF4B2B)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFF416C).withValues(alpha: 0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      child: Row(
+        children: [
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Flash Sale Ending In',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                SizedBox(height: 8),
+                Row(
+                  children: [
+                    _TimerBox(value: _formatDuration(_timeLeft.inHours)),
+                    const Padding(padding: EdgeInsets.symmetric(horizontal: 4), child: Text(':', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                    _TimerBox(value: _formatDuration(_timeLeft.inMinutes % 60)),
+                    const Padding(padding: EdgeInsets.symmetric(horizontal: 4), child: Text(':', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                    _TimerBox(value: _formatDuration(_timeLeft.inSeconds % 60)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Text(
+              'View All',
+              style: TextStyle(color: Color(0xFFFF416C), fontWeight: FontWeight.w900, fontSize: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TimerBox extends StatelessWidget {
+  final String value;
+  const _TimerBox({required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white24,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        value,
+        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16),
       ),
     );
   }
@@ -528,7 +757,7 @@ class _AiProductCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     '₹${product.price.toInt()}',
-                    style: const TextStyle(fontWeight: FontWeight.w900, color: Colors.black),
+                    style: const TextStyle(fontWeight: FontWeight.w900, color: AppColors.textPrimary),
                   ),
                 ],
               ),
@@ -541,15 +770,14 @@ class _AiProductCard extends StatelessWidget {
 }
 
 class _StickySearchDelegate extends SliverPersistentHeaderDelegate {
-  final Color brandRed;
-  _StickySearchDelegate(this.brandRed);
+  const _StickySearchDelegate();
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     return GestureDetector(
       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SearchScreen())),
       child: Container(
-        color: brandRed,
+        color: AppColors.brandRed,
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -560,11 +788,11 @@ class _StickySearchDelegate extends SliverPersistentHeaderDelegate {
           ),
           child: Row(
             children: [
-              const Icon(Icons.search, color: Colors.grey),
+              const Icon(Icons.search, color: AppColors.textMuted),
               const SizedBox(width: 12),
-              Text('Search "chips"', style: TextStyle(color: Colors.grey[400], fontSize: 15)),
+              const Text('Search "chips"', style: TextStyle(color: AppColors.textMuted, fontSize: 15)),
               const Spacer(),
-              const Icon(Icons.mic_none, color: Colors.grey),
+              const Icon(Icons.mic_none, color: AppColors.textMuted),
             ],
           ),
         ),
@@ -640,7 +868,7 @@ class _ProductCard extends StatelessWidget {
                           backgroundColor: Colors.white.withValues(alpha: 0.9),
                           child: Icon(
                             wishlist.isFavorite(product.id) ? Icons.favorite : Icons.favorite_border,
-                            color: Colors.red,
+                            color: AppColors.brandRed,
                             size: 16,
                           ),
                         ),
@@ -669,7 +897,7 @@ class _ProductCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      Text(product.unit, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
+                      Text(product.unit, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textSecondary)),
                     ],
                   ),
                   const SizedBox(height: 4),
@@ -682,7 +910,7 @@ class _ProductCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           if (product.oldPrice > product.price)
-                            Text('₹${product.oldPrice.toInt()}', style: const TextStyle(decoration: TextDecoration.lineThrough, color: Colors.grey, fontSize: 11)),
+                            const Text('₹', style: TextStyle(decoration: TextDecoration.lineThrough, color: AppColors.textSecondary, fontSize: 11)),
                           Text('₹${product.price.toInt()}', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
                         ],
                       ),
@@ -718,10 +946,10 @@ class _AddButtonSmall extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFFFF3232)),
+                border: Border.all(color: AppColors.brandRed),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFFF3232).withValues(alpha: 0.1),
+                    color: AppColors.brandRed.withValues(alpha: 0.1),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   )
@@ -730,7 +958,7 @@ class _AddButtonSmall extends StatelessWidget {
               child: const Text(
                 'ADD',
                 style: TextStyle(
-                  color: Color(0xFFFF3232),
+                  color: AppColors.brandRed,
                   fontWeight: FontWeight.w900,
                   fontSize: 13,
                 ),
@@ -741,7 +969,7 @@ class _AddButtonSmall extends StatelessWidget {
 
         return Container(
           decoration: BoxDecoration(
-            color: const Color(0xFFFF3232),
+            color: AppColors.brandRed,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(

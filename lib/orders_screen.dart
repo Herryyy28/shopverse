@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:shopverse/providers/order_provider.dart';
 import 'package:intl/intl.dart';
 import 'tracking_screen.dart';
+import 'utils/app_colors.dart';
 
 class OrdersScreen extends StatelessWidget {
   const OrdersScreen({super.key});
@@ -11,16 +12,13 @@ class OrdersScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final orderProv = Provider.of<OrderProvider>(context);
     final orders = orderProv.orders;
-    const Color brandRed = Color(0xFFFF3232);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FB),
+      backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         title: const Text(
           'Orders History',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 20),
+          style: TextStyle(color: AppColors.brandRed, fontWeight: FontWeight.w900, fontSize: 20),
         ),
       ),
       body: orders.isEmpty
@@ -62,7 +60,7 @@ class OrdersScreen extends StatelessWidget {
                                 ),
                                 Text(
                                   'ID: ORD-${order.id.substring(order.id.length - 6).toUpperCase()}',
-                                  style: TextStyle(color: Colors.grey[600], fontSize: 11),
+                                  style: TextStyle(color: AppColors.textMuted, fontSize: 11),
                                 ),
                               ],
                             ),
@@ -110,7 +108,7 @@ class OrdersScreen extends StatelessWidget {
                                   ),
                                   Text(
                                     '₹${order.amount.toStringAsFixed(2)}',
-                                    style: TextStyle(color: brandRed, fontWeight: FontWeight.bold, fontSize: 13),
+                                    style: const TextStyle(color: AppColors.brandRed, fontWeight: FontWeight.bold, fontSize: 13),
                                   ),
                                 ],
                               ),
@@ -126,7 +124,7 @@ class OrdersScreen extends StatelessWidget {
                                   );
                                 },
                                 style: TextButton.styleFrom(
-                                  foregroundColor: brandRed,
+                                  foregroundColor: AppColors.brandRed,
                                   textStyle: const TextStyle(fontWeight: FontWeight.bold),
                                 ),
                                 child: const Text('TRACK'),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class CategoryItem {
   final String id;
@@ -34,12 +35,41 @@ class CategoryItem {
 
 class CategoryProvider with ChangeNotifier {
   List<CategoryItem> _categories = [];
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  
+  // Use lazy getter to avoid "No Firebase App" crash during provider initialization
+  FirebaseFirestore get _firestore => FirebaseFirestore.instance;
 
   List<CategoryItem> get categories => [..._categories];
 
   CategoryProvider() {
-    fetchCategories();
+    _safeFetchCategories();
+  }
+
+  Future<void> _safeFetchCategories() async {
+    try {
+      if (Firebase.apps.isNotEmpty) {
+        await fetchCategories();
+      } else {
+        _loadMockData();
+      }
+    } catch (e) {
+      debugPrint('Firebase not ready for categories: $e');
+      _loadMockData();
+    }
+  }
+
+  void _loadMockData() {
+    _categories = [
+      CategoryItem(id: 'c1', name: 'Grocery', iconCode: Icons.fastfood.codePoint, colorValue: Colors.green.value),
+      CategoryItem(id: 'c2', name: 'Fashion', iconCode: Icons.checkroom.codePoint, colorValue: Colors.blue.value),
+      CategoryItem(id: 'c3', name: 'Electronics', iconCode: Icons.electrical_services.codePoint, colorValue: Colors.orange.value),
+      CategoryItem(id: 'c4', name: 'Home', iconCode: Icons.home.codePoint, colorValue: Colors.brown.value),
+      CategoryItem(id: 'c5', name: 'Beauty', iconCode: Icons.health_and_safety.codePoint, colorValue: Colors.pink.value),
+      CategoryItem(id: 'c6', name: 'Toys', iconCode: Icons.toys.codePoint, colorValue: Colors.red.value),
+      CategoryItem(id: 'c7', name: 'Sports', iconCode: Icons.sports_basketball.codePoint, colorValue: Colors.indigo.value),
+      CategoryItem(id: 'c8', name: 'Automotive', iconCode: Icons.directions_car.codePoint, colorValue: Colors.blueGrey.value),
+    ];
+    notifyListeners();
   }
 
   Future<void> fetchCategories() async {
@@ -47,22 +77,13 @@ class CategoryProvider with ChangeNotifier {
       final snapshot = await _firestore.collection('categories').get();
       if (snapshot.docs.isNotEmpty) {
         _categories = snapshot.docs.map((doc) => CategoryItem.fromJson(doc.data())).toList();
+        notifyListeners();
       } else {
-        // Mock data fallback
-        _categories = [
-          CategoryItem(id: 'c1', name: 'Grocery', iconCode: Icons.fastfood.codePoint, colorValue: Colors.green.value),
-          CategoryItem(id: 'c2', name: 'Fashion', iconCode: Icons.checkroom.codePoint, colorValue: Colors.blue.value),
-          CategoryItem(id: 'c3', name: 'Electronics', iconCode: Icons.electrical_services.codePoint, colorValue: Colors.orange.value),
-          CategoryItem(id: 'c4', name: 'Home', iconCode: Icons.home.codePoint, colorValue: Colors.brown.value),
-          CategoryItem(id: 'c5', name: 'Beauty', iconCode: Icons.health_and_safety.codePoint, colorValue: Colors.pink.value),
-          CategoryItem(id: 'c6', name: 'Toys', iconCode: Icons.toys.codePoint, colorValue: Colors.red.value),
-          CategoryItem(id: 'c7', name: 'Sports', iconCode: Icons.sports_basketball.codePoint, colorValue: Colors.indigo.value),
-          CategoryItem(id: 'c8', name: 'Automotive', iconCode: Icons.directions_car.codePoint, colorValue: Colors.blueGrey.value),
-        ];
+        _loadMockData();
       }
-      notifyListeners();
     } catch (e) {
       debugPrint('Error fetching categories: $e');
+      _loadMockData();
     }
   }
 
@@ -83,10 +104,24 @@ class CategoryProvider with ChangeNotifier {
     }
   }
 
-  // Real-time listener for categories
+  Future<void> deleteCategory(String id) async {
+    try {
+      await _firestore.collection('categories').doc(id).delete();
+      _categories.removeWhere((c) => c.id == id);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error deleting category: $e');
+    }
+  }
+
   Stream<List<CategoryItem>> get categoriesStream {
-    return _firestore.collection('categories').snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) => CategoryItem.fromJson(doc.data())).toList();
-    });
+    try {
+      if (Firebase.apps.isEmpty) return Stream.value(_categories);
+      return _firestore.collection('categories').snapshots().map((snapshot) {
+        return snapshot.docs.map((doc) => CategoryItem.fromJson(doc.data())).toList();
+      });
+    } catch (e) {
+      return Stream.value(_categories);
+    }
   }
 }

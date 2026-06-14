@@ -2,21 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shopverse/providers/wallet_provider.dart';
 import 'package:intl/intl.dart';
+import 'utils/app_colors.dart';
+import 'widgets/custom_button.dart';
 
 class WalletScreen extends StatelessWidget {
   const WalletScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    const Color brandRed = Color(0xFFFF3232);
     final wallet = Provider.of<WalletProvider>(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FB),
+      backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
-        title: const Text('ShopVerse Wallet', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        elevation: 0,
+        title: const Text('ShopVerse Wallet', style: TextStyle(fontWeight: FontWeight.w900, color: AppColors.brandRed)),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -28,14 +27,14 @@ class WalletScreen extends StatelessWidget {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [brandRed, Color(0xFFE52E2E)],
+                  colors: [AppColors.brandRed, Color(0xFFE52E2E)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: brandRed.withValues(alpha: 0.3),
+                    color: AppColors.brandRed.withValues(alpha: 0.3),
                     blurRadius: 15,
                     offset: const Offset(0, 8),
                   )
@@ -211,6 +210,10 @@ class WalletScreen extends StatelessWidget {
                 Navigator.pop(context);
               }
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.brandRed,
+              foregroundColor: Colors.white,
+            ),
             child: const Text('ADD'),
           ),
         ],

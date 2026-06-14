@@ -6,6 +6,7 @@ import 'print_screen.dart';
 import 'profile_screen.dart';
 import 'providers/cart_provider.dart';
 import 'cart_screen.dart';
+import 'utils/app_colors.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -16,7 +17,6 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-  final Color themeColor = const Color(0xFFFF3232);
 
   final List<Widget> _screens = [
     const HomeScreen(),
@@ -30,7 +30,25 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          _screens[_selectedIndex],
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            transitionBuilder: (Widget child, Animation<double> animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0.05, 0),
+                    end: Offset.zero,
+                  ).animate(animation),
+                  child: child,
+                ),
+              );
+            },
+            child: KeyedSubtree(
+              key: ValueKey<int>(_selectedIndex),
+              child: _screens[_selectedIndex],
+            ),
+          ),
           _buildFloatingCartStrip(context),
         ],
       ),
@@ -43,7 +61,7 @@ class _MainScreenState extends State<MainScreen> {
           currentIndex: _selectedIndex,
           onTap: (index) => setState(() => _selectedIndex = index),
           type: BottomNavigationBarType.fixed,
-          selectedItemColor: themeColor,
+          selectedItemColor: AppColors.brandRed,
           unselectedItemColor: Colors.black54,
           backgroundColor: Colors.white,
           elevation: 0,
@@ -63,43 +81,62 @@ class _MainScreenState extends State<MainScreen> {
   Widget _buildFloatingCartStrip(BuildContext context) {
     return Consumer<CartProvider>(
       builder: (context, cart, _) {
-        if (cart.itemCount == 0) return const SizedBox.shrink();
-        
         return Positioned(
           bottom: 16,
           left: 16,
           right: 16,
-          child: GestureDetector(
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen())),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: themeColor,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [BoxShadow(color: themeColor.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 5))],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(4)),
-                    child: const Icon(Icons.shopping_bag, color: Colors.white, size: 20),
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('${cart.itemCount} ITEMS', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12)),
-                      Text('₹${cart.totalAmount.toInt()}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                    ],
-                  ),
-                  const Spacer(),
-                  const Text('View Cart', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16)),
-                  const Icon(Icons.arrow_right, color: Colors.white),
-                ],
-              ),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 400),
+            transitionBuilder: (child, animation) => SlideTransition(
+              position: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
+                  .animate(CurvedAnimation(parent: animation, curve: Curves.easeOutBack)),
+              child: FadeTransition(opacity: animation, child: child),
             ),
+            child: cart.itemCount == 0
+                ? const SizedBox.shrink(key: ValueKey('empty_cart'))
+                : GestureDetector(
+                    key: const ValueKey('cart_strip'),
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen())),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: AppColors.brandRed,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                              color: AppColors.brandRed.withValues(alpha: 0.3),
+                              blurRadius: 15,
+                              offset: const Offset(0, 5))
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(4)),
+                            child: const Icon(Icons.shopping_bag, color: Colors.white, size: 20),
+                          ),
+                          const SizedBox(width: 12),
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('${cart.itemCount} ITEMS',
+                                  style: const TextStyle(
+                                      color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12)),
+                              Text('₹${cart.totalAmount.toInt()}',
+                                  style: const TextStyle(
+                                      color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                            ],
+                          ),
+                          const Spacer(),
+                          const Text('View Cart',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16)),
+                          const Icon(Icons.arrow_right, color: Colors.white),
+                        ],
+                      ),
+                    ),
+                  ),
           ),
         );
       },
