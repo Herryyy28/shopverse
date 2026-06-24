@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
-import '../utils/app_colors.dart';
 
 class ARPreviewDialog extends StatelessWidget {
   final String modelUrl;
