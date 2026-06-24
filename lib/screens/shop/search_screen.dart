@@ -166,7 +166,7 @@ class _SearchScreenState extends State<SearchScreen> {
       description: 'Fresh toned milk',
       price: 27.0,
       oldPrice: 30.0,
-      imageUrl: 'https://www.amul.com/files/products/Taaza_1L_Front.jpg',
+      imageUrl: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=800',
       category: 'Dairy',
       unit: '500 ml',
     ),

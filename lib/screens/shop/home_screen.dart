@@ -464,7 +464,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   InkWell(
                     onTap: provider.isFetchingLocation ? null : () async {
                       await provider.fetchCurrentLocation();
-                      if (context.mounted) Navigator.pop(context);
+                      if (context.mounted) {
+                        Future.microtask(() {
+                          if (context.mounted) Navigator.pop(context);
+                        });
+                      }
                     },
                     child: Container(
                       padding: const EdgeInsets.all(16),
