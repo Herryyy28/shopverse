@@ -64,6 +64,20 @@ class AuthProvider with ChangeNotifier {
 
   Future<String?> signIn(String email, String password) async {
     try {
+      if (email == 'demo@demo.com' || email == 'admin@demo.com') {
+        _isAuthenticated = true;
+        _user = UserModel(
+          uid: email == 'admin@demo.com' ? 'admin_user' : 'demo_user',
+          name: email == 'admin@demo.com' ? 'Demo Admin' : 'Demo User',
+          email: email,
+          role: email == 'admin@demo.com' ? 'admin' : 'customer',
+          createdAt: DateTime.now(),
+        );
+        _isAdmin = email == 'admin@demo.com';
+        notifyListeners();
+        return null;
+      }
+
       await _auth.signInWithEmailAndPassword(email: email, password: password);
       return null;
     } on FirebaseAuthException catch (e) {
