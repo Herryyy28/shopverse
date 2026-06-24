@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:imageview360/imageview360.dart';
-import '../utils/app_colors.dart';
+import 'package:shopverse/utils/app_colors.dart';
 
 class View360Dialog extends StatefulWidget {
   final List<String> imageList;

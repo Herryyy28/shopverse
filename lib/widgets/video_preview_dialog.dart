@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import '../utils/app_colors.dart';
+import 'package:shopverse/utils/app_colors.dart';
 
 class VideoPreviewDialog extends StatefulWidget {
   final String videoUrl;

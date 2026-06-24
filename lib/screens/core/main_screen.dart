@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'home_screen.dart';
-import 'search_screen.dart';
-import 'print_screen.dart';
-import 'profile_screen.dart';
-import 'providers/cart_provider.dart';
-import 'cart_screen.dart';
-import 'utils/app_colors.dart';
+import 'package:shopverse/screens/shop/home_screen.dart';
+import 'package:shopverse/screens/shop/search_screen.dart';
+import 'package:shopverse/screens/core/print_screen.dart';
+import 'package:shopverse/screens/profile/profile_screen.dart';
+import 'package:shopverse/providers/cart_provider.dart';
+import 'package:shopverse/screens/checkout/cart_screen.dart';
+import 'package:shopverse/utils/app_colors.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});

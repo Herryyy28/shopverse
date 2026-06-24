@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shopverse/models/product.dart';
@@ -7,8 +8,8 @@ import 'package:shopverse/providers/cart_provider.dart';
 import 'package:shopverse/providers/wishlist_provider.dart';
 import 'package:shopverse/providers/location_provider.dart';
 import 'package:shopverse/providers/recent_provider.dart';
-import 'package:shopverse/search_screen.dart';
-import 'package:shopverse/product_details_screen.dart';
+import 'package:shopverse/screens/shop/search_screen.dart';
+import 'package:shopverse/screens/shop/product_details_screen.dart';
 import 'package:shopverse/services/ai_service.dart';
 import 'package:shopverse/services/firebase_service.dart';
 import 'package:shopverse/providers/product_provider.dart';
@@ -72,11 +73,22 @@ class _HomeScreenState extends State<HomeScreen> {
     
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showAIChat(context),
+        backgroundColor: AppColors.primary,
+        icon: const Icon(Icons.auto_awesome, color: Colors.amber),
+        label: const Text('Ask ShopVerse AI', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      ),
       body: SafeArea(
         child: StreamBuilder<List<Product>>(
           stream: productProv.productsStream,
           builder: (context, snapshot) {
             final allProducts = snapshot.data ?? productProv.products;
+            
+            if (snapshot.connectionState == ConnectionState.waiting && allProducts.isEmpty) {
+              return _buildShimmerLoading();
+            }
+
             final recommended = AIService.getRecommendations(allProducts);
             final newlyAdded = allProducts.reversed.take(5).toList();
 
@@ -129,6 +141,179 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         ),
       ),
+    );
+  }
+
+  Widget _buildShimmerLoading() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(height: 120, color: Colors.white),
+            const SizedBox(height: 20),
+            Container(height: 160, margin: const EdgeInsets.symmetric(horizontal: 16), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20))),
+            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, mainAxisSpacing: 12, crossAxisSpacing: 12, childAspectRatio: 0.85),
+                itemCount: 8,
+                itemBuilder: (_, __) => Container(decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16))),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Expanded(child: Container(height: 20, color: Colors.white)),
+                  const SizedBox(width: 100),
+                  Container(width: 40, height: 16, color: Colors.white),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 280,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                itemCount: 3,
+                itemBuilder: (_, __) => Container(
+                  width: 160,
+                  margin: const EdgeInsets.symmetric(horizontal: 6),
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAIChat(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.85,
+          decoration: const BoxDecoration(
+            color: AppColors.backgroundColor,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+                decoration: BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.auto_awesome, color: Colors.amber, size: 28),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('ShopVerse AI', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                          Text('Your personal shopping assistant', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                    IconButton(icon: const Icon(Icons.close, color: Colors.white), onPressed: () => Navigator.pop(context)),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.all(20),
+                  children: [
+                    _buildAiChatBubble('Hi there! 👋 I am your ShopVerse AI assistant. What are you looking for today?', false),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _buildAiSuggestionChip('Find me a smartwatch under ₹2000'),
+                        _buildAiSuggestionChip('Best products for oily skin'),
+                        _buildAiSuggestionChip('Healthy snacks for diet'),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.fromLTRB(16, 12, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -5))],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Type your message...',
+                          hintStyle: const TextStyle(color: AppColors.textMuted),
+                          filled: true,
+                          fillColor: AppColors.backgroundColor,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.primary),
+                      child: IconButton(icon: const Icon(Icons.send_rounded, color: Colors.white, size: 20), onPressed: () {}),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAiChatBubble(String text, bool isUser) {
+    return Align(
+      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: EdgeInsets.only(left: isUser ? 40 : 0, right: isUser ? 0 : 40),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isUser ? AppColors.primary : Colors.white,
+          borderRadius: BorderRadius.circular(16).copyWith(
+            bottomLeft: isUser ? const Radius.circular(16) : Radius.zero,
+            bottomRight: isUser ? Radius.zero : const Radius.circular(16),
+          ),
+          border: isUser ? null : Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+        ),
+        child: Text(text, style: TextStyle(color: isUser ? Colors.white : AppColors.textPrimary)),
+      ),
+    );
+  }
+
+  Widget _buildAiSuggestionChip(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+      ),
+      child: Text(text, style: const TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.bold)),
     );
   }
 

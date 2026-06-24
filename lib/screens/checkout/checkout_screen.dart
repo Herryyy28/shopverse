@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:confetti/confetti.dart';
 import 'package:shopverse/providers/cart_provider.dart';
 import 'package:shopverse/providers/location_provider.dart';
 import 'package:shopverse/providers/wallet_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:shopverse/providers/order_provider.dart';
-import 'package:shopverse/tracking_screen.dart';
+import 'package:shopverse/screens/checkout/tracking_screen.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -18,8 +19,20 @@ class CheckoutScreen extends StatefulWidget {
 class _CheckoutScreenState extends State<CheckoutScreen> {
   int _selectedPaymentMethod = 0; // 0: Wallet, 1: UPI, 2: Card, 3: Cash
   static const Color _primary = Color(0xFF5B61F4);
-  static const Color _accent = Color(0xFFFF6B35);
   bool _isProcessing = false;
+  late ConfettiController _confettiController;
+
+  @override
+  void initState() {
+    super.initState();
+    _confettiController = ConfettiController(duration: const Duration(seconds: 2));
+  }
+
+  @override
+  void dispose() {
+    _confettiController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -667,7 +680,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
+      builder: (context) {
+        _confettiController.play();
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         contentPadding: const EdgeInsets.all(28),
         content: Column(
@@ -721,6 +739,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ],
         ),
       ),
-    );
+      ConfettiWidget(
+        confettiController: _confettiController,
+        blastDirectionality: BlastDirectionality.explosive,
+        shouldLoop: false,
+        colors: const [Colors.green, Colors.blue, Colors.pink, Colors.orange, Colors.purple],
+        numberOfParticles: 50,
+        maxBlastForce: 100,
+        minBlastForce: 80,
+        gravity: 0.2,
+      ),
+    ],
+  );
+},
+);
   }
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shopverse/providers/cart_provider.dart';
 import 'package:shopverse/providers/order_provider.dart';
-import 'package:shopverse/tracking_screen.dart';
+import 'package:shopverse/screens/checkout/tracking_screen.dart';
 import 'package:shopverse/utils/app_colors.dart';
 import 'package:shopverse/widgets/custom_button.dart';
 

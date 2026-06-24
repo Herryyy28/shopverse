@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shopverse/models/product.dart';
 import 'package:shopverse/providers/product_provider.dart';
-import 'package:shopverse/add_product_screen.dart';
+import 'package:shopverse/screens/admin/add_product_screen.dart';
 import 'package:shopverse/utils/app_colors.dart';
 
 class ManageProductsScreen extends StatelessWidget {

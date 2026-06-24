@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'utils/app_colors.dart';
-import 'widgets/custom_button.dart';
+import 'package:shopverse/utils/app_colors.dart';
+import 'package:shopverse/widgets/custom_button.dart';
 
 class PrintScreen extends StatefulWidget {
   const PrintScreen({super.key});

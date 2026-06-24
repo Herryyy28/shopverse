@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shopverse/providers/wishlist_provider.dart';
 import 'package:shopverse/providers/cart_provider.dart';
-import 'package:shopverse/product_details_screen.dart';
+import 'package:shopverse/screens/shop/product_details_screen.dart';
 import 'package:shopverse/models/product.dart';
 
 class WishlistScreen extends StatelessWidget {

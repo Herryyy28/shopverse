@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/cart_item.dart';
-import '../models/product.dart';
+import 'package:shopverse/models/cart_item.dart';
+import 'package:shopverse/models/product.dart';
 
 class CartProvider with ChangeNotifier {
   Map<String, CartItem> _items = {};

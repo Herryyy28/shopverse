@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'models/product.dart';
-import 'providers/cart_provider.dart';
-import 'providers/wishlist_provider.dart';
-import 'providers/recent_provider.dart';
-import 'services/ai_service.dart';
-import 'utils/app_colors.dart';
-import 'widgets/custom_button.dart';
-import 'widgets/video_preview_dialog.dart';
-import 'widgets/view_360_dialog.dart';
-import 'widgets/ar_preview_dialog.dart';
+import 'package:shopverse/models/product.dart';
+import 'package:shopverse/providers/cart_provider.dart';
+import 'package:shopverse/providers/wishlist_provider.dart';
+import 'package:shopverse/providers/recent_provider.dart';
+import 'package:shopverse/services/ai_service.dart';
+import 'package:shopverse/utils/app_colors.dart';
+import 'package:shopverse/widgets/custom_button.dart';
+import 'package:shopverse/widgets/video_preview_dialog.dart';
+import 'package:shopverse/widgets/view_360_dialog.dart';
+import 'package:shopverse/widgets/ar_preview_dialog.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   final Product product;

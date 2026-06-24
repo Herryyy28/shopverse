@@ -5,6 +5,7 @@ import 'package:shopverse/models/product.dart';
 import 'package:shopverse/providers/product_provider.dart';
 import 'package:shopverse/providers/category_provider.dart';
 import 'package:shopverse/services/firebase_service.dart';
+import 'package:shopverse/utils/app_colors.dart';
 
 class AddProductScreen extends StatefulWidget {
   final Product? product;
@@ -40,9 +41,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
     _isVeg = widget.product?.isVeg ?? true;
     _existingImageUrl = widget.product?.imageUrl;
   }
-
-  final List<String> _categories = ['Grocery', 'Dairy', 'Snacks', 'Munchies', 'Cold Drinks', 'Footwear', 'Electronics'];
-  final Color brandRed = const Color(0xFFFF3232);
 
   Future<void> _pickImage() async {
     final result = await FilePicker.pickFiles(type: FileType.image);
@@ -214,7 +212,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   SwitchListTile(
                     title: const Text('Is Vegetarian?'),
                     value: _isVeg,
-                    activeColor: Colors.green,
+                    activeThumbColor: Colors.green,
                     onChanged: (v) => setState(() => _isVeg = v),
                   ),
 
@@ -226,7 +224,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     child: ElevatedButton(
                       onPressed: _isUploading ? null : _submit,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: brandRed,
+                        backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),

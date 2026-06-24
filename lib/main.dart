@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'login_screen.dart';
-import 'main_screen.dart';
+import 'package:shopverse/screens/auth/login_screen.dart';
+import 'package:shopverse/screens/core/main_screen.dart';
 import 'package:shopverse/providers/recent_provider.dart';
-import 'providers/cart_provider.dart';
-import 'providers/wishlist_provider.dart';
-import 'providers/auth_provider.dart';
-import 'providers/location_provider.dart';
-import 'providers/order_provider.dart';
-import 'providers/wallet_provider.dart';
-import 'providers/admin_provider.dart';
-import 'providers/product_provider.dart';
-import 'providers/category_provider.dart';
-import 'providers/user_provider.dart';
-import 'providers/notification_provider.dart';
-import 'services/firebase_service.dart';
-import 'utils/app_theme.dart';
+import 'package:shopverse/providers/cart_provider.dart';
+import 'package:shopverse/providers/wishlist_provider.dart';
+import 'package:shopverse/providers/auth_provider.dart';
+import 'package:shopverse/providers/location_provider.dart';
+import 'package:shopverse/providers/order_provider.dart';
+import 'package:shopverse/providers/wallet_provider.dart';
+import 'package:shopverse/providers/admin_provider.dart';
+import 'package:shopverse/providers/product_provider.dart';
+import 'package:shopverse/providers/category_provider.dart';
+import 'package:shopverse/providers/user_provider.dart';
+import 'package:shopverse/providers/notification_provider.dart';
+import 'package:shopverse/services/firebase_service.dart';
+import 'package:shopverse/utils/app_theme.dart';
 
 void main() async {
   try {

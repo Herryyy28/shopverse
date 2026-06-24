@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import '../models/order_item.dart';
+import 'package:shopverse/models/order_item.dart';
 
 class OrderProvider with ChangeNotifier {
   List<OrderItem> _orders = [];

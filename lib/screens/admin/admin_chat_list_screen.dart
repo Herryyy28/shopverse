@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shopverse/services/chat_service.dart';
-import 'package:shopverse/chat_screen.dart';
+import 'package:shopverse/screens/core/chat_screen.dart';
 import 'package:shopverse/utils/app_colors.dart';
 import 'package:intl/intl.dart';
 

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/product.dart';
+import 'package:shopverse/models/product.dart';
 
 class WishlistProvider with ChangeNotifier {
   Map<String, Product> _items = {};

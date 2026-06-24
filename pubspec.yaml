@@ -30,6 +30,9 @@ dependencies:
   speech_to_text: ^7.0.0
   mobile_scanner: ^7.2.0
   image_picker: ^1.1.2
+  shimmer: ^3.0.0
+  confetti: ^0.8.0
+  lottie: ^3.3.3
 
 dev_dependencies:
   flutter_test:

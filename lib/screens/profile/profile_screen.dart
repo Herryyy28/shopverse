@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'providers/auth_provider.dart';
-import 'orders_screen.dart';
-import 'notifications_screen.dart';
-import 'wallet_screen.dart';
-import 'admin_dashboard.dart';
-import 'edit_profile_screen.dart';
-import 'chat_screen.dart';
-import 'utils/app_colors.dart';
-import 'widgets/custom_button.dart';
+import 'package:shopverse/providers/auth_provider.dart';
+import 'package:shopverse/screens/profile/orders_screen.dart';
+import 'package:shopverse/screens/profile/notifications_screen.dart';
+import 'package:shopverse/screens/profile/edit_profile_screen.dart';
+import 'package:shopverse/screens/profile/wallet_screen.dart';
+import 'package:shopverse/screens/admin/admin_dashboard.dart';
+import 'package:shopverse/screens/core/chat_screen.dart';
+import 'package:shopverse/utils/app_colors.dart';
+import 'package:shopverse/widgets/custom_button.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});

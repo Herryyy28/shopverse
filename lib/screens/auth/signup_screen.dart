@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'providers/auth_provider.dart';
-import 'widgets/custom_button.dart';
-import 'widgets/custom_text_field.dart';
-import 'utils/app_colors.dart';
+import 'package:shopverse/providers/auth_provider.dart';
+import 'package:shopverse/widgets/custom_button.dart';
+import 'package:shopverse/widgets/custom_text_field.dart';
+import 'package:shopverse/utils/app_colors.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});

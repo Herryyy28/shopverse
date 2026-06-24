@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shopverse/providers/cart_provider.dart';
+import 'package:shopverse/models/cart_item.dart';
 import 'package:shopverse/providers/order_provider.dart';
 import 'package:intl/intl.dart';
-import 'tracking_screen.dart';
-import 'utils/app_colors.dart';
+import 'package:shopverse/screens/checkout/tracking_screen.dart';
+import 'package:shopverse/utils/app_colors.dart';
 
 class OrdersScreen extends StatelessWidget {
   const OrdersScreen({super.key});
@@ -130,7 +132,39 @@ class OrdersScreen extends StatelessWidget {
                                 child: const Text('TRACK'),
                               )
                             else
-                              const Icon(Icons.chevron_right, color: Colors.grey),
+                              TextButton.icon(
+                                onPressed: () {
+                                  final cartProv = Provider.of<CartProvider>(context, listen: false);
+                                  int added = 0;
+                                  for (var item in order.products) {
+                                    try {
+                                      if (item is CartItem) {
+                                        cartProv.addItem(item.product);
+                                        added++;
+                                      } else if (item is Map<String, dynamic> && item.containsKey('product')) {
+                                        final cartItem = CartItem.fromJson(item);
+                                        cartProv.addItem(cartItem.product);
+                                        added++;
+                                      }
+                                    } catch (e) {
+                                      // Skip invalid legacy items
+                                    }
+                                  }
+                                  
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(added > 0 ? 'Items added to cart!' : 'Cannot reorder legacy items.'),
+                                      backgroundColor: added > 0 ? Colors.green : Colors.red,
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.refresh, size: 16),
+                                label: const Text('REORDER'),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: AppColors.primary,
+                                  textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ),
                           ],
                         ),
                       ),

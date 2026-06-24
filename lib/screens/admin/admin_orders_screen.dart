@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:shopverse/providers/order_provider.dart';
 import 'package:shopverse/models/order_item.dart';
 import 'package:intl/intl.dart';
-import 'utils/app_colors.dart';
+import 'package:shopverse/utils/app_colors.dart';
 
 class AdminOrdersScreen extends StatefulWidget {
   const AdminOrdersScreen({super.key});

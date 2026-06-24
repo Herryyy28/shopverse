@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'models/product.dart';
-import 'product_details_screen.dart';
-import 'providers/cart_provider.dart';
+import 'package:shopverse/models/product.dart';
+import 'package:shopverse/screens/shop/product_details_screen.dart';
+import 'package:shopverse/providers/cart_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shopverse/services/ai_service.dart';
 import 'package:shopverse/widgets/barcode_scanner_dialog.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'utils/app_colors.dart';
-import 'widgets/custom_button.dart';
+import 'package:shopverse/utils/app_colors.dart';
+import 'package:shopverse/widgets/custom_button.dart';
 
 class SearchScreen extends StatefulWidget {
   final String? initialQuery;

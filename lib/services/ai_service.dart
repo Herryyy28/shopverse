@@ -1,4 +1,4 @@
-import '../models/product.dart';
+import 'package:shopverse/models/product.dart';
 
 class AIService {
   static Future<List<String>> getSearchSuggestions(String query) async {
