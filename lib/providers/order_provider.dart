@@ -116,7 +116,7 @@ class OrderProvider with ChangeNotifier {
     }
   }
 
-  Future<void> addOrder(double total, List<dynamic> cartItems) async {
+  Future<String> addOrder(double total, List<dynamic> cartItems) async {
     final orderId = 'ORD-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
     final newOrder = OrderItem(
       id: orderId,
@@ -136,5 +136,6 @@ class OrderProvider with ChangeNotifier {
     } catch (e) {
       debugPrint('Error saving order to Firebase: $e');
     }
+    return orderId;
   }
 }

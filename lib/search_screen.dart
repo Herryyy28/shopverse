@@ -59,23 +59,6 @@ class _SearchScreenState extends State<SearchScreen> {
     setState(() {});
   }
 
-  void _onSearchChanged(String query) async {
-    setState(() {
-      _isSearching = query.isNotEmpty;
-    });
-
-    if (query.isNotEmpty) {
-      final suggestions = await AIService.getSearchSuggestions(query);
-      setState(() {
-        _aiSuggestions = suggestions;
-        _filteredProducts = _allProducts
-            .where((p) => p.name.toLowerCase().contains(query.toLowerCase()) || 
-                         p.category.toLowerCase().contains(query.toLowerCase()))
-            .toList();
-      });
-    }
-  }
-
   Future<void> _startListening() async {
     bool available = await _speech.initialize();
     if (available) {
@@ -351,7 +334,7 @@ class _SearchScreenState extends State<SearchScreen> {
               child: ActionChip(
                 label: Text(_searchHistory[i], style: const TextStyle(fontSize: 12)),
                 backgroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide(color: Colors.grey[200]!)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: Colors.grey[200]!)),
                 onPressed: () {
                   _searchController.text = _searchHistory[i];
                   _onSearchChanged(_searchHistory[i]);

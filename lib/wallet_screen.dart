@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:shopverse/providers/wallet_provider.dart';
 import 'package:intl/intl.dart';
 import 'utils/app_colors.dart';
-import 'widgets/custom_button.dart';
 
 class WalletScreen extends StatelessWidget {
   const WalletScreen({super.key});

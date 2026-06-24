@@ -232,7 +232,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         width: _currentImageIndex == index ? 20 : 6,
                         height: 6,
                         decoration: BoxDecoration(
-                          color: _currentImageIndex == index ? AppColors.brandRed : Colors.black24,
+                          color: _currentImageIndex == index ? AppColors.brandRed : Colors.black.withValues(alpha: 0.24),
                           borderRadius: BorderRadius.circular(3),
                         ),
                       ),

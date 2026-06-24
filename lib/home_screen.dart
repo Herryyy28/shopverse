@@ -178,20 +178,26 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (context, locationProvider, _) {
           final address = locationProvider.selectedAddress;
           return Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [AppColors.brandRed, AppColors.brandRed.withValues(alpha: 0.8)],
+                colors: [Color(0xFF5B61F4), Color(0xFF7C3AED)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
             ),
             child: Row(
               children: [
-                const CircleAvatar(
-                  radius: 18,
-                  backgroundColor: Colors.white24,
-                  child: Icon(Icons.location_on, color: Colors.white, size: 20),
+                GestureDetector(
+                  onTap: () => _showLocationPicker(context, locationProvider),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(Icons.location_on_rounded, color: Colors.white, size: 20),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -203,15 +209,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         Row(
                           children: [
                             Text(
-                              'Delivery in ${address.deliveryTimeMinutes} mins',
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16),
+                              'Deliver to ${address.label}',
+                              style: const TextStyle(color: Colors.white70, fontSize: 12),
                             ),
-                            const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 20),
+                            const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white70, size: 18),
                           ],
                         ),
                         Text(
-                          '${address.label} - ${address.addressLine}, ${address.area}',
-                          style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500),
+                          '${address.addressLine}, ${address.area}',
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -219,10 +225,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
+                const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(color: Colors.white12, borderRadius: BorderRadius.circular(50)),
-                  child: const Icon(Icons.person_outline, color: Colors.white),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Icon(Icons.notifications_outlined, color: Colors.white, size: 20),
                 ),
               ],
             ),
@@ -652,15 +662,15 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'Flash Sale Ending In',
                   style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Row(
                   children: [
                     _TimerBox(value: _formatDuration(_timeLeft.inHours)),
@@ -777,22 +787,37 @@ class _StickySearchDelegate extends SliverPersistentHeaderDelegate {
     return GestureDetector(
       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SearchScreen())),
       child: Container(
-        color: AppColors.brandRed,
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF5B61F4), Color(0xFF7C3AED)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 2))],
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              )
+            ],
           ),
-          child: Row(
+          child: const Row(
             children: [
-              const Icon(Icons.search, color: AppColors.textMuted),
-              const SizedBox(width: 12),
-              const Text('Search "chips"', style: TextStyle(color: AppColors.textMuted, fontSize: 15)),
-              const Spacer(),
-              const Icon(Icons.mic_none, color: AppColors.textMuted),
+              Icon(Icons.search_rounded, color: AppColors.primary, size: 20),
+              SizedBox(width: 10),
+              Text(
+                'Search products, brands, categories...',
+                style: TextStyle(color: AppColors.textMuted, fontSize: 14),
+              ),
+              Spacer(),
+              Icon(Icons.mic_none_rounded, color: AppColors.primary, size: 20),
             ],
           ),
         ),

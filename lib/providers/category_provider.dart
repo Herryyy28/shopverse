@@ -26,7 +26,7 @@ class CategoryItem {
     id: json['id'] ?? '',
     name: json['name'] ?? '',
     iconCode: json['iconCode'] ?? Icons.category.codePoint,
-    colorValue: json['colorValue'] ?? Colors.blue.value,
+    colorValue: json['colorValue'] ?? Colors.blue.toARGB32(),
   );
 
   IconData get icon => IconData(iconCode, fontFamily: 'MaterialIcons');
@@ -60,14 +60,14 @@ class CategoryProvider with ChangeNotifier {
 
   void _loadMockData() {
     _categories = [
-      CategoryItem(id: 'c1', name: 'Grocery', iconCode: Icons.fastfood.codePoint, colorValue: Colors.green.value),
-      CategoryItem(id: 'c2', name: 'Fashion', iconCode: Icons.checkroom.codePoint, colorValue: Colors.blue.value),
-      CategoryItem(id: 'c3', name: 'Electronics', iconCode: Icons.electrical_services.codePoint, colorValue: Colors.orange.value),
-      CategoryItem(id: 'c4', name: 'Home', iconCode: Icons.home.codePoint, colorValue: Colors.brown.value),
-      CategoryItem(id: 'c5', name: 'Beauty', iconCode: Icons.health_and_safety.codePoint, colorValue: Colors.pink.value),
-      CategoryItem(id: 'c6', name: 'Toys', iconCode: Icons.toys.codePoint, colorValue: Colors.red.value),
-      CategoryItem(id: 'c7', name: 'Sports', iconCode: Icons.sports_basketball.codePoint, colorValue: Colors.indigo.value),
-      CategoryItem(id: 'c8', name: 'Automotive', iconCode: Icons.directions_car.codePoint, colorValue: Colors.blueGrey.value),
+      CategoryItem(id: 'c1', name: 'Grocery', iconCode: Icons.fastfood.codePoint, colorValue: Colors.green.toARGB32()),
+      CategoryItem(id: 'c2', name: 'Fashion', iconCode: Icons.checkroom.codePoint, colorValue: Colors.blue.toARGB32()),
+      CategoryItem(id: 'c3', name: 'Electronics', iconCode: Icons.electrical_services.codePoint, colorValue: Colors.orange.toARGB32()),
+      CategoryItem(id: 'c4', name: 'Home', iconCode: Icons.home.codePoint, colorValue: Colors.brown.toARGB32()),
+      CategoryItem(id: 'c5', name: 'Beauty', iconCode: Icons.health_and_safety.codePoint, colorValue: Colors.pink.toARGB32()),
+      CategoryItem(id: 'c6', name: 'Toys', iconCode: Icons.toys.codePoint, colorValue: Colors.red.toARGB32()),
+      CategoryItem(id: 'c7', name: 'Sports', iconCode: Icons.sports_basketball.codePoint, colorValue: Colors.indigo.toARGB32()),
+      CategoryItem(id: 'c8', name: 'Automotive', iconCode: Icons.directions_car.codePoint, colorValue: Colors.blueGrey.toARGB32()),
     ];
     notifyListeners();
   }
@@ -92,7 +92,7 @@ class CategoryProvider with ChangeNotifier {
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: name,
       iconCode: icon.codePoint,
-      colorValue: color.value,
+      colorValue: color.toARGB32(),
     );
     
     try {

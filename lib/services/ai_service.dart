@@ -1,3 +1,5 @@
+import '../models/product.dart';
+
 class AIService {
   static Future<List<String>> getSearchSuggestions(String query) async {
     // In a real app, this would call a Gemini or GPT-4 API

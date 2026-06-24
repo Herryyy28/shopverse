@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shopverse/providers/cart_provider.dart';
 import 'package:shopverse/providers/location_provider.dart';
+import 'package:shopverse/providers/wallet_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:shopverse/providers/order_provider.dart';
@@ -16,7 +17,8 @@ class CheckoutScreen extends StatefulWidget {
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
   int _selectedPaymentMethod = 0; // 0: Wallet, 1: UPI, 2: Card, 3: Cash
-  final Color brandRed = const Color(0xFFFF3232);
+  static const Color _primary = Color(0xFF5B61F4);
+  static const Color _accent = Color(0xFFFF6B35);
   bool _isProcessing = false;
 
   @override
@@ -31,50 +33,90 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final double taxes = cart.totalAmount * 0.05;
     const double couponDiscount = 15.0;
     const double pointsRedeemed = 10.0;
-    
+
     final totalAmount = cart.totalAmount + deliveryFee + handlingFee + taxes - couponDiscount - pointsRedeemed;
-    final totalSavings = couponDiscount + pointsRedeemed + 5.0; // Mocking some additional savings
+    final totalSavings = couponDiscount + pointsRedeemed + 5.0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FB),
+      backgroundColor: const Color(0xFFF6F7FB),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Bill Details',
-          style: TextStyle(
-            color: Color(0xFF1A1A1A),
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
+        leading: Container(
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF6F7FB),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF1A1A2E), size: 18),
+            onPressed: () => Navigator.pop(context),
           ),
         ),
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Checkout',
+              style: TextStyle(
+                color: Color(0xFF1A1A2E),
+                fontWeight: FontWeight.w900,
+                fontSize: 20,
+              ),
+            ),
+            Text(
+              'Review your order',
+              style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.normal),
+            ),
+          ],
+        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.help_outline, color: Color(0xFF1A1A1A)),
-            onPressed: () {},
+          Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF6F7FB),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.help_outline, color: Color(0xFF1A1A2E)),
+              onPressed: () {},
+            ),
           ),
         ],
       ),
       body: SingleChildScrollView(
+        padding: const EdgeInsets.only(bottom: 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Delivery Address Section
-            _buildSectionHeader('DELIVERY ADDRESS'),
+            _buildSectionHeader('DELIVERY ADDRESS', Icons.location_on_outlined),
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 15,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: _primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.home_outlined, color: _primary, size: 22),
+                  ),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,30 +128,51 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
+                                color: Color(0xFF1A1A2E),
                               ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.green.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Text('DEFAULT', style: TextStyle(color: Colors.green, fontSize: 9, fontWeight: FontWeight.bold)),
                             ),
                             const Spacer(),
                             GestureDetector(
-                              onPressed: () {
-                                // Navigator to address selection or show bottom sheet
+                              onTap: () {
+                                // Navigate to address selection
                               },
-                              child: Text(
+                              child: const Text(
                                 'Change',
                                 style: TextStyle(
-                                  color: brandRed,
+                                  color: _primary,
                                   fontWeight: FontWeight.bold,
+                                  fontSize: 13,
                                 ),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         Text(
                           '${address.addressLine}, ${address.area}',
                           style: TextStyle(
                             color: Colors.grey[600],
-                            fontSize: 14,
+                            fontSize: 13,
                           ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(Icons.bolt, color: Colors.orange, size: 14),
+                            Text(
+                              ' Delivery in ${address.deliveryTimeMinutes} mins',
+                              style: const TextStyle(color: Colors.orange, fontSize: 12, fontWeight: FontWeight.bold),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -119,12 +182,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
 
             // Order Summary Section
-            _buildSectionHeader('ORDER SUMMARY'),
+            _buildSectionHeader('ORDER SUMMARY', Icons.shopping_bag_outlined),
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 15,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: ListView.separated(
                 shrinkWrap: true,
@@ -134,17 +204,24 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 itemBuilder: (context, index) {
                   final item = cart.items.values.toList()[index];
                   return Padding(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(14),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: CachedNetworkImage(
-                            imageUrl: item.product.imageUrl,
-                            width: 60,
-                            height: 60,
-                            fit: BoxFit.cover,
+                        Container(
+                          width: 64,
+                          height: 64,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF6F7FB),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: CachedNetworkImage(
+                              imageUrl: item.product.imageUrl,
+                              fit: BoxFit.contain,
+                              placeholder: (_, __) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -154,32 +231,32 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             children: [
                               Text(
                                 item.product.name,
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF1A1A2E)),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                item.product.unit,
-                                style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                              ),
                               const SizedBox(height: 4),
                               Text(
+                                item.product.unit,
+                                style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
                                 '₹${item.product.price.toStringAsFixed(2)}',
-                                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+                                style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF1A1A2E), fontSize: 15),
                               ),
                             ],
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(6),
+                            color: _primary.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             'x${item.quantity}',
-                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: _primary),
                           ),
                         ),
                       ],
@@ -190,13 +267,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
 
             // Bill Breakdown Section
-            _buildSectionHeader('BILL BREAKDOWN'),
+            _buildSectionHeader('BILL BREAKDOWN', Icons.receipt_long_outlined),
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 15,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Column(
                 children: [
@@ -204,47 +288,76 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   _buildBillRow('Delivery Fee', '₹${deliveryFee.toStringAsFixed(2)}'),
                   _buildBillRow('Handling Fee', '₹${handlingFee.toStringAsFixed(2)}'),
                   _buildBillRow('Taxes & Charges', '₹${taxes.toStringAsFixed(2)}'),
+                  const SizedBox(height: 10),
+                  Divider(color: Colors.grey[100], thickness: 1),
                   const SizedBox(height: 8),
-                  const Divider(thickness: 1, height: 1),
-                  const SizedBox(height: 12),
                   _buildBillRow(
-                    'Coupon (SVFIRST)', 
-                    '-₹${couponDiscount.toStringAsFixed(2)}', 
+                    'Coupon (SVFIRST)',
+                    '-₹${couponDiscount.toStringAsFixed(2)}',
                     isDiscount: true,
                     icon: Icons.confirmation_number_outlined,
                   ),
                   _buildBillRow(
-                    'Points Redeemed (500 pts)', 
-                    '-₹${pointsRedeemed.toStringAsFixed(2)}', 
+                    'Points Redeemed',
+                    '-₹${pointsRedeemed.toStringAsFixed(2)}',
                     isDiscount: true,
                     icon: Icons.stars_outlined,
                   ),
+                  const SizedBox(height: 10),
+                  Divider(color: Colors.grey[100], thickness: 1),
                   const SizedBox(height: 12),
-                  const Divider(thickness: 1, height: 1),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Total Amount',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [_primary.withValues(alpha: 0.06), _primary.withValues(alpha: 0.02)],
                       ),
-                      Text(
-                        '₹${totalAmount.toStringAsFixed(2)}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold, 
-                          fontSize: 20, 
-                          color: brandRed,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Total Amount',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1A1A2E)),
                         ),
-                      ),
-                    ],
+                        Text(
+                          '₹${totalAmount.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 22,
+                            color: _primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.savings_outlined, size: 16, color: Colors.green),
+                        const SizedBox(width: 6),
+                        Text(
+                          'You save ₹${totalSavings.toStringAsFixed(2)} on this order 🎉',
+                          style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
 
             // Payment Method Section
-            _buildSectionHeader('PAYMENT METHOD'),
+            _buildSectionHeader('PAYMENT METHOD', Icons.payment_outlined),
             _buildPaymentOption(
               index: 0,
               icon: Icons.account_balance_wallet_outlined,
@@ -270,18 +383,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               title: 'Cash on Delivery',
               subtitle: 'Pay at your doorstep',
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 120),
           ],
         ),
       ),
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 28),
         decoration: BoxDecoration(
           color: Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 20,
               offset: const Offset(0, -5),
             )
           ],
@@ -299,76 +413,63 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 Text(
                   '₹${totalAmount.toStringAsFixed(2)}',
                   style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1A1A1A),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF1A1A2E),
                   ),
                 ),
               ],
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE8F5E9),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.savings_outlined, size: 14, color: Color(0xFF2E7D32)),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Save ₹${totalSavings.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2E7D32),
-                          ),
-                        ),
-                      ],
-                    ),
+              child: SizedBox(
+                height: 54,
+                child: ElevatedButton(
+                  onPressed: _isProcessing
+                    ? null
+                    : () => _handlePayment(context, totalAmount, cart, walletProv),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ).copyWith(
+                    backgroundColor: WidgetStateProperty.all(Colors.transparent),
                   ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: _isProcessing 
-                        ? null 
-                        : () => _handlePayment(context, totalAmount, cart, walletProv),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: brandRed,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        elevation: 0,
-                        disabledBackgroundColor: brandRed.withValues(alpha: 0.5),
-                      ),
+                  child: Ink(
+                    decoration: BoxDecoration(
+                      gradient: _isProcessing
+                          ? null
+                          : const LinearGradient(
+                              colors: [Color(0xFF5B61F4), Color(0xFF8B5CF6)],
+                            ),
+                      color: _isProcessing ? Colors.grey[300] : null,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Container(
+                      alignment: Alignment.center,
                       child: _isProcessing
                         ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                            height: 22,
+                            width: 22,
+                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
                           )
                         : const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
+                              Icon(Icons.lock_outline, size: 16, color: Colors.white),
+                              SizedBox(width: 8),
                               Text(
                                 'Proceed to Pay',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                               ),
                               SizedBox(width: 8),
-                              Icon(Icons.chevron_right),
+                              Icon(Icons.chevron_right, color: Colors.white),
                             ],
                           ),
                     ),
                   ),
-                ],
+                ),
               ),
             ),
           ],
@@ -387,35 +488,40 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final isSelected = _selectedPaymentMethod == index;
     return GestureDetector(
       onTap: isEnabled ? () => setState(() => _selectedPaymentMethod = index) : null,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isEnabled ? Colors.white : Colors.grey[50],
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? brandRed : Colors.transparent,
+            color: isSelected ? _primary : Colors.transparent,
             width: 1.5,
           ),
-          boxShadow: isSelected ? [
+          boxShadow: [
             BoxShadow(
-              color: brandRed.withValues(alpha: 0.1),
-              blurRadius: 10,
+              color: isSelected
+                ? _primary.withValues(alpha: 0.12)
+                : Colors.black.withValues(alpha: 0.04),
+              blurRadius: isSelected ? 15 : 10,
               offset: const Offset(0, 4),
             )
-          ] : null,
+          ],
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: (isSelected ? brandRed : Colors.grey[100])?.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
+                color: isSelected
+                  ? _primary.withValues(alpha: 0.12)
+                  : const Color(0xFFF6F7FB),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
-                icon, 
-                color: isSelected ? brandRed : Colors.grey[600],
+                icon,
+                color: isSelected ? _primary : Colors.grey[500],
                 size: 24,
               ),
             ),
@@ -429,7 +535,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
-                      color: isEnabled ? Colors.black : Colors.grey,
+                      color: isEnabled ? const Color(0xFF1A1A2E) : Colors.grey,
                     ),
                   ),
                   Text(
@@ -443,15 +549,30 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ),
             ),
             if (!isEnabled)
-              Text(
-                'Insufficient',
-                style: TextStyle(color: brandRed, fontSize: 10, fontWeight: FontWeight.bold),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text('Low Balance', style: TextStyle(color: Colors.red, fontSize: 10, fontWeight: FontWeight.bold)),
               )
             else
-              Icon(
-                isSelected ? Icons.check_circle : Icons.radio_button_off,
-                color: isSelected ? brandRed : Colors.grey[300],
-                size: 22,
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isSelected ? _primary : Colors.transparent,
+                  border: Border.all(
+                    color: isSelected ? _primary : Colors.grey[300]!,
+                    width: 2,
+                  ),
+                ),
+                child: isSelected
+                  ? const Icon(Icons.check, color: Colors.white, size: 14)
+                  : null,
               ),
           ],
         ),
@@ -459,21 +580,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(String title, IconData icon) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
       child: Row(
         children: [
-          if (title == 'DELIVERY ADDRESS')
-            Icon(Icons.location_on_outlined, size: 18, color: Colors.grey[700]),
-          if (title == 'DELIVERY ADDRESS') const SizedBox(width: 8),
+          Icon(icon, size: 16, color: Colors.grey[600]),
+          const SizedBox(width: 8),
           Text(
             title,
             style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[700],
-              letterSpacing: 1.1,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: Colors.grey[600],
+              letterSpacing: 1.2,
             ),
           ),
         ],
@@ -483,28 +603,28 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   Widget _buildBillRow(String label, String value, {bool isDiscount = false, IconData? icon}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 16, color: isDiscount ? const Color(0xFF2E7D32) : Colors.grey[600]),
-            const SizedBox(width: 8),
+            Icon(icon, size: 15, color: isDiscount ? Colors.green : Colors.grey[600]),
+            const SizedBox(width: 6),
           ],
           Text(
             label,
             style: TextStyle(
-              color: isDiscount ? const Color(0xFF2E7D32) : Colors.grey[700],
+              color: isDiscount ? Colors.green : Colors.grey[600],
               fontSize: 14,
-              fontWeight: isDiscount ? FontWeight.w500 : FontWeight.normal,
+              fontWeight: isDiscount ? FontWeight.w600 : FontWeight.normal,
             ),
           ),
           const Spacer(),
           Text(
             value,
             style: TextStyle(
-              color: isDiscount ? const Color(0xFF2E7D32) : Colors.black,
+              color: isDiscount ? Colors.green : const Color(0xFF1A1A2E),
               fontSize: 14,
-              fontWeight: isDiscount ? FontWeight.bold : FontWeight.normal,
+              fontWeight: isDiscount ? FontWeight.bold : FontWeight.w500,
             ),
           ),
         ],
@@ -512,16 +632,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-
   void _handlePayment(BuildContext context, double total, CartProvider cart, WalletProvider wallet) async {
     setState(() => _isProcessing = true);
 
-    // Simulate payment processing delay
     await Future.delayed(const Duration(seconds: 2));
 
     if (!mounted) return;
 
-    if (_selectedPaymentMethod == 0) { // Wallet
+    if (_selectedPaymentMethod == 0) {
       if (wallet.balance >= total) {
         wallet.pay(total, 'ORD-${DateTime.now().millisecond}');
       } else {
@@ -533,51 +651,71 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       }
     }
 
-    // Success flow
+    if (!mounted) return;
     _showSuccessDialog(context, total, cart.items.values.toList());
     cart.clear();
     setState(() => _isProcessing = false);
   }
 
-  void _showSuccessDialog(BuildContext context, double total, List cartItems) {
+  void _showSuccessDialog(BuildContext context, double total, List cartItems) async {
     final orderProv = Provider.of<OrderProvider>(context, listen: false);
-    final orderId = orderProv.addOrder(total, cartItems);
+    final orderId = await orderProv.addOrder(total, cartItems);
     final shortId = 'ORD-${orderId.substring(orderId.length - 6).toUpperCase()}';
+
+    if (!mounted) return;
 
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        contentPadding: const EdgeInsets.all(28),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.check_circle, color: Colors.green, size: 80),
+            Container(
+              width: 90,
+              height: 90,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF5B61F4), Color(0xFF8B5CF6)],
+                ),
+                borderRadius: BorderRadius.circular(45),
+              ),
+              child: const Icon(Icons.check_rounded, color: Colors.white, size: 50),
+            ),
             const SizedBox(height: 24),
             const Text(
-              'Order Placed!',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              'Order Placed! 🎉',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF1A1A2E)),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             Text(
-              'Your order $shortId has been placed successfully. You can track it in the orders section.',
+              'Your order $shortId has been placed successfully. Track it in the orders section.',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.grey),
+              style: TextStyle(color: Colors.grey[600], height: 1.5),
             ),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
+              height: 50,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.of(context).pop(); // Close dialog
-                  Navigator.of(context).pop(); // Close checkout
-                  Navigator.of(context).pop(); // Close cart
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => TrackingScreen(orderId: shortId)),
                   );
                 },
-                child: const Text('Track Order'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF5B61F4),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  elevation: 0,
+                ),
+                child: const Text('Track Order', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
               ),
             ),
           ],
