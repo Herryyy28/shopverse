@@ -59,12 +59,12 @@ class AdminChatListScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.surfaceColor,
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)],
+                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10)],
                 ),
                 child: ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   leading: CircleAvatar(
-                    backgroundColor: AppColors.brandRed.withOpacity(0.1),
+                    backgroundColor: AppColors.brandRed.withValues(alpha: 0.1),
                     child: const Icon(Icons.person, color: AppColors.brandRed),
                   ),
                   title: Text(

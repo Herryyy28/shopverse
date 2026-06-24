@@ -92,6 +92,7 @@ class _SearchScreenState extends State<SearchScreen> {
   Future<void> _pickImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
+      if (!mounted) return;
       // Show analyzing loader
       showDialog(
         context: context,

@@ -300,10 +300,10 @@ class CartScreen extends StatelessWidget {
                       child: CachedNetworkImage(
                         imageUrl: item.product.imageUrl,
                         fit: BoxFit.contain,
-                        placeholder: (_, __) => const Center(
+                        placeholder: (_, _) => const Center(
                           child: CircularProgressIndicator(strokeWidth: 2, color: _primary),
                         ),
-                        errorWidget: (_, __, ___) => const Icon(Icons.image_outlined, color: Colors.grey),
+                        errorWidget: (_, _, _) => const Icon(Icons.image_outlined, color: Colors.grey),
                       ),
                     ),
                   ),
@@ -446,7 +446,7 @@ class CartScreen extends StatelessWidget {
                         imageUrl: s['img']! as String,
                         height: 90,
                         fit: BoxFit.contain,
-                        placeholder: (_, __) => const CircularProgressIndicator(strokeWidth: 2, color: _primary),
+                        placeholder: (_, _) => const CircularProgressIndicator(strokeWidth: 2, color: _primary),
                       ),
                     ),
                   ),

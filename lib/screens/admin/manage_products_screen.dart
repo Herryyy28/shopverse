@@ -112,7 +112,7 @@ class _ProductListItemState extends State<_ProductListItem> {
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: Colors.grey.withOpacity(0.1)),
+            side: BorderSide(color: Colors.grey.withValues(alpha: 0.1)),
           ),
           child: ListTile(
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -170,7 +170,7 @@ class _ProductListItemState extends State<_ProductListItem> {
       onPressed: onTap,
       visualDensity: VisualDensity.compact,
       style: IconButton.styleFrom(
-        backgroundColor: color.withOpacity(0.05),
+        backgroundColor: color.withValues(alpha: 0.05),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );

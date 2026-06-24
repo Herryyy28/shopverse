@@ -162,7 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, mainAxisSpacing: 12, crossAxisSpacing: 12, childAspectRatio: 0.85),
                 itemCount: 8,
-                itemBuilder: (_, __) => Container(decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16))),
+                itemBuilder: (_, _) => Container(decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16))),
               ),
             ),
             const SizedBox(height: 20),
@@ -183,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 itemCount: 3,
-                itemBuilder: (_, __) => Container(
+                itemBuilder: (_, _) => Container(
                   width: 160,
                   margin: const EdgeInsets.symmetric(horizontal: 6),
                   decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
@@ -513,7 +513,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Expanded(
                     child: ListView.separated(
                       itemCount: provider.addresses.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      separatorBuilder: (_, _) => const SizedBox(height: 12),
                       itemBuilder: (context, index) {
                         final address = provider.addresses[index];
                         final isSelected = provider.selectedAddress.id == address.id;

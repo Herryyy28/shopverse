@@ -233,7 +233,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             child: CachedNetworkImage(
                               imageUrl: item.product.imageUrl,
                               fit: BoxFit.contain,
-                              placeholder: (_, __) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                              placeholder: (_, _) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
                             ),
                           ),
                         ),
@@ -650,7 +650,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     await Future.delayed(const Duration(seconds: 2));
 
-    if (!mounted) return;
+    if (!context.mounted) return;
 
     if (_selectedPaymentMethod == 0) {
       if (wallet.balance >= total) {
@@ -664,7 +664,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       }
     }
 
-    if (!mounted) return;
+    if (!context.mounted) return;
     _showSuccessDialog(context, total, cart.items.values.toList());
     cart.clear();
     setState(() => _isProcessing = false);
@@ -675,7 +675,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final orderId = await orderProv.addOrder(total, cartItems);
     final shortId = 'ORD-${orderId.substring(orderId.length - 6).toUpperCase()}';
 
-    if (!mounted) return;
+    if (!context.mounted) return;
 
     showDialog(
       context: context,

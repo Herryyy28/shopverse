@@ -79,6 +79,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
       );
 
       // 3. Save to Firestore & Provider
+      if (!mounted) return;
       final productProv = Provider.of<ProductProvider>(context, listen: false);
       if (widget.product == null) {
         await productProv.addProduct(newProduct);

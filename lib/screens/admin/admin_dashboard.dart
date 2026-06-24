@@ -287,7 +287,7 @@ class AdminDashboard extends StatelessWidget {
               child: ListView.separated(
                 itemCount: userProv.users.length,
                 padding: const EdgeInsets.all(20),
-                separatorBuilder: (_, __) => const Divider(height: 24),
+                separatorBuilder: (_, _) => const Divider(height: 24),
                 itemBuilder: (ctx, i) {
                   final user = userProv.users[i];
                   return Row(

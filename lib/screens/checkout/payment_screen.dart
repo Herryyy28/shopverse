@@ -145,7 +145,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     // Simulate network delay
     await Future.delayed(const Duration(seconds: 2));
 
-    if (!mounted) return;
+    if (!context.mounted) return;
 
     final cart = Provider.of<CartProvider>(context, listen: false);
     final orderProv = Provider.of<OrderProvider>(context, listen: false);
@@ -153,7 +153,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     orderProv.addOrder(widget.amount, cart.items.values.toList());
     cart.clear();
 
-    if (!mounted) return;
+    if (!context.mounted) return;
     
     Navigator.pushReplacement(
       context,

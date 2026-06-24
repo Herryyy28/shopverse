@@ -313,7 +313,7 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.network(iconUrl, height: 20, errorBuilder: (_, __, ___) => const Icon(Icons.login)),
+          Image.network(iconUrl, height: 20, errorBuilder: (_, _, _) => const Icon(Icons.login)),
           const SizedBox(width: 8),
           Text(label, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         ],

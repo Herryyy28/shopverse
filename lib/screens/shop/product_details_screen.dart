@@ -293,7 +293,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         TextButton.icon(
                           onPressed: () async {
                             final recommendation = await AIService.getSizeRecommendation(product.id, {});
-                            if (context.mounted) {
+                            if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(recommendation),
@@ -636,7 +636,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             subtitle: 'Let AI find the best value for you',
             onTap: () async {
               final comparison = await AIService.getProductComparison(widget.product.id, 'similar_id');
-              if (context.mounted) {
+              if (mounted) {
                 showModalBottomSheet(
                   context: context,
                   builder: (context) => Container(
@@ -671,7 +671,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             subtitle: 'Is this the best time to buy?',
             onTap: () async {
               final suggestion = await AIService.getBudgetSuggestion(widget.product.price, widget.product.category);
-              if (context.mounted) {
+              if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(suggestion), backgroundColor: Colors.blue),
                 );
@@ -886,7 +886,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           const Row(
             children: [
               Icon(Icons.account_balance_wallet_outlined, color: Color(0xFF00E676), size: 14),
-              const SizedBox(width: 4),
+              SizedBox(width: 4),
               Text('CASHBACK', style: TextStyle(color: Color(0xFF00E676), fontWeight: FontWeight.bold, fontSize: 10)),
             ],
           ),
