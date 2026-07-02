@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:confetti/confetti.dart';
@@ -22,6 +23,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   int _selectedPaymentMethod = 0; // 0: Wallet, 1: UPI, 2: Card, 3: Cash
   static const Color _primary = Color(0xFF5B61F4);
   bool _isProcessing = false;
+  bool _carbonNeutral = false;
+  bool _ecoCargo = false;
   late ConfettiController _confettiController;
 
   @override
@@ -86,6 +89,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.mic, color: Color(0xFF5B61F4)),
+            onPressed: () => _startVoiceCheckout(context),
+          ),
           Container(
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
@@ -375,6 +382,117 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         ),
                       ],
                     ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Carbon-Neutral delivery choice
+            _buildSectionHeader('GREEN DELIVERY', Icons.eco_outlined),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 15,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.park_outlined, color: Colors.green, size: 22),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          'Carbon-Neutral Delivery',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF1A1A2E)),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Deliver in grouped cycles. Earn +15 Coins!',
+                          style: TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Switch(
+                    value: _carbonNeutral,
+                    activeColor: Colors.green,
+                    onChanged: (val) {
+                      setState(() {
+                        _carbonNeutral = val;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 12),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 15,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.local_shipping_outlined, color: Colors.green, size: 22),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          'Eco-Cargo Route Grouping',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF1A1A2E)),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Slower fleet logistics path. Earn +25 Coins!',
+                          style: TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Switch(
+                    value: _ecoCargo,
+                    activeColor: Colors.green,
+                    onChanged: (val) {
+                      setState(() {
+                        _ecoCargo = val;
+                      });
+                    },
                   ),
                 ],
               ),
@@ -675,6 +793,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       }
     }
 
+    if (_carbonNeutral) {
+      wallet.addCoins(15, 'Carbon Neutral Delivery Reward');
+    }
+
+    if (_ecoCargo) {
+      wallet.addCoins(25, 'Eco-Cargo Logistics Reward');
+    }
+
     if (!context.mounted) return;
     _showSuccessDialog(context, total, cart.items.values.toList());
     cart.clear();
@@ -791,4 +917,158 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 },
 );
   }
+  void _startVoiceCheckout(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogCtx) {
+        return _VoiceCheckoutAssistantDialog(
+          onConfirmed: (bool useWallet, bool useEco, bool useEcoCargo) {
+            setState(() {
+              if (useWallet) _selectedPaymentMethod = 0;
+              if (useEco) _carbonNeutral = true;
+              if (useEcoCargo) _ecoCargo = true;
+            });
+          },
+        );
+      },
+    );
+  }
+}
+
+class _VoiceCheckoutAssistantDialog extends StatefulWidget {
+  final Function(bool, bool, bool) onConfirmed;
+
+  const _VoiceCheckoutAssistantDialog({required this.onConfirmed});
+
+  @override
+  State<_VoiceCheckoutAssistantDialog> createState() => _VoiceCheckoutAssistantDialogState();
+}
+
+class _VoiceCheckoutAssistantDialogState extends State<_VoiceCheckoutAssistantDialog> with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  String _statusText = 'Say: "pay using wallet and select eco-friendly options"';
+  bool _listening = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat();
+
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        setState(() {
+          _statusText = 'Heard: "pay with wallet and use green delivery routes"';
+        });
+      }
+    });
+
+    Future.delayed(const Duration(seconds: 5), () {
+      if (mounted) {
+        setState(() {
+          _statusText = 'Applying voice commands...';
+          _listening = false;
+        });
+        Future.delayed(const Duration(seconds: 1), () {
+          if (mounted) {
+            widget.onConfirmed(true, true, true);
+            Navigator.pop(context);
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'VOICE CHECKOUT ASSISTANT',
+              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14, letterSpacing: 0.5),
+            ),
+            const SizedBox(height: 24),
+            CircleAvatar(
+              radius: 32,
+              backgroundColor: _listening ? Colors.blueAccent : Colors.green,
+              child: Icon(_listening ? Icons.mic : Icons.check, color: Colors.white, size: 28),
+            ),
+            const SizedBox(height: 20),
+            if (_listening)
+              SizedBox(
+                height: 40,
+                width: 180,
+                child: AnimatedBuilder(
+                  animation: _animationController,
+                  builder: (context, child) {
+                    return CustomPaint(
+                      painter: _SiriWavePainter(value: _animationController.value),
+                    );
+                  },
+                ),
+              )
+            else
+              const SizedBox(height: 40),
+            const SizedBox(height: 20),
+            Text(
+              _statusText,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SiriWavePainter extends CustomPainter {
+  final double value;
+  _SiriWavePainter({required this.value});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint1 = Paint()
+      ..color = Colors.blueAccent.withValues(alpha: 0.6)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+
+    final paint2 = Paint()
+      ..color = Colors.cyanAccent.withValues(alpha: 0.4)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+
+    final path1 = Path();
+    final path2 = Path();
+
+    path1.moveTo(0, size.height / 2);
+    path2.moveTo(0, size.height / 2);
+
+    for (double x = 0; x <= size.width; x++) {
+      final y1 = size.height / 2 + sin((x / size.width * 2 * pi * 2) + value * 2 * pi) * 12 * sin(value * pi);
+      final y2 = size.height / 2 + cos((x / size.width * 2 * pi * 3) - value * 2 * pi) * 8 * sin(value * pi);
+      path1.lineTo(x, y1);
+      path2.lineTo(x, y2);
+    }
+
+    canvas.drawPath(path1, paint1);
+    canvas.drawPath(path2, paint2);
+  }
+
+  @override
+  bool shouldRepaint(covariant _SiriWavePainter oldDelegate) => true;
 }

@@ -19,6 +19,12 @@ import 'package:shopverse/screens/shop/spatial_room_screen.dart';
 import 'package:shopverse/screens/shop/recipe_builder_screen.dart';
 import 'package:shopverse/screens/profile/login_streak_screen.dart';
 import 'package:shopverse/screens/profile/referral_screen.dart';
+import 'package:shopverse/screens/profile/avatar_preview_screen.dart';
+import 'package:shopverse/screens/shop/group_registry_screen.dart';
+import 'package:shopverse/screens/profile/pantry_tracker_screen.dart';
+import 'package:shopverse/screens/shop/variant_designer_screen.dart';
+import 'package:shopverse/screens/profile/eco_impact_screen.dart';
+import 'package:shopverse/screens/profile/settings_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -61,7 +67,12 @@ class ProfileScreen extends StatelessWidget {
         leading: const Icon(Icons.bolt, color: AppColors.brandRed),
         title: const Text('My Profile', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w900)),
         actions: [
-          IconButton(icon: const Icon(Icons.settings_outlined, color: AppColors.textPrimary), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.settings_outlined, color: AppColors.textPrimary),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
+            },
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -194,7 +205,9 @@ class ProfileScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 12),
+             const SizedBox(height: 12),
+            _buildProfileSectionHeader('INTERACTIVE GAMING & REWARDS'),
+            const SizedBox(height: 8),
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 20),
               decoration: BoxDecoration(
@@ -204,6 +217,14 @@ class ProfileScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
+                  _buildMenuItem(Icons.calendar_month_outlined, 'Daily Check-in Streak', () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginStreakScreen()));
+                  }),
+                  const Divider(height: 1, indent: 56),
+                  _buildMenuItem(Icons.share_outlined, 'Referral Rewards Center', () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ReferralScreen()));
+                  }),
+                  const Divider(height: 1, indent: 56),
                   _buildMenuItem(Icons.card_giftcard, 'Lucky Scratch Coupon', () {
                     showDialog(context: context, builder: (_) => const ScratchCardDialog());
                   }),
@@ -211,33 +232,75 @@ class ProfileScreen extends StatelessWidget {
                   _buildMenuItem(Icons.markunread_mailbox_outlined, 'Mystery Reward Box', () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const MysteryBoxScreen()));
                   }),
-                  const Divider(height: 1, indent: 56),
-                  _buildMenuItem(Icons.video_library_outlined, 'Video Commerce Feed', () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const VideoFeedScreen()));
-                  }),
-                  const Divider(height: 1, indent: 56),
-                  _buildMenuItem(Icons.group_work_outlined, 'Group Cart Splitter', () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const SharedCartScreen()));
-                  }),
-                  const Divider(height: 1, indent: 56),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+            _buildProfileSectionHeader('AI FIT & CUSTOMIZER STUDIO'),
+            const SizedBox(height: 8),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceColor,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10)],
+              ),
+              child: Column(
+                children: [
                   _buildMenuItem(Icons.face_retouching_natural, 'AI Virtual Fit Try-On', () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const VirtualTryonScreen()));
                   }),
                   const Divider(height: 1, indent: 56),
+                  _buildMenuItem(Icons.face_unlock_outlined, 'My Avatar Closet', () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const AvatarPreviewScreen()));
+                  }),
+                  const Divider(height: 1, indent: 56),
+                  _buildMenuItem(Icons.palette_outlined, 'Custom Sneaker Designer', () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const VariantDesignerScreen()));
+                  }),
+                  const Divider(height: 1, indent: 56),
                   _buildMenuItem(Icons.door_sliding_outlined, 'Spatial Room AR Furnish', () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const SpatialRoomScreen()));
+                  }),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+            _buildProfileSectionHeader('SMART HOUSEHOLD & SOCIAL SHOPPING'),
+            const SizedBox(height: 8),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceColor,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10)],
+              ),
+              child: Column(
+                children: [
+                  _buildMenuItem(Icons.group_work_outlined, 'Group Cart Splitter', () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const SharedCartScreen()));
+                  }),
+                  const Divider(height: 1, indent: 56),
+                  _buildMenuItem(Icons.card_membership_outlined, 'My Gift Registries', () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const GroupRegistryScreen()));
+                  }),
+                  const Divider(height: 1, indent: 56),
+                  _buildMenuItem(Icons.kitchen_outlined, 'Smart Shelf Pantry', () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const PantryTrackerScreen()));
                   }),
                   const Divider(height: 1, indent: 56),
                   _buildMenuItem(Icons.soup_kitchen_outlined, 'Recipe Ingredients Cart', () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const RecipeBuilderScreen()));
                   }),
                   const Divider(height: 1, indent: 56),
-                  _buildMenuItem(Icons.calendar_month_outlined, 'Daily Check-in Streak', () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginStreakScreen()));
+                  _buildMenuItem(Icons.eco_outlined, 'My Eco-Impact Dashboard', () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const EcoImpactScreen()));
                   }),
                   const Divider(height: 1, indent: 56),
-                  _buildMenuItem(Icons.share_outlined, 'Referral Rewards Center', () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ReferralScreen()));
+                  _buildMenuItem(Icons.video_library_outlined, 'Video Commerce Feed', () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const VideoFeedScreen()));
                   }),
                 ],
               ),
@@ -310,6 +373,24 @@ class ProfileScreen extends StatelessWidget {
               const SizedBox(height: 8),
               Text(label, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: AppColors.textSecondary)),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileSectionHeader(String title) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Text(
+          title,
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textSecondary,
+            letterSpacing: 0.5,
           ),
         ),
       ),

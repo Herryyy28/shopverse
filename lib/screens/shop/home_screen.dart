@@ -20,6 +20,10 @@ import 'package:shopverse/widgets/custom_text_field.dart';
 import 'package:shopverse/widgets/spin_wheel_dialog.dart';
 import 'package:shopverse/widgets/delivery_eta_banner.dart';
 import 'package:shopverse/widgets/flash_deal_radar.dart';
+import 'package:shopverse/widgets/autopilot_restock_widget.dart';
+import 'package:shopverse/screens/shop/balloon_pop_screen.dart';
+import 'package:shopverse/screens/shop/shoppable_feed_screen.dart';
+import 'package:shopverse/widgets/mystery_deal_spinner.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -107,6 +111,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       _buildDailyCoinsAndSpinBanner(context),
                       const DeliveryEtaBanner(),
                       const FlashDealRadar(),
+                      const AutopilotRestockWidget(),
+                      _buildBalloonPopLauncher(context),
+                      _buildShoppableFeedLauncher(context),
+                      _buildMysterySpinnerLauncher(context),
                       _buildPromotionBanner(),
                       _buildCategoryGrid(),
                       _buildFlashSaleTimer(context),
@@ -702,6 +710,150 @@ class _HomeScreenState extends State<HomeScreen> {
               wallet.hasSpunToday ? 'SPUN' : 'SPIN',
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBalloonPopLauncher(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFEC4899), Color(0xFFF59E0B)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.videogame_asset_outlined, color: Colors.white, size: 28),
+          const SizedBox(width: 14),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Balloon Pop Arcade Game',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                Text(
+                  'Pop balloons in 10s to win coins!',
+                  style: TextStyle(color: Colors.white70, fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const BalloonPopScreen()));
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.pink,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('PLAY', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShoppableFeedLauncher(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.video_library_rounded, color: Colors.white, size: 28),
+          const SizedBox(width: 14),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Community Unboxings Feed',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                Text(
+                  'Watch short videos & buy instantly!',
+                  style: TextStyle(color: Colors.white70, fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const ShoppableFeedScreen()));
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.blueAccent,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('WATCH', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMysterySpinnerLauncher(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFF59E0B), Color(0xFF10B981)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.stars, color: Colors.white, size: 28),
+          const SizedBox(width: 14),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Mystery Box Spinner Deal',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                Text(
+                  'Spin to win random high-discount deals!',
+                  style: TextStyle(color: Colors.white70, fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (_) => const MysteryDealSpinner(),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.green,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('SPIN', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
           ),
         ],
       ),

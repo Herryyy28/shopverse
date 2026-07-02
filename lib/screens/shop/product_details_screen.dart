@@ -15,6 +15,12 @@ import 'package:shopverse/widgets/view_360_dialog.dart';
 import 'package:shopverse/widgets/ar_preview_dialog.dart';
 import 'package:shopverse/widgets/price_tracker_widget.dart';
 import 'package:shopverse/widgets/subscription_scheduler_dialog.dart';
+import 'package:shopverse/widgets/bargain_arena_widget.dart';
+import 'package:shopverse/widgets/drag_to_buy_slider.dart';
+import 'package:shopverse/widgets/video_reviews_widget.dart';
+import 'package:shopverse/widgets/digital_wrapper_dialog.dart';
+import 'package:shopverse/widgets/price_comparison_graph.dart';
+import 'package:shopverse/screens/shop/ar_dimension_calculator.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   final Product product;
@@ -484,7 +490,39 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   _buildAIAssistantSection(),
 
                   const SizedBox(height: 32),
+                  const Text('Fit Sizing Guide', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w900)),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      final sizeRec = await Navigator.push<String>(
+                        context,
+                        MaterialPageRoute(builder: (_) => const ARDimensionCalculator()),
+                      );
+                      if (sizeRec != null && mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Calculated sizing: $sizeRec applied!'), backgroundColor: Colors.blueAccent),
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.center_focus_strong, color: Color(0xFF5B61F4)),
+                    label: const Text('SCAN MY SIZE WITH AR', style: TextStyle(color: Color(0xFF5B61F4), fontWeight: FontWeight.bold)),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFF5B61F4)),
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  BargainArenaWidget(
+                    originalPrice: product.price,
+                    onPriceUpdated: (newPrice) {
+                      // Trigger price slashes dynamically
+                    },
+                  ),
+                  const SizedBox(height: 24),
                   PriceTrackerWidget(currentPrice: product.price, oldPrice: product.oldPrice),
+                  const SizedBox(height: 24),
+                  PriceComparisonGraph(currentPrice: product.price),
                   const SizedBox(height: 24),
                   
                   // Subscription scheduling trigger
@@ -533,6 +571,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   const Text('Technical Specifications', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w900)),
                   const SizedBox(height: 12),
                   _buildSpecificationsTable(product.specifications),
+
+                  const SizedBox(height: 32),
+                  const VideoReviewsWidget(),
+                  const SizedBox(height: 32),
 
                   const SizedBox(height: 32),
                   _buildRatingsSection(product),
@@ -649,6 +691,18 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     ),
                   ),
 
+                  const SizedBox(height: 32),
+                  const Text('Instant Checkout Slider', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w900)),
+                  const SizedBox(height: 12),
+                  DragToBuySlider(
+                    price: product.price,
+                    onConfirmed: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => DigitalWrapperDialog(productName: product.name),
+                      );
+                    },
+                  ),
                   const SizedBox(height: 32),
                   _buildReferralSection(accentPurple, bgColor),
                   const SizedBox(height: 100),

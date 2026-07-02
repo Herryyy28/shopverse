@@ -41,6 +41,15 @@ class _SharedCartScreenState extends State<SharedCartScreen> {
     }
   ];
 
+  int _yesVotes = 2;
+  int _noVotes = 1;
+  bool _hasVoted = false;
+  final TextEditingController _commentController = TextEditingController();
+  final List<String> _comments = [
+    'Rahul Kumar: Aura headphones are super worth it!',
+    'Herry Praja: I voted yes, the discount code is active.',
+  ];
+
   double get _totalCartVal {
     double total = 0;
     for (var member in _groupMembers) {
@@ -73,6 +82,12 @@ class _SharedCartScreenState extends State<SharedCartScreen> {
         ),
       );
     }
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
   }
 
   @override
@@ -182,6 +197,142 @@ class _SharedCartScreenState extends State<SharedCartScreen> {
                   ),
                 );
               }),
+
+              const SizedBox(height: 24),
+              const Text(
+                'Active Group Cart Polls',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+              ),
+              const SizedBox(height: 12),
+
+              // Decisions Poll Panel
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E1E2F) : Colors.blue.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.blue.withValues(alpha: 0.2), width: 1.5),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.poll_outlined, color: Colors.blueAccent),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              Text('DECISION POLL', style: TextStyle(fontWeight: FontWeight.w900, color: Colors.blueAccent, fontSize: 11)),
+                              Text('Buy Aura Wireless Headphones?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Vote ratio progress indicator
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: _yesVotes + _noVotes > 0 ? _yesVotes / (_yesVotes + _noVotes) : 0.5,
+                        backgroundColor: isDark ? Colors.white10 : Colors.black12,
+                        valueColor: const AlwaysStoppedAnimation(Colors.green),
+                        minHeight: 6,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Yes: $_yesVotes votes', style: const TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold)),
+                        Text('No: $_noVotes votes', style: const TextStyle(color: Colors.red, fontSize: 11, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: _hasVoted
+                                ? null
+                                : () {
+                                    setState(() {
+                                      _yesVotes++;
+                                      _hasVoted = true;
+                                    });
+                                  },
+                            icon: const Icon(Icons.thumb_up, size: 14),
+                            label: const Text('APPROVE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: _hasVoted
+                                ? null
+                                : () {
+                                    setState(() {
+                                      _noVotes++;
+                                      _hasVoted = true;
+                                    });
+                                  },
+                            icon: const Icon(Icons.thumb_down, size: 14),
+                            label: const Text('REJECT', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(height: 32),
+
+                    const Text('Discussion Thread', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                    const SizedBox(height: 8),
+                    ..._comments.map((comment) => Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: Text(
+                            comment,
+                            style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                          ),
+                        )),
+                    const SizedBox(height: 12),
+
+                    // Add comment form
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _commentController,
+                            style: const TextStyle(fontSize: 12),
+                            decoration: const InputDecoration(
+                              hintText: 'Ask group or suggest items...',
+                              isDense: true,
+                              contentPadding: EdgeInsets.all(10),
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: const Icon(Icons.send, color: Colors.blueAccent),
+                          onPressed: () {
+                            if (_commentController.text.isNotEmpty) {
+                              setState(() {
+                                _comments.add('You: ${_commentController.text}');
+                                _commentController.clear();
+                              });
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
 
               const SizedBox(height: 24),
               const Divider(),

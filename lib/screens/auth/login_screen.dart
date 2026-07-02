@@ -292,10 +292,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 12),
                 if (!_isPhoneLogin)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           TextButton(
                             onPressed: () {
