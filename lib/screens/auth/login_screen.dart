@@ -162,12 +162,22 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Hero(
                     tag: 'logo',
                     child: Container(
-                      padding: const EdgeInsets.all(20),
+                      width: 104,
+                      height: 104,
                       decoration: BoxDecoration(
-                        color: AppColors.brandRed.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                        image: const DecorationImage(
+                          image: AssetImage('assets/images/logo.jpg'),
+                          fit: BoxFit.cover,
+                        ),
                       ),
-                      child: const Icon(Icons.shopping_cart_checkout, size: 64, color: AppColors.brandRed),
                     ),
                   ),
                 ),
