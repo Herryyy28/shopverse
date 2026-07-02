@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:imageview360/imageview360.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shopverse/utils/app_colors.dart';
 
 class View360Dialog extends StatefulWidget {
@@ -13,6 +13,8 @@ class View360Dialog extends StatefulWidget {
 
 class _View360DialogState extends State<View360Dialog> {
   bool _imagePrecached = false;
+  int _currentFrame = 0;
+  double _dragProgress = 0.0;
 
   @override
   void initState() {
@@ -33,8 +35,10 @@ class _View360DialogState extends State<View360Dialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Dialog(
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? const Color(0xFF1E1E2F) : Colors.white,
       insetPadding: const EdgeInsets.all(20),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
@@ -56,17 +60,53 @@ class _View360DialogState extends State<View360Dialog> {
               ],
             ),
             const SizedBox(height: 20),
-            if (_imagePrecached)
-              ImageView360(
-                key: UniqueKey(),
-                imageList: widget.imageList.map((url) => NetworkImage(url)).toList(),
-                autoRotate: true,
-                rotationCount: 2,
-                swipeSensitivity: 2,
-                allowSwipeToRotate: true,
-                onImageIndexChanged: (currentImageIndex) {},
-              )
-            else
+            if (_imagePrecached && widget.imageList.isNotEmpty) ...[
+              // Gesture rotation detector
+              GestureDetector(
+                onHorizontalDragUpdate: (details) {
+                  setState(() {
+                    _dragProgress += details.primaryDelta! / 10;
+                    if (_dragProgress.abs() >= 1.0) {
+                      final change = _dragProgress.floor();
+                      _currentFrame = (_currentFrame - change) % widget.imageList.length;
+                      if (_currentFrame < 0) {
+                        _currentFrame += widget.imageList.length;
+                      }
+                      _dragProgress -= change;
+                    }
+                  });
+                },
+                child: Container(
+                  height: 220,
+                  width: double.infinity,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.black12 : Colors.grey[50],
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: CachedNetworkImage(
+                    imageUrl: widget.imageList[_currentFrame],
+                    fit: BoxFit.contain,
+                    placeholder: (c, u) => const Center(child: CircularProgressIndicator(color: AppColors.brandRed)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              
+              // Scrubbing Slider bar
+              Slider(
+                value: _currentFrame.toDouble(),
+                min: 0,
+                max: (widget.imageList.length - 1).toDouble(),
+                activeColor: AppColors.primary,
+                inactiveColor: isDark ? Colors.white12 : Colors.black12,
+                onChanged: (val) {
+                  setState(() {
+                    _currentFrame = val.toInt();
+                  });
+                },
+              ),
+            ] else
               const Center(
                 child: Column(
                   children: [
@@ -76,9 +116,9 @@ class _View360DialogState extends State<View360Dialog> {
                   ],
                 ),
               ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
             const Text(
-              'Swipe to rotate manually',
+              'Drag image or use slider to rotate manually',
               style: TextStyle(color: AppColors.textMuted, fontSize: 12),
             ),
           ],

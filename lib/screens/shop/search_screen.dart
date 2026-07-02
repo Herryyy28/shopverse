@@ -11,6 +11,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shopverse/utils/app_colors.dart';
 import 'package:shopverse/widgets/custom_button.dart';
+import 'package:shopverse/widgets/voice_visualizer_dialog.dart';
 
 class SearchScreen extends StatefulWidget {
   final String? initialQuery;
@@ -60,21 +61,16 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Future<void> _startListening() async {
-    bool available = await _speech.initialize();
-    if (available) {
-      setState(() => _isListening = true);
-      _speech.listen(
-        onResult: (result) {
-          setState(() {
-            _searchController.text = result.recognizedWords;
-            _onSearchChanged(result.recognizedWords);
-            if (result.finalResult) {
-              _isListening = false;
-              _saveSearchHistory(result.recognizedWords);
-            }
-          });
-        },
-      );
+    final query = await showDialog<String>(
+      context: context,
+      builder: (context) => const VoiceVisualizerDialog(),
+    );
+    if (query != null && query.isNotEmpty) {
+      setState(() {
+        _searchController.text = query;
+        _onSearchChanged(query);
+        _saveSearchHistory(query);
+      });
     }
   }
 
@@ -399,10 +395,13 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildRecentItemsGrid() {
+    final width = MediaQuery.of(context).size.width;
+    final cols = width > 900 ? 5 : (width > 600 ? 3 : 2);
+
     return GridView.builder(
       padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: cols,
         childAspectRatio: 0.65,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,

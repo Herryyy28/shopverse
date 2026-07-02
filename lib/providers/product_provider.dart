@@ -66,7 +66,7 @@ class ProductProvider with ChangeNotifier {
         description: 'Fresh toned milk',
         price: 27.0,
         oldPrice: 30.0,
-        imageUrl: 'https://www.amul.com/files/products/Taaza_1L_Front.jpg',
+        imageUrl: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=800',
         category: 'Dairy',
         unit: '500 ml',
         rating: 4.8,

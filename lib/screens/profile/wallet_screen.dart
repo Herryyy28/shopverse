@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:shopverse/providers/wallet_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:shopverse/utils/app_colors.dart';
+import 'package:shopverse/widgets/wallet_recharge_slider.dart';
 
 class WalletScreen extends StatelessWidget {
   const WalletScreen({super.key});
@@ -186,26 +187,34 @@ class WalletScreen extends StatelessWidget {
   }
 
   void _showAddMoneyDialog(BuildContext context, WalletProvider wallet) {
-    final controller = TextEditingController();
+    double selectedAmount = 500.0;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Add Money'),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            prefixText: '₹ ',
-            hintText: 'Enter amount',
-          ),
+        title: const Text('Add Money to Wallet', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: StatefulBuilder(
+          builder: (context, setState) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 12),
+                WalletRechargeSlider(
+                  initialValue: selectedAmount,
+                  onChanged: (val) {
+                    selectedAmount = val;
+                  },
+                ),
+                const SizedBox(height: 12),
+              ],
+            );
+          }
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('CANCEL')),
           ElevatedButton(
             onPressed: () {
-              final amount = double.tryParse(controller.text);
-              if (amount != null && amount > 0) {
-                wallet.addMoney(amount);
+              if (selectedAmount > 0) {
+                wallet.addMoney(selectedAmount);
                 Navigator.pop(context);
               }
             },

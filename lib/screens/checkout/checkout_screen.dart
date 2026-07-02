@@ -8,6 +8,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:shopverse/providers/order_provider.dart';
 import 'package:shopverse/screens/checkout/tracking_screen.dart';
+import 'package:shopverse/screens/checkout/location_picker_screen.dart';
+import 'package:shopverse/screens/checkout/receipt_screen.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -155,8 +157,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             ),
                             const Spacer(),
                             GestureDetector(
-                              onTap: () {
-                                // Navigate to address selection
+                              onTap: () async {
+                                final selectedLoc = await Navigator.push<String>(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const LocationPickerScreen()),
+                                );
+                                if (selectedLoc != null) {
+                                  final parts = selectedLoc.split(',');
+                                  final line = parts.isNotEmpty ? parts[0] : selectedLoc;
+                                  final area = parts.length > 1 ? parts.sublist(1).join(',').trim() : '';
+                                  locationProv.addAddress('Custom Pin', line, area);
+                                }
                               },
                               child: const Text(
                                 'Change',
@@ -734,6 +745,32 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   elevation: 0,
                 ),
                 child: const Text('Track Order', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: OutlinedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ReceiptScreen(
+                        orderId: orderId,
+                        totalAmount: total,
+                      ),
+                    ),
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Color(0xFF5B61F4)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+                child: const Text('View Invoice', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF5B61F4))),
               ),
             ),
           ],

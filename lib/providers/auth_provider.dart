@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:shopverse/models/user_model.dart';
+import 'dart:io' show Platform;
 
 import 'package:local_auth/local_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -78,6 +79,10 @@ class AuthProvider with ChangeNotifier {
         return null;
       }
 
+      if (Firebase.apps.isEmpty) {
+        return "Firebase is not initialized. Please click 'Demo User' or 'Demo Admin' below to log in.";
+      }
+
       await _auth.signInWithEmailAndPassword(email: email, password: password);
       return null;
     } on FirebaseAuthException catch (e) {
@@ -89,6 +94,9 @@ class AuthProvider with ChangeNotifier {
 
   Future<String?> signInWithPhone(String phone) async {
     try {
+      if (Firebase.apps.isEmpty) {
+        return "Phone verification requires Firebase. Please log in using a Demo account.";
+      }
       await _auth.verifyPhoneNumber(
         phoneNumber: phone,
         verificationCompleted: (PhoneAuthCredential credential) async {
@@ -147,6 +155,9 @@ class AuthProvider with ChangeNotifier {
 
   Future<String?> signInWithGoogle() async {
     try {
+      if (Firebase.apps.isEmpty) {
+        return "Google login requires Firebase. Please log in using a Demo account.";
+      }
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return "Google Sign-In canceled";
 
@@ -200,9 +211,9 @@ class AuthProvider with ChangeNotifier {
 
       return await _localAuth.authenticate(
         localizedReason: 'Please authenticate to log in to ShopVerse',
-        options: const AuthenticationOptions(
+        options: AuthenticationOptions(
           stickyAuth: true,
-          biometricOnly: true,
+          biometricOnly: !Platform.isWindows && !Platform.isMacOS,
         ),
       );
     } catch (e) {
@@ -213,6 +224,9 @@ class AuthProvider with ChangeNotifier {
 
   Future<String?> signUp(String email, String password, String name) async {
     try {
+      if (Firebase.apps.isEmpty) {
+        return "Sign up requires Firebase. Please log in using a Demo account.";
+      }
       final userCredential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
       final firebaseUser = userCredential.user;
 

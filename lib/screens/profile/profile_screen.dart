@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shopverse/providers/auth_provider.dart';
+import 'package:shopverse/providers/theme_provider.dart';
 import 'package:shopverse/screens/profile/orders_screen.dart';
 import 'package:shopverse/screens/profile/notifications_screen.dart';
 import 'package:shopverse/screens/profile/edit_profile_screen.dart';
@@ -9,6 +10,15 @@ import 'package:shopverse/screens/admin/admin_dashboard.dart';
 import 'package:shopverse/screens/core/chat_screen.dart';
 import 'package:shopverse/utils/app_colors.dart';
 import 'package:shopverse/widgets/custom_button.dart';
+import 'package:shopverse/widgets/scratch_card_dialog.dart';
+import 'package:shopverse/screens/shop/mystery_box_screen.dart';
+import 'package:shopverse/screens/shop/video_feed_screen.dart';
+import 'package:shopverse/screens/shop/shared_cart_screen.dart';
+import 'package:shopverse/screens/shop/virtual_tryon_screen.dart';
+import 'package:shopverse/screens/shop/spatial_room_screen.dart';
+import 'package:shopverse/screens/shop/recipe_builder_screen.dart';
+import 'package:shopverse/screens/profile/login_streak_screen.dart';
+import 'package:shopverse/screens/profile/referral_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -151,6 +161,8 @@ class ProfileScreen extends StatelessWidget {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const EditProfileScreen()));
                   }),
                   const Divider(height: 1, indent: 56),
+                  _buildThemeToggleItem(context),
+                  const Divider(height: 1, indent: 56),
                   _buildMenuItem(Icons.notifications_none_outlined, 'Notifications', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen()))),
                   const Divider(height: 1, indent: 56),
                   _buildMenuItem(Icons.help_outline, 'Help & Support', () {
@@ -166,6 +178,67 @@ class ProfileScreen extends StatelessWidget {
                   }),
                   const Divider(height: 1, indent: 56),
                   _buildMenuItem(Icons.info_outline, 'About ShopVerse', () {}),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+            // Interactive Corner Section
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: const [
+                  Icon(Icons.auto_awesome, color: Colors.purpleAccent, size: 20),
+                  SizedBox(width: 8),
+                  Text('Interactive Zone', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceColor,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10)],
+              ),
+              child: Column(
+                children: [
+                  _buildMenuItem(Icons.card_giftcard, 'Lucky Scratch Coupon', () {
+                    showDialog(context: context, builder: (_) => const ScratchCardDialog());
+                  }),
+                  const Divider(height: 1, indent: 56),
+                  _buildMenuItem(Icons.markunread_mailbox_outlined, 'Mystery Reward Box', () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const MysteryBoxScreen()));
+                  }),
+                  const Divider(height: 1, indent: 56),
+                  _buildMenuItem(Icons.video_library_outlined, 'Video Commerce Feed', () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const VideoFeedScreen()));
+                  }),
+                  const Divider(height: 1, indent: 56),
+                  _buildMenuItem(Icons.group_work_outlined, 'Group Cart Splitter', () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const SharedCartScreen()));
+                  }),
+                  const Divider(height: 1, indent: 56),
+                  _buildMenuItem(Icons.face_retouching_natural, 'AI Virtual Fit Try-On', () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const VirtualTryonScreen()));
+                  }),
+                  const Divider(height: 1, indent: 56),
+                  _buildMenuItem(Icons.door_sliding_outlined, 'Spatial Room AR Furnish', () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const SpatialRoomScreen()));
+                  }),
+                  const Divider(height: 1, indent: 56),
+                  _buildMenuItem(Icons.soup_kitchen_outlined, 'Recipe Ingredients Cart', () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const RecipeBuilderScreen()));
+                  }),
+                  const Divider(height: 1, indent: 56),
+                  _buildMenuItem(Icons.calendar_month_outlined, 'Daily Check-in Streak', () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginStreakScreen()));
+                  }),
+                  const Divider(height: 1, indent: 56),
+                  _buildMenuItem(Icons.share_outlined, 'Referral Rewards Center', () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ReferralScreen()));
+                  }),
                 ],
               ),
             ),
@@ -316,6 +389,31 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildThemeToggleItem(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(
+          themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+          color: AppColors.primary,
+          size: 20,
+        ),
+      ),
+      title: const Text('Dark Mode', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
+      trailing: Switch(
+        value: themeProvider.isDarkMode,
+        activeThumbColor: AppColors.primary,
+        onChanged: (value) => themeProvider.toggleTheme(value),
       ),
     );
   }

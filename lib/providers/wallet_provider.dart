@@ -18,6 +18,9 @@ class WalletTransaction {
 
 class WalletProvider with ChangeNotifier {
   double _balance = 1250.75;
+  int _coinsBalance = 150;
+  bool _hasSpunToday = false;
+
   final List<WalletTransaction> _transactions = [
     WalletTransaction(
       id: 't1',
@@ -43,7 +46,31 @@ class WalletProvider with ChangeNotifier {
   ];
 
   double get balance => _balance;
+  int get coinsBalance => _coinsBalance;
+  bool get hasSpunToday => _hasSpunToday;
   List<WalletTransaction> get transactions => [..._transactions];
+
+  void addCoins(int amount, String title) {
+    _coinsBalance += amount;
+    notifyListeners();
+  }
+
+  void redeemCoins(int amount, String orderId) {
+    if (_coinsBalance >= amount) {
+      _coinsBalance -= amount;
+      notifyListeners();
+    }
+  }
+
+  void spinWheel(int coinsWon) {
+    _hasSpunToday = true;
+    addCoins(coinsWon, 'Daily Spin Reward');
+  }
+
+  void resetDailySpin() {
+    _hasSpunToday = false;
+    notifyListeners();
+  }
 
   void addMoney(double amount) {
     _balance += amount;

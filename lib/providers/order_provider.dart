@@ -123,7 +123,7 @@ class OrderProvider with ChangeNotifier {
       amount: total,
       products: cartItems,
       dateTime: DateTime.now(),
-      userId: _auth.currentUser?.uid ?? 'guest',
+      userId: Firebase.apps.isNotEmpty ? _auth.currentUser?.uid ?? 'guest' : 'guest',
     );
 
     _orders.insert(0, newOrder);

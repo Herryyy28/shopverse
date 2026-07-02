@@ -1,10 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:shopverse/models/chat_message.dart';
 
 class ChatService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  FirebaseFirestore get _firestore => FirebaseFirestore.instance;
+  bool get _isFirebaseReady => Firebase.apps.isNotEmpty;
 
   Stream<List<ChatMessage>> getMessages(String userId, String adminId) {
+    if (!_isFirebaseReady) return Stream.value([]);
     String chatId = getChatId(userId, adminId);
     return _firestore
         .collection('chats')
@@ -18,6 +21,7 @@ class ChatService {
   }
 
   Future<void> sendMessage(ChatMessage message) async {
+    if (!_isFirebaseReady) return;
     String chatId = getChatId(message.senderId, message.receiverId);
     
     // Add message to subcollection
@@ -41,6 +45,7 @@ class ChatService {
   }
 
   Stream<List<Map<String, dynamic>>> getAdminChatList() {
+    if (!_isFirebaseReady) return Stream.value([]);
     return _firestore
         .collection('chats')
         .orderBy('lastTimestamp', descending: true)

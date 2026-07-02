@@ -5,12 +5,16 @@ import 'package:shopverse/models/product.dart';
 import 'package:shopverse/providers/cart_provider.dart';
 import 'package:shopverse/providers/wishlist_provider.dart';
 import 'package:shopverse/providers/recent_provider.dart';
+import 'package:shopverse/providers/compare_provider.dart';
+import 'package:shopverse/screens/shop/comparison_screen.dart';
 import 'package:shopverse/services/ai_service.dart';
 import 'package:shopverse/utils/app_colors.dart';
 import 'package:shopverse/widgets/custom_button.dart';
 import 'package:shopverse/widgets/video_preview_dialog.dart';
 import 'package:shopverse/widgets/view_360_dialog.dart';
 import 'package:shopverse/widgets/ar_preview_dialog.dart';
+import 'package:shopverse/widgets/price_tracker_widget.dart';
+import 'package:shopverse/widgets/subscription_scheduler_dialog.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   final Product product;
@@ -27,10 +31,20 @@ class ProductDetailsScreen extends StatefulWidget {
 class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   int _currentImageIndex = 0;
   final Map<String, String> _selectedOptions = {};
+  late PageController _pageController;
+  
+  String? get _currentARModelUrl {
+    final selectedColor = _selectedOptions['Color'];
+    if (selectedColor == 'Space Black') {
+      return 'https://modelviewer.dev/shared-assets/models/Astronaut.glb';
+    }
+    return widget.product.arModelUrl;
+  }
 
   @override
   void initState() {
     super.initState();
+    _pageController = PageController();
     // Initialize default variants
     for (var variant in widget.product.variants) {
       if (variant.options.isNotEmpty) {
@@ -40,6 +54,30 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     // Add to recently viewed
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<RecentProvider>(context, listen: false).addProduct(widget.product);
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _onVariantSelected(String name, String option) {
+    setState(() {
+      _selectedOptions[name] = option;
+      if (name.toLowerCase() == 'color') {
+        final variant = widget.product.variants.firstWhere((v) => v.name.toLowerCase() == 'color');
+        final index = variant.options.indexOf(option);
+        if (index >= 0 && index < (widget.product.images.length + 1)) {
+          _currentImageIndex = index;
+          _pageController.animateToPage(
+            index,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      }
     });
   }
 
@@ -108,6 +146,40 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         ),
         actions: [
           IconButton(icon: const Icon(Icons.mic, color: AppColors.textPrimary), onPressed: () {}),
+          Consumer<CompareProvider>(
+            builder: (context, compareProv, _) {
+              final isComparing = compareProv.isComparing(product.id);
+              return IconButton(
+                icon: Icon(
+                  isComparing ? Icons.compare : Icons.compare_arrows,
+                  color: isComparing ? AppColors.brandRed : AppColors.textPrimary,
+                ),
+                onPressed: () {
+                  final error = compareProv.addProduct(product);
+                  if (error != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(error), backgroundColor: Colors.redAccent),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(isComparing ? 'Removed from comparison' : 'Added to comparison'),
+                        backgroundColor: Colors.green,
+                        action: SnackBarAction(
+                          label: 'VIEW',
+                          textColor: Colors.white,
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const ComparisonScreen()),
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+                },
+              );
+            },
+          ),
           Consumer<WishlistProvider>(
             builder: (context, wishlist, _) => IconButton(
               icon: Icon(
@@ -131,6 +203,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   height: 400,
                   width: double.infinity,
                   child: PageView.builder(
+                    controller: _pageController,
                     itemCount: allImages.length,
                     onPageChanged: (index) => setState(() => _currentImageIndex = index),
                     itemBuilder: (context, index) {
@@ -194,15 +267,15 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                             builder: (_) => View360Dialog(imageList: mock360Images),
                           );
                         }),
-                      if (product.arModelUrl != null)
+                      if (_currentARModelUrl != null)
                         const SizedBox(height: 12),
-                      if (product.arModelUrl != null)
+                      if (_currentARModelUrl != null)
                         _buildMediaCircle(Icons.view_in_ar, 'AR', () {
                           showDialog(
                             context: context,
                             builder: (_) => ARPreviewDialog(
-                              modelUrl: product.arModelUrl!,
-                              productName: product.name,
+                              modelUrl: _currentARModelUrl!,
+                              productName: '${widget.product.name} (${_selectedOptions['Color'] ?? ''})',
                             ),
                           );
                         }),
@@ -411,6 +484,52 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   _buildAIAssistantSection(),
 
                   const SizedBox(height: 32),
+                  PriceTrackerWidget(currentPrice: product.price, oldPrice: product.oldPrice),
+                  const SizedBox(height: 24),
+                  
+                  // Subscription scheduling trigger
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.repeat, color: Colors.amber),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('ShopVerse Repeat', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                              Text('Schedule recurring automatic deliveries', style: TextStyle(color: AppColors.textSecondary, fontSize: 11)),
+                            ],
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (_) => SubscriptionSchedulerDialog(
+                                productName: product.name,
+                                price: product.price,
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.amber,
+                            foregroundColor: Colors.black87,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          child: const Text('SUBSCRIBE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 32),
                   const Text('Technical Specifications', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w900)),
                   const SizedBox(height: 12),
                   _buildSpecificationsTable(product.specifications),
@@ -593,7 +712,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             children: variant.options.map((option) {
               final isSelected = _selectedOptions[variant.name] == option;
               return GestureDetector(
-                onTap: () => setState(() => _selectedOptions[variant.name] = option),
+                onTap: () => _onVariantSelected(variant.name, option),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(

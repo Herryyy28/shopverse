@@ -7,6 +7,7 @@ import 'package:shopverse/screens/profile/profile_screen.dart';
 import 'package:shopverse/providers/cart_provider.dart';
 import 'package:shopverse/screens/checkout/cart_screen.dart';
 import 'package:shopverse/utils/app_colors.dart';
+import 'package:shopverse/widgets/cart_drawer.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -28,6 +29,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      endDrawer: const CartDrawer(),
       body: Stack(
         children: [
           AnimatedSwitcher(
@@ -144,7 +146,7 @@ class _MainScreenState extends State<MainScreen> {
                 ? const SizedBox.shrink(key: ValueKey('empty_cart'))
                 : GestureDetector(
                     key: const ValueKey('cart_strip'),
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen())),
+                    onTap: () => Scaffold.of(context).openEndDrawer(),
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                       decoration: BoxDecoration(

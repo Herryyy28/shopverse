@@ -62,27 +62,59 @@ class _TrackingScreenState extends State<TrackingScreen> {
                 child: Container(
                   width: double.infinity,
                   color: Colors.grey[100],
-                  child: Stack(
-                    children: [
-                      Opacity(
-                        opacity: 0.4,
-                        child: Image.network(
-                          'https://miro.medium.com/v2/resize:fit:1400/1*qV92Z4S9uY-59uO1I4iCqg.png',
-                          width: double.infinity,
-                          height: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      if (_currentStep == 0) _buildFindingPartnerOverlay(),
-                      if (_currentStep > 0)
-                        AnimatedPositioned(
-                          duration: const Duration(seconds: 3),
-                          curve: Curves.easeInOut,
-                          top: _currentStep == 1 ? 450 : (_currentStep == 2 ? 300 : (_currentStep == 3 ? 150 : 80)),
-                          left: _currentStep == 1 ? 40 : (_currentStep == 2 ? 180 : (_currentStep == 3 ? 100 : 220)),
-                          child: _currentStep < 4 ? _buildRiderMarker() : _buildDeliveryMarker(),
-                        ),
-                    ],
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final w = constraints.maxWidth;
+                      final h = constraints.maxHeight;
+
+                      // Map positions dynamically
+                      double markerTop = h - 100;
+                      double markerLeft = 20;
+
+                      if (_currentStep == 1) {
+                        markerTop = h * 0.8;
+                        markerLeft = w * 0.15;
+                      } else if (_currentStep == 2) {
+                        markerTop = h * 0.55;
+                        markerLeft = w * 0.55;
+                      } else if (_currentStep == 3) {
+                        markerTop = h * 0.35;
+                        markerLeft = w * 0.28;
+                      } else if (_currentStep == 4) {
+                        markerTop = h * 0.15;
+                        markerLeft = w * 0.65;
+                      }
+
+                      return Stack(
+                        children: [
+                          Opacity(
+                            opacity: 0.4,
+                            child: Image.network(
+                              'https://miro.medium.com/v2/resize:fit:1400/1*qV92Z4S9uY-59uO1I4iCqg.png',
+                              width: double.infinity,
+                              height: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          // Route path overlay
+                          if (_currentStep > 0)
+                            Positioned.fill(
+                              child: CustomPaint(
+                                painter: _RoutePainter(currentStep: _currentStep),
+                              ),
+                            ),
+                          if (_currentStep == 0) _buildFindingPartnerOverlay(),
+                          if (_currentStep > 0)
+                            AnimatedPositioned(
+                              duration: const Duration(seconds: 3),
+                              curve: Curves.easeInOut,
+                              top: markerTop - 35,
+                              left: markerLeft - 25,
+                              child: _currentStep < 4 ? _buildRiderMarker() : _buildDeliveryMarker(),
+                            ),
+                        ],
+                      );
+                    }
                   ),
                 ),
               ),
@@ -335,4 +367,98 @@ class _TrackingScreenState extends State<TrackingScreen> {
       ),
     );
   }
+}
+
+class _RoutePainter extends CustomPainter {
+  final int currentStep;
+
+  _RoutePainter({required this.currentStep});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final p1 = Offset(size.width * 0.15, size.height * 0.8);
+    final p2 = Offset(size.width * 0.55, size.height * 0.55);
+    final p3 = Offset(size.width * 0.28, size.height * 0.35);
+    final p4 = Offset(size.width * 0.65, size.height * 0.15);
+
+    final path = Path()
+      ..moveTo(p1.dx, p1.dy)
+      ..cubicTo(
+        (p1.dx + p2.dx) / 2, p1.dy,
+        p2.dx, (p1.dy + p2.dy) / 2,
+        p2.dx, p2.dy,
+      )
+      ..cubicTo(
+        p2.dx, (p2.dy + p3.dy) / 2,
+        p3.dx, (p2.dy + p3.dy) / 2,
+        p3.dx, p3.dy,
+      )
+      ..cubicTo(
+        p3.dx, (p3.dy + p4.dy) / 2,
+        (p3.dx + p4.dx) / 2, p4.dy,
+        p4.dx, p4.dy,
+      );
+
+    final backgroundPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.1)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 6.0
+      ..strokeCap = StrokeCap.round;
+
+    final pathPaint = Paint()
+      ..color = AppColors.brandRed
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 6.0
+      ..strokeCap = StrokeCap.round;
+
+    // Draw full road path background
+    canvas.drawPath(path, backgroundPaint);
+
+    // Draw active glowing path depending on the current step
+    final activePath = Path()..moveTo(p1.dx, p1.dy);
+    if (currentStep >= 1) {
+      activePath.cubicTo(
+        (p1.dx + p2.dx) / 2, p1.dy,
+        p2.dx, (p1.dy + p2.dy) / 2,
+        p2.dx, p2.dy,
+      );
+    }
+    if (currentStep >= 2) {
+      activePath.cubicTo(
+        p2.dx, (p2.dy + p3.dy) / 2,
+        p3.dx, (p2.dy + p3.dy) / 2,
+        p3.dx, p3.dy,
+      );
+    }
+    if (currentStep >= 3) {
+      activePath.cubicTo(
+        p3.dx, (p3.dy + p4.dy) / 2,
+        (p3.dx + p4.dx) / 2, p4.dy,
+        p4.dx, p4.dy,
+      );
+    }
+
+    canvas.drawPath(activePath, pathPaint);
+
+    // Draw nodes/hubs
+    final nodePaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    
+    final borderPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.0;
+
+    final List<Offset> points = [p1, p2, p3, p4];
+    for (int i = 0; i < points.length; i++) {
+      final isCompleted = currentStep >= i;
+      borderPaint.color = isCompleted ? Colors.green : Colors.grey;
+      canvas.drawCircle(points[i], 8.0, nodePaint);
+      canvas.drawCircle(points[i], 8.0, borderPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _RoutePainter oldDelegate) =>
+      oldDelegate.currentStep != currentStep;
 }

@@ -8,6 +8,7 @@ import 'package:shopverse/providers/cart_provider.dart';
 import 'package:shopverse/providers/wishlist_provider.dart';
 import 'package:shopverse/providers/location_provider.dart';
 import 'package:shopverse/providers/recent_provider.dart';
+import 'package:shopverse/providers/wallet_provider.dart';
 import 'package:shopverse/screens/shop/search_screen.dart';
 import 'package:shopverse/screens/shop/product_details_screen.dart';
 import 'package:shopverse/services/ai_service.dart';
@@ -16,6 +17,9 @@ import 'package:shopverse/providers/product_provider.dart';
 import 'package:shopverse/utils/app_colors.dart';
 import 'package:shopverse/widgets/custom_button.dart';
 import 'package:shopverse/widgets/custom_text_field.dart';
+import 'package:shopverse/widgets/spin_wheel_dialog.dart';
+import 'package:shopverse/widgets/delivery_eta_banner.dart';
+import 'package:shopverse/widgets/flash_deal_radar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -100,6 +104,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 SliverToBoxAdapter(
                   child: Column(
                     children: [
+                      _buildDailyCoinsAndSpinBanner(context),
+                      const DeliveryEtaBanner(),
+                      const FlashDealRadar(),
                       _buildPromotionBanner(),
                       _buildCategoryGrid(),
                       _buildFlashSaleTimer(context),
@@ -635,6 +642,72 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildDailyCoinsAndSpinBanner(BuildContext context) {
+    final wallet = Provider.of<WalletProvider>(context);
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF2E3192), Color(0xFF1BFFFF)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.cyan.withValues(alpha: 0.15),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.stars, color: Colors.amber, size: 28),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'ShopVerse Coins: ${wallet.coinsBalance}',
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 15),
+                ),
+                Text(
+                  wallet.hasSpunToday ? 'You spun today! Come back tomorrow.' : 'Spin the Daily Wheel to win coins!',
+                  style: const TextStyle(color: Colors.white70, fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: wallet.hasSpunToday
+                ? null
+                : () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => const SpinWheelDialog(),
+                    );
+                  },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.amber,
+              foregroundColor: Colors.black87,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: Text(
+              wallet.hasSpunToday ? 'SPUN' : 'SPIN',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPromotionBanner() {
     return Container(
       height: 160,
@@ -656,8 +729,8 @@ class _HomeScreenState extends State<HomeScreen> {
         color: color,
         borderRadius: BorderRadius.circular(20),
         image: const DecorationImage(
-          image: NetworkImage('https://www.transparentpng.com/download/food/vegetables-png-images-free-download-23.png'),
-          fit: BoxFit.fitHeight,
+          image: NetworkImage('https://images.unsplash.com/photo-1542838132-92c53300491e?w=800'),
+          fit: BoxFit.cover,
           alignment: Alignment.centerRight,
           opacity: 0.3,
         ),
@@ -691,16 +764,19 @@ class _HomeScreenState extends State<HomeScreen> {
       {'n': 'More', 'i': Icons.grid_view, 'c': const Color(0xFF6B7280)},
     ];
 
+    final width = MediaQuery.of(context).size.width;
+    final cols = width > 900 ? 8 : (width > 600 ? 6 : 4);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 4,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: cols,
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
-          childAspectRatio: 0.85,
+          childAspectRatio: width > 600 ? 1.1 : 0.85,
         ),
         itemCount: categories.length,
         itemBuilder: (context, i) => GestureDetector(
@@ -749,14 +825,17 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildDailyDealsGrid(BuildContext context, List<Product> deals) {
+    final width = MediaQuery.of(context).size.width;
+    final cols = width > 900 ? 4 : (width > 600 ? 3 : 2);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 1.5,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: cols,
+          childAspectRatio: width > 900 ? 1.8 : 1.5,
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
         ),
@@ -821,16 +900,19 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildVerticalGrid(BuildContext context, List<Product> products) {
+    final width = MediaQuery.of(context).size.width;
+    final cols = width > 900 ? 5 : (width > 600 ? 3 : 2);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: cols,
           childAspectRatio: 0.65,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
         ),
         itemCount: products.length,
         itemBuilder: (context, i) => _ProductCard(product: products[i]),

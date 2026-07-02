@@ -14,6 +14,8 @@ import 'package:shopverse/providers/product_provider.dart';
 import 'package:shopverse/providers/category_provider.dart';
 import 'package:shopverse/providers/user_provider.dart';
 import 'package:shopverse/providers/notification_provider.dart';
+import 'package:shopverse/providers/theme_provider.dart';
+import 'package:shopverse/providers/compare_provider.dart';
 import 'package:shopverse/services/firebase_service.dart';
 import 'package:shopverse/utils/app_theme.dart';
 
@@ -28,6 +30,8 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => CompareProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
         ChangeNotifierProvider(create: (_) => WishlistProvider()),
@@ -51,15 +55,21 @@ class ShopVerseApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'ShopVerse',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      home: Consumer<AuthProvider>(
-        builder: (context, auth, _) {
-          return auth.isAuthenticated ? const MainScreen() : const LoginScreen();
-        },
-      ),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        return MaterialApp(
+          title: 'ShopVerse',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeProvider.themeMode,
+          home: Consumer<AuthProvider>(
+            builder: (context, auth, _) {
+              return auth.isAuthenticated ? const MainScreen() : const LoginScreen();
+            },
+          ),
+        );
+      },
     );
   }
 }
