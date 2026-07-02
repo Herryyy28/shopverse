@@ -33,12 +33,14 @@ class _LoginScreenState extends State<LoginScreen> {
   void _login() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
-      
+
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       String? error;
-      
+
       if (_isPhoneLogin) {
-        error = await authProvider.signInWithPhone(_phoneController.text.trim());
+        error = await authProvider.signInWithPhone(
+          _phoneController.text.trim(),
+        );
         if (mounted && error == null) {
           _showOtpDialog();
         }
@@ -81,11 +83,17 @@ class _LoginScreenState extends State<LoginScreen> {
       // In a real app, you'd check if a user was previously logged in on this device
       // For this demo, we'll simulate a login if biometrics succeed
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Biometric Authentication Successful'), backgroundColor: Colors.green),
+        const SnackBar(
+          content: Text('Biometric Authentication Successful'),
+          backgroundColor: Colors.green,
+        ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Biometric Authentication Failed'), backgroundColor: AppColors.brandRed),
+        const SnackBar(
+          content: Text('Biometric Authentication Failed'),
+          backgroundColor: AppColors.brandRed,
+        ),
       );
     }
   }
@@ -95,26 +103,46 @@ class _LoginScreenState extends State<LoginScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (context) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 24, right: 24, top: 24),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+          left: 24,
+          right: 24,
+          top: 24,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Verify Phone', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text(
+              'Verify Phone',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
-            Text('Enter the 6-digit code sent to ${_phoneController.text}', style: TextStyle(color: Colors.grey[600])),
+            Text(
+              'Enter the 6-digit code sent to ${_phoneController.text}',
+              style: TextStyle(color: Colors.grey[600]),
+            ),
             const SizedBox(height: 24),
             TextField(
               controller: otpController,
               keyboardType: TextInputType.number,
               maxLength: 6,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: 8),
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 8,
+              ),
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Colors.grey[100],
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
                 counterText: "",
               ),
             ),
@@ -124,18 +152,37 @@ class _LoginScreenState extends State<LoginScreen> {
               height: 56,
               child: ElevatedButton(
                 onPressed: () async {
-                  final authProvider = Provider.of<AuthProvider>(context, listen: false);
-                  final error = await authProvider.verifyOtp(_phoneController.text, otpController.text);
+                  final authProvider = Provider.of<AuthProvider>(
+                    context,
+                    listen: false,
+                  );
+                  final error = await authProvider.verifyOtp(
+                    _phoneController.text,
+                    otpController.text,
+                  );
                   if (mounted) {
                     if (error == null) {
                       Navigator.pop(context);
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text(error)));
                     }
                   }
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: AppColors.brandRed, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
-                child: const Text('VERIFY', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.brandRed,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: const Text(
+                  'VERIFY',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 24),
@@ -182,16 +229,31 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Text('ShopVerse', textAlign: TextAlign.center, 
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900, color: AppColors.brandRed, letterSpacing: -1)),
+                Text(
+                  'ShopVerse',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.brandRed,
+                    letterSpacing: -1,
+                  ),
+                ),
                 const SizedBox(height: 32),
-                
+
                 // Toggle between Email and Phone
                 Row(
                   children: [
-                    _buildToggleButton('Email', !_isPhoneLogin, () => setState(() => _isPhoneLogin = false)),
+                    _buildToggleButton(
+                      'Email',
+                      !_isPhoneLogin,
+                      () => setState(() => _isPhoneLogin = false),
+                    ),
                     const SizedBox(width: 12),
-                    _buildToggleButton('Phone', _isPhoneLogin, () => setState(() => _isPhoneLogin = true)),
+                    _buildToggleButton(
+                      'Phone',
+                      _isPhoneLogin,
+                      () => setState(() => _isPhoneLogin = true),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -201,7 +263,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: _emailController,
                     label: 'Email',
                     prefixIcon: Icons.email_outlined,
-                    validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                    validator: (value) =>
+                        value == null || value.isEmpty ? 'Required' : null,
                   ),
                   const SizedBox(height: 20),
                   CustomTextField(
@@ -210,8 +273,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     prefixIcon: Icons.lock_outline,
                     isPassword: true,
                     isPasswordVisible: _isPasswordVisible,
-                    onTogglePassword: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
-                    validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                    onTogglePassword: () => setState(
+                      () => _isPasswordVisible = !_isPasswordVisible,
+                    ),
+                    validator: (value) =>
+                        value == null || value.isEmpty ? 'Required' : null,
                   ),
                 ] else ...[
                   CustomTextField(
@@ -219,41 +285,96 @@ class _LoginScreenState extends State<LoginScreen> {
                     label: 'Phone Number',
                     prefixIcon: Icons.phone_android_outlined,
                     keyboardType: TextInputType.phone,
-                    validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                    validator: (value) =>
+                        value == null || value.isEmpty ? 'Required' : null,
                   ),
                 ],
 
                 const SizedBox(height: 12),
                 if (!_isPhoneLogin)
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {},
-                      child: const Text('Forgot Password?', style: TextStyle(color: AppColors.brandRed, fontWeight: FontWeight.bold)),
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          TextButton(
+                            onPressed: () {
+                              _emailController.text = 'demo@demo.com';
+                              _passwordController.text = '123456';
+                            },
+                            child: const Text(
+                              'Demo User',
+                              style: TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const Text('|', style: TextStyle(color: Colors.grey)),
+                          TextButton(
+                            onPressed: () {
+                              _emailController.text = 'admin@demo.com';
+                              _passwordController.text = '123456';
+                            },
+                            child: const Text(
+                              'Demo Admin',
+                              style: TextStyle(
+                                color: Colors.orange,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      TextButton(
+                        onPressed: () {},
+                        child: const Text(
+                          'Forgot Password?',
+                          style: TextStyle(
+                            color: AppColors.brandRed,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                
+
                 const SizedBox(height: 24),
                 CustomButton(
                   text: _isPhoneLogin ? 'GET OTP' : 'LOG IN',
                   isLoading: _isLoading,
                   onPressed: _login,
                 ),
-                
+
                 const SizedBox(height: 24),
                 Row(
                   children: [
                     const Expanded(child: Divider()),
-                    Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Text("OR", style: TextStyle(color: Colors.grey[400], fontWeight: FontWeight.bold))),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        "OR",
+                        style: TextStyle(
+                          color: Colors.grey[400],
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                     const Expanded(child: Divider()),
                   ],
                 ),
                 const SizedBox(height: 24),
-                
+
                 // Social Logins
                 Row(
                   children: [
-                    Expanded(child: _buildSocialButton('Google', 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_\"G\"_logo.svg/768px-Google_\"G\"_logo.svg.png', _googleSignIn)),
+                    Expanded(
+                      child: _buildSocialButton(
+                        'Google',
+                        'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_\"G\"_logo.svg/768px-Google_\"G\"_logo.svg.png',
+                        _googleSignIn,
+                      ),
+                    ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: OutlinedButton(
@@ -261,14 +382,22 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           side: BorderSide(color: Colors.grey[200]!),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                         ),
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(Icons.fingerprint, color: Colors.black),
                             SizedBox(width: 8),
-                            Text('Biometric', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                            Text(
+                              'Biometric',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -280,10 +409,27 @@ class _LoginScreenState extends State<LoginScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("New here?", style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.w500)),
+                    Text(
+                      "New here?",
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                     TextButton(
-                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SignupScreen())),
-                      child: const Text('Create Account', style: TextStyle(color: AppColors.brandRed, fontWeight: FontWeight.w900)),
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SignupScreen(),
+                        ),
+                      ),
+                      child: const Text(
+                        'Create Account',
+                        style: TextStyle(
+                          color: AppColors.brandRed,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -305,8 +451,14 @@ class _LoginScreenState extends State<LoginScreen> {
             color: isSelected ? AppColors.brandRed : Colors.grey[100],
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Text(label, textAlign: TextAlign.center, 
-            style: TextStyle(color: isSelected ? Colors.white : Colors.grey[600], fontWeight: FontWeight.bold)),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: isSelected ? Colors.white : Colors.grey[600],
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
       ),
     );
@@ -323,9 +475,19 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.network(iconUrl, height: 20, errorBuilder: (_, _, _) => const Icon(Icons.login)),
+          Image.network(
+            iconUrl,
+            height: 20,
+            errorBuilder: (_, _, _) => const Icon(Icons.login),
+          ),
           const SizedBox(width: 8),
-          Text(label, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );
