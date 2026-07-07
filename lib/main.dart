@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shopverse/screens/auth/login_screen.dart';
+import 'package:shopverse/screens/auth/onboarding_screen.dart';
 import 'package:shopverse/screens/core/main_screen.dart';
 import 'package:shopverse/providers/recent_provider.dart';
 import 'package:shopverse/providers/cart_provider.dart';
@@ -16,6 +18,8 @@ import 'package:shopverse/providers/user_provider.dart';
 import 'package:shopverse/providers/notification_provider.dart';
 import 'package:shopverse/providers/theme_provider.dart';
 import 'package:shopverse/providers/compare_provider.dart';
+import 'package:shopverse/providers/review_provider.dart';
+import 'package:shopverse/providers/coupon_provider.dart';
 import 'package:shopverse/services/firebase_service.dart';
 import 'package:shopverse/utils/app_theme.dart';
 
@@ -44,14 +48,38 @@ void main() async {
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
         ChangeNotifierProvider(create: (_) => RecentProvider()),
+        ChangeNotifierProvider(create: (_) => ReviewProvider()),
+        ChangeNotifierProvider(create: (_) => CouponProvider()),
       ],
       child: const ShopVerseApp(),
     ),
   );
 }
 
-class ShopVerseApp extends StatelessWidget {
+class ShopVerseApp extends StatefulWidget {
   const ShopVerseApp({super.key});
+
+  @override
+  State<ShopVerseApp> createState() => _ShopVerseAppState();
+}
+
+class _ShopVerseAppState extends State<ShopVerseApp> {
+  bool _onboardingComplete = true;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkOnboarding();
+  }
+
+  Future<void> _checkOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
+      _loading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,11 +91,17 @@ class ShopVerseApp extends StatelessWidget {
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: themeProvider.themeMode,
-          home: Consumer<AuthProvider>(
-            builder: (context, auth, _) {
-              return auth.isAuthenticated ? const MainScreen() : const LoginScreen();
-            },
-          ),
+          home: _loading
+            ? const Scaffold(body: Center(child: CircularProgressIndicator()))
+            : !_onboardingComplete
+              ? OnboardingScreen(
+                  onComplete: () => setState(() => _onboardingComplete = true),
+                )
+              : Consumer<AuthProvider>(
+                  builder: (context, auth, _) {
+                    return auth.isAuthenticated ? const MainScreen() : const LoginScreen();
+                  },
+                ),
         );
       },
     );

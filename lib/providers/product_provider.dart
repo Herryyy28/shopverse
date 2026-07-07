@@ -205,6 +205,10 @@ class ProductProvider with ChangeNotifier {
     }
   }
 
+  void refreshProducts() {
+    _safeFetchProducts();
+  }
+
   Stream<List<Product>> get productsStream {
     try {
       if (Firebase.apps.isEmpty) return Stream.value(_products);

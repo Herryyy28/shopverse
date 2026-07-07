@@ -5,8 +5,10 @@ import 'package:shopverse/screens/checkout/checkout_screen.dart';
 import 'package:shopverse/providers/location_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shopverse/providers/cart_provider.dart';
+import 'package:shopverse/providers/coupon_provider.dart';
 import 'package:shopverse/models/product.dart';
 import 'package:shopverse/utils/app_colors.dart';
+import 'package:shopverse/screens/checkout/coupons_screen.dart';
 
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
@@ -371,40 +373,90 @@ class CartScreen extends StatelessWidget {
   }
 
   Widget _buildCouponBanner() {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _primary.withValues(alpha: 0.15)),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 3)),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
+    return Consumer2<CouponProvider, CartProvider>(
+      builder: (context, couponProv, cart, _) {
+        final appliedCoupon = couponProv.appliedCoupon;
+        final discount = couponProv.getDiscount(cart.totalAmount);
+
+        return GestureDetector(
+          onTap: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => CouponsScreen(orderAmount: cart.totalAmount),
+              ),
+            );
+          },
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              color: _primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
+              color: appliedCoupon != null ? Colors.green.withValues(alpha: 0.05) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: appliedCoupon != null
+                  ? Colors.green.withValues(alpha: 0.3)
+                  : _primary.withValues(alpha: 0.15),
+              ),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 3)),
+              ],
             ),
-            child: const Icon(Icons.confirmation_number_outlined, color: _primary, size: 18),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Text('Apply Coupon', style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textPrimary)),
-                Text('Save more with promo codes', style: GoogleFonts.inter(fontSize: 11, color: AppColors.textMuted)),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: appliedCoupon != null
+                      ? Colors.green.withValues(alpha: 0.1)
+                      : _primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    appliedCoupon != null ? Icons.check_circle : Icons.confirmation_number_outlined,
+                    color: appliedCoupon != null ? Colors.green : _primary,
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        appliedCoupon != null
+                          ? '${appliedCoupon.code} Applied!'
+                          : 'Apply Coupon',
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: appliedCoupon != null ? Colors.green : AppColors.textPrimary,
+                        ),
+                      ),
+                      Text(
+                        appliedCoupon != null
+                          ? 'You save ₹${discount.toInt()} on this order'
+                          : 'Save more with promo codes',
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          color: appliedCoupon != null ? Colors.green : AppColors.textMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (appliedCoupon != null)
+                  GestureDetector(
+                    onTap: () => couponProv.removeCoupon(),
+                    child: const Icon(Icons.close, size: 18, color: Colors.red),
+                  )
+                else
+                  const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.textMuted),
               ],
             ),
           ),
-          const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.textMuted),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -481,11 +533,12 @@ class CartScreen extends StatelessWidget {
   }
 
   Widget _buildBillDetails(CartProvider cart) {
+    final couponProv = Provider.of<CouponProvider>(context, listen: true);
     final itemTotal = cart.totalAmount;
     const deliveryFee = 25.0;
     const handlingFee = 5.0;
-    const discount = 0.0;
-    final total = itemTotal + deliveryFee + handlingFee - discount;
+    final couponDiscount = couponProv.getDiscount(itemTotal);
+    final total = itemTotal + deliveryFee + handlingFee - couponDiscount;
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
@@ -503,8 +556,8 @@ class CartScreen extends StatelessWidget {
           _billRow('Item Total', '₹${itemTotal.toStringAsFixed(2)}'),
           _billRow('Delivery Fee', '₹${deliveryFee.toStringAsFixed(2)}', iconData: Icons.local_shipping_outlined),
           _billRow('Handling Charge', '₹${handlingFee.toStringAsFixed(2)}', iconData: Icons.handshake_outlined),
-          if (discount > 0)
-            _billRow('Discount', '-₹${discount.toStringAsFixed(2)}', isGreen: true, iconData: Icons.confirmation_number_outlined),
+          if (couponDiscount > 0)
+            _billRow('Coupon Discount', '-₹${couponDiscount.toStringAsFixed(2)}', isGreen: true, iconData: Icons.confirmation_number_outlined),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 14),
             child: Divider(color: Colors.grey[100], thickness: 1.5),

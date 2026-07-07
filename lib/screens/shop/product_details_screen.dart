@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shopverse/models/product.dart';
@@ -21,6 +22,7 @@ import 'package:shopverse/widgets/video_reviews_widget.dart';
 import 'package:shopverse/widgets/digital_wrapper_dialog.dart';
 import 'package:shopverse/widgets/price_comparison_graph.dart';
 import 'package:shopverse/screens/shop/ar_dimension_calculator.dart';
+import 'package:shopverse/widgets/review_section_widget.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   final Product product;
@@ -195,7 +197,24 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               onPressed: () => wishlist.toggleWishlist(product),
             ),
           ),
-          IconButton(icon: const Icon(Icons.share, color: AppColors.textPrimary), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.share, color: AppColors.textPrimary),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Share link copied: shopverse.app/product/${product.id}'),
+                  backgroundColor: Colors.green,
+                  behavior: SnackBarBehavior.floating,
+                  action: SnackBarAction(
+                    label: 'SHARE',
+                    textColor: Colors.white,
+                    onPressed: () {},
+                  ),
+                ),
+              );
+            },
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -573,12 +592,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   _buildSpecificationsTable(product.specifications),
 
                   const SizedBox(height: 32),
-                  const VideoReviewsWidget(),
-                  const SizedBox(height: 32),
-
-                  const SizedBox(height: 32),
-                  _buildRatingsSection(product),
-
+                  ReviewSectionWidget(productId: product.id),
                   const SizedBox(height: 32),
                   _buildQASection(),
 
@@ -1107,7 +1121,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           onTap: () {
             if (!isInCart) {
               cart.addItem(product);
-            }
+              HapticFeedback.mediumImpact();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Added to cart! 🛒'),
+                  duration: Duration(milliseconds: 800),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
           },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

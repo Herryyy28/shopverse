@@ -113,77 +113,96 @@ class _HomeScreenState extends State<HomeScreen> {
             final recommended = AIService.getRecommendations(allProducts);
             final newlyAdded = allProducts.reversed.take(5).toList();
 
-            return CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                _buildBlinkitHeader(context),
-                _buildStickySearch(context),
-                SliverToBoxAdapter(
-                  child: Column(
-                    children: [
-                      _buildDailyCoinsAndSpinBanner(context),
-                      const DeliveryEtaBanner(),
-                      _buildSmartListBanner(context),
-                      const FlashDealRadar(),
-                      const AutopilotRestockWidget(),
-                      _buildAIHub(context),
-                      _buildBalloonPopLauncher(context),
-                      _buildShoppableFeedLauncher(context),
-                      _buildMysterySpinnerLauncher(context),
-                      _buildPromotionBanner(),
-                      _buildCategoryGrid(),
-                      _buildFlashSaleTimer(context),
+            return RefreshIndicator(
+              color: AppColors.primary,
+              backgroundColor: Colors.white,
+              strokeWidth: 3,
+              displacement: 60,
+              onRefresh: () async {
+                await Future.delayed(const Duration(milliseconds: 1500));
+                if (mounted) {
+                  productProv.refreshProducts();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Feed refreshed! ✨'),
+                      duration: Duration(milliseconds: 800),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              },
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+                slivers: [
+                  _buildBlinkitHeader(context),
+                  _buildStickySearch(context),
+                  SliverToBoxAdapter(
+                    child: Column(
+                      children: [
+                        _buildDailyCoinsAndSpinBanner(context),
+                        const DeliveryEtaBanner(),
+                        _buildSmartListBanner(context),
+                        const FlashDealRadar(),
+                        const AutopilotRestockWidget(),
+                        _buildAIHub(context),
+                        _buildBalloonPopLauncher(context),
+                        _buildShoppableFeedLauncher(context),
+                        _buildMysterySpinnerLauncher(context),
+                        _buildPromotionBanner(),
+                        _buildCategoryGrid(),
+                        _buildFlashSaleTimer(context),
 
-                      if (newlyAdded.isNotEmpty) ...[
-                        _buildSectionHeader('Newly Added', 'Fresh in stock!'),
-                        _buildHorizontalList(context, newlyAdded),
+                        if (newlyAdded.isNotEmpty) ...[
+                          _buildSectionHeader('Newly Added', 'Fresh in stock!'),
+                          _buildHorizontalList(context, newlyAdded),
+                        ],
+
+                        // Recently Viewed Section
+                        Consumer<RecentProvider>(
+                          builder: (context, recentProv, _) {
+                            if (recentProv.recentlyViewed.isEmpty)
+                              return const SizedBox.shrink();
+                            return Column(
+                              children: [
+                                _buildSectionHeader(
+                                  'Recently Viewed',
+                                  'Pick up where you left off',
+                                ),
+                                _buildHorizontalList(
+                                  context,
+                                  recentProv.recentlyViewed,
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+
+                        _buildSectionHeader(
+                          'Recommended for You',
+                          'Picked by ShopVerse AI',
+                          isAI: true,
+                        ),
+                        _buildHorizontalRecommendations(context, recommended),
+
+                        _buildSectionHeader(
+                          'Daily Deals',
+                          'Exclusive offers just for you',
+                        ),
+                        _buildDailyDealsGrid(
+                          context,
+                          allProducts.take(4).toList(),
+                        ),
+
+                        _buildSectionHeader('Bestsellers', 'Trending items'),
+                        _buildHorizontalList(context, allProducts),
+                        _buildSectionHeader('Daily Staples', 'Fresh & Essential'),
+                        _buildVerticalGrid(context, allProducts),
+                        const SizedBox(height: 100),
                       ],
-
-                      // Recently Viewed Section
-                      Consumer<RecentProvider>(
-                        builder: (context, recentProv, _) {
-                          if (recentProv.recentlyViewed.isEmpty)
-                            return const SizedBox.shrink();
-                          return Column(
-                            children: [
-                              _buildSectionHeader(
-                                'Recently Viewed',
-                                'Pick up where you left off',
-                              ),
-                              _buildHorizontalList(
-                                context,
-                                recentProv.recentlyViewed,
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-
-                      _buildSectionHeader(
-                        'Recommended for You',
-                        'Picked by ShopVerse AI',
-                        isAI: true,
-                      ),
-                      _buildHorizontalRecommendations(context, recommended),
-
-                      _buildSectionHeader(
-                        'Daily Deals',
-                        'Exclusive offers just for you',
-                      ),
-                      _buildDailyDealsGrid(
-                        context,
-                        allProducts.take(4).toList(),
-                      ),
-
-                      _buildSectionHeader('Bestsellers', 'Trending items'),
-                      _buildHorizontalList(context, allProducts),
-                      _buildSectionHeader('Daily Staples', 'Fresh & Essential'),
-                      _buildVerticalGrid(context, allProducts),
-                      const SizedBox(height: 100),
-                    ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             );
           },
         ),
