@@ -24,6 +24,13 @@ import 'package:shopverse/widgets/autopilot_restock_widget.dart';
 import 'package:shopverse/screens/shop/balloon_pop_screen.dart';
 import 'package:shopverse/screens/shop/shoppable_feed_screen.dart';
 import 'package:shopverse/widgets/mystery_deal_spinner.dart';
+import 'package:shopverse/screens/shop/virtual_tryon_screen.dart';
+import 'package:shopverse/screens/shop/variant_designer_screen.dart';
+import 'package:shopverse/screens/shop/spatial_room_screen.dart';
+import 'package:shopverse/screens/shop/shared_cart_screen.dart';
+import 'package:shopverse/screens/shop/recipe_builder_screen.dart';
+import 'package:shopverse/screens/profile/pantry_tracker_screen.dart';
+import 'package:shopverse/screens/shop/smart_list_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -110,8 +117,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       _buildDailyCoinsAndSpinBanner(context),
                       const DeliveryEtaBanner(),
+                      _buildSmartListBanner(context),
                       const FlashDealRadar(),
                       const AutopilotRestockWidget(),
+                      _buildAIHub(context),
                       _buildBalloonPopLauncher(context),
                       _buildShoppableFeedLauncher(context),
                       _buildMysterySpinnerLauncher(context),
