@@ -51,7 +51,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _initFlashSaleSync() {
-    _flashSaleSubscription = FirebaseService.getFlashSaleEndTime().listen((endTime) {
+    _flashSaleSubscription = FirebaseService.getFlashSaleEndTime().listen((
+      endTime,
+    ) {
       _startTimer(endTime);
     });
   }
@@ -85,22 +87,26 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final productProv = Provider.of<ProductProvider>(context);
-    
+
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAIChat(context),
         backgroundColor: AppColors.primary,
         icon: const Icon(Icons.auto_awesome, color: Colors.amber),
-        label: const Text('Ask ShopVerse AI', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        label: const Text(
+          'Ask ShopVerse AI',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
       ),
       body: SafeArea(
         child: StreamBuilder<List<Product>>(
           stream: productProv.productsStream,
           builder: (context, snapshot) {
             final allProducts = snapshot.data ?? productProv.products;
-            
-            if (snapshot.connectionState == ConnectionState.waiting && allProducts.isEmpty) {
+
+            if (snapshot.connectionState == ConnectionState.waiting &&
+                allProducts.isEmpty) {
               return _buildShimmerLoading();
             }
 
@@ -136,21 +142,38 @@ class _HomeScreenState extends State<HomeScreen> {
                       // Recently Viewed Section
                       Consumer<RecentProvider>(
                         builder: (context, recentProv, _) {
-                          if (recentProv.recentlyViewed.isEmpty) return const SizedBox.shrink();
+                          if (recentProv.recentlyViewed.isEmpty)
+                            return const SizedBox.shrink();
                           return Column(
                             children: [
-                              _buildSectionHeader('Recently Viewed', 'Pick up where you left off'),
-                              _buildHorizontalList(context, recentProv.recentlyViewed),
+                              _buildSectionHeader(
+                                'Recently Viewed',
+                                'Pick up where you left off',
+                              ),
+                              _buildHorizontalList(
+                                context,
+                                recentProv.recentlyViewed,
+                              ),
                             ],
                           );
                         },
                       ),
 
-                      _buildSectionHeader('Recommended for You', 'Picked by ShopVerse AI', isAI: true),
+                      _buildSectionHeader(
+                        'Recommended for You',
+                        'Picked by ShopVerse AI',
+                        isAI: true,
+                      ),
                       _buildHorizontalRecommendations(context, recommended),
 
-                      _buildSectionHeader('Daily Deals', 'Exclusive offers just for you'),
-                      _buildDailyDealsGrid(context, allProducts.take(4).toList()),
+                      _buildSectionHeader(
+                        'Daily Deals',
+                        'Exclusive offers just for you',
+                      ),
+                      _buildDailyDealsGrid(
+                        context,
+                        allProducts.take(4).toList(),
+                      ),
 
                       _buildSectionHeader('Bestsellers', 'Trending items'),
                       _buildHorizontalList(context, allProducts),
@@ -162,7 +185,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             );
-          }
+          },
         ),
       ),
     );
@@ -177,16 +200,33 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Container(height: 120, color: Colors.white),
             const SizedBox(height: 20),
-            Container(height: 160, margin: const EdgeInsets.symmetric(horizontal: 16), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20))),
+            Container(
+              height: 160,
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
             const SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, mainAxisSpacing: 12, crossAxisSpacing: 12, childAspectRatio: 0.85),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: 0.85,
+                ),
                 itemCount: 8,
-                itemBuilder: (_, _) => Container(decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16))),
+                itemBuilder: (_, _) => Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 20),
@@ -210,7 +250,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemBuilder: (_, _) => Container(
                   width: 160,
                   margin: const EdgeInsets.symmetric(horizontal: 6),
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                 ),
               ),
             ),
@@ -238,22 +281,44 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
                 decoration: BoxDecoration(
                   gradient: AppColors.primaryGradient,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(24),
+                  ),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.auto_awesome, color: Colors.amber, size: 28),
+                    const Icon(
+                      Icons.auto_awesome,
+                      color: Colors.amber,
+                      size: 28,
+                    ),
                     const SizedBox(width: 12),
                     const Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('ShopVerse AI', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                          Text('Your personal shopping assistant', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                          Text(
+                            'ShopVerse AI',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'Your personal shopping assistant',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                    IconButton(icon: const Icon(Icons.close, color: Colors.white), onPressed: () => Navigator.pop(context)),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white),
+                      onPressed: () => Navigator.pop(context),
+                    ),
                   ],
                 ),
               ),
@@ -261,13 +326,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: ListView(
                   padding: const EdgeInsets.all(20),
                   children: [
-                    _buildAiChatBubble('Hi there! 👋 I am your ShopVerse AI assistant. What are you looking for today?', false),
+                    _buildAiChatBubble(
+                      'Hi there! 👋 I am your ShopVerse AI assistant. What are you looking for today?',
+                      false,
+                    ),
                     const SizedBox(height: 12),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
                       children: [
-                        _buildAiSuggestionChip('Find me a smartwatch under ₹2000'),
+                        _buildAiSuggestionChip(
+                          'Find me a smartwatch under ₹2000',
+                        ),
                         _buildAiSuggestionChip('Best products for oily skin'),
                         _buildAiSuggestionChip('Healthy snacks for diet'),
                       ],
@@ -276,10 +346,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               Container(
-                padding: EdgeInsets.fromLTRB(16, 12, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  12,
+                  16,
+                  MediaQuery.of(context).viewInsets.bottom + 16,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -5))],
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, -5),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
@@ -287,18 +368,36 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: TextField(
                         decoration: InputDecoration(
                           hintText: 'Type your message...',
-                          hintStyle: const TextStyle(color: AppColors.textMuted),
+                          hintStyle: const TextStyle(
+                            color: AppColors.textMuted,
+                          ),
                           filled: true,
                           fillColor: AppColors.backgroundColor,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.primary),
-                      child: IconButton(icon: const Icon(Icons.send_rounded, color: Colors.white, size: 20), onPressed: () {}),
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.primary,
+                      ),
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.send_rounded,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                        onPressed: () {},
+                      ),
                     ),
                   ],
                 ),
@@ -322,9 +421,16 @@ class _HomeScreenState extends State<HomeScreen> {
             bottomLeft: isUser ? const Radius.circular(16) : Radius.zero,
             bottomRight: isUser ? Radius.zero : const Radius.circular(16),
           ),
-          border: isUser ? null : Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+          border: isUser
+              ? null
+              : Border.all(color: Colors.grey.withValues(alpha: 0.2)),
         ),
-        child: Text(text, style: TextStyle(color: isUser ? Colors.white : AppColors.textPrimary)),
+        child: Text(
+          text,
+          style: TextStyle(
+            color: isUser ? Colors.white : AppColors.textPrimary,
+          ),
+        ),
       ),
     );
   }
@@ -337,11 +443,22 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
       ),
-      child: Text(text, style: const TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.bold)),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: AppColors.primary,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 
-  Widget _buildSectionHeader(String title, String subtitle, {bool isAI = false}) {
+  Widget _buildSectionHeader(
+    String title,
+    String subtitle, {
+    bool isAI = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
       child: Row(
@@ -353,30 +470,56 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 children: [
                   if (isAI) ...[
-                    const Icon(Icons.auto_awesome, color: Colors.amber, size: 18),
+                    const Icon(
+                      Icons.auto_awesome,
+                      color: Colors.amber,
+                      size: 18,
+                    ),
                     const SizedBox(width: 6),
                   ],
-                  Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
                 ],
               ),
-              Text(subtitle, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 13,
+                ),
+              ),
             ],
           ),
           const Spacer(),
-          const Text('See all', style: TextStyle(color: AppColors.brandRed, fontWeight: FontWeight.bold)),
+          const Text(
+            'See all',
+            style: TextStyle(
+              color: AppColors.brandRed,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildHorizontalRecommendations(BuildContext context, List<Product> recommendations) {
+  Widget _buildHorizontalRecommendations(
+    BuildContext context,
+    List<Product> recommendations,
+  ) {
     return SizedBox(
       height: 200,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         itemCount: recommendations.length,
-        itemBuilder: (context, i) => _AiProductCard(product: recommendations[i]),
+        itemBuilder: (context, i) =>
+            _AiProductCard(product: recommendations[i]),
       ),
     );
   }
@@ -405,7 +548,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Icon(Icons.location_on_rounded, color: Colors.white, size: 20),
+                    child: const Icon(
+                      Icons.location_on_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -419,14 +566,25 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             Text(
                               'Deliver to ${address.label}',
-                              style: const TextStyle(color: Colors.white70, fontSize: 12),
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
                             ),
-                            const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white70, size: 18),
+                            const Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color: Colors.white70,
+                              size: 18,
+                            ),
                           ],
                         ),
                         Text(
                           '${address.addressLine}, ${address.area}',
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -441,7 +599,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: const Icon(Icons.notifications_outlined, color: Colors.white, size: 20),
+                  child: const Icon(
+                    Icons.notifications_outlined,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ),
               ],
             ),
@@ -474,7 +636,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       const Text(
                         'Change Location',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                       IconButton(
                         icon: const Icon(Icons.close),
@@ -483,42 +648,67 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  
+
                   // Use Current Location Button
                   InkWell(
-                    onTap: provider.isFetchingLocation ? null : () async {
-                      await provider.fetchCurrentLocation();
-                      if (context.mounted) {
-                        Future.microtask(() {
-                          if (context.mounted) Navigator.pop(context);
-                        });
-                      }
-                    },
+                    onTap: provider.isFetchingLocation
+                        ? null
+                        : () async {
+                            await provider.fetchCurrentLocation();
+                            if (context.mounted) {
+                              Future.microtask(() {
+                                if (context.mounted) Navigator.pop(context);
+                              });
+                            }
+                          },
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: AppColors.brandRed.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.brandRed.withValues(alpha: 0.2)),
+                        border: Border.all(
+                          color: AppColors.brandRed.withValues(alpha: 0.2),
+                        ),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.my_location, color: AppColors.brandRed),
+                          const Icon(
+                            Icons.my_location,
+                            color: AppColors.brandRed,
+                          ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Use current location', style: TextStyle(color: AppColors.brandRed, fontWeight: FontWeight.bold)),
+                                const Text(
+                                  'Use current location',
+                                  style: TextStyle(
+                                    color: AppColors.brandRed,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                                 Text(
-                                  provider.isFetchingLocation ? 'Detecting...' : 'Using GPS to find your address',
-                                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                                  provider.isFetchingLocation
+                                      ? 'Detecting...'
+                                      : 'Using GPS to find your address',
+                                  style: const TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ],
                             ),
                           ),
                           if (provider.isFetchingLocation)
-                            const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.brandRed)),
+                            const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.brandRed,
+                              ),
+                            ),
                         ],
                       ),
                     ),
@@ -531,7 +721,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         Expanded(child: Divider()),
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 16),
-                          child: Text('SAVED ADDRESSES', style: TextStyle(color: AppColors.textMuted, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1)),
+                          child: Text(
+                            'SAVED ADDRESSES',
+                            style: TextStyle(
+                              color: AppColors.textMuted,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              letterSpacing: 1,
+                            ),
+                          ),
                         ),
                         Expanded(child: Divider()),
                       ],
@@ -544,8 +742,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       separatorBuilder: (_, _) => const SizedBox(height: 12),
                       itemBuilder: (context, index) {
                         final address = provider.addresses[index];
-                        final isSelected = provider.selectedAddress.id == address.id;
-                        
+                        final isSelected =
+                            provider.selectedAddress.id == address.id;
+
                         return InkWell(
                           onTap: () {
                             provider.selectAddress(index);
@@ -554,35 +753,57 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: isSelected ? AppColors.brandRed.withValues(alpha: 0.02) : Colors.white,
+                              color: isSelected
+                                  ? AppColors.brandRed.withValues(alpha: 0.02)
+                                  : Colors.white,
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: isSelected ? AppColors.brandRed : Colors.grey.withValues(alpha: 0.2),
+                                color: isSelected
+                                    ? AppColors.brandRed
+                                    : Colors.grey.withValues(alpha: 0.2),
                                 width: isSelected ? 1.5 : 1,
                               ),
                             ),
                             child: Row(
                               children: [
                                 CircleAvatar(
-                                  backgroundColor: isSelected ? AppColors.brandRed : Colors.grey[100],
+                                  backgroundColor: isSelected
+                                      ? AppColors.brandRed
+                                      : Colors.grey[100],
                                   child: Icon(
-                                    address.label == 'Home' ? Icons.home : (address.label == 'Work' ? Icons.work : Icons.location_on),
-                                    color: isSelected ? Colors.white : Colors.grey[600],
+                                    address.label == 'Home'
+                                        ? Icons.home
+                                        : (address.label == 'Work'
+                                              ? Icons.work
+                                              : Icons.location_on),
+                                    color: isSelected
+                                        ? Colors.white
+                                        : Colors.grey[600],
                                     size: 20,
                                   ),
                                 ),
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         address.label,
-                                        style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: isSelected ? AppColors.brandRed : AppColors.textPrimary),
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 15,
+                                          color: isSelected
+                                              ? AppColors.brandRed
+                                              : AppColors.textPrimary,
+                                        ),
                                       ),
                                       Text(
                                         '${address.addressLine}, ${address.area}',
-                                        style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                                        style: const TextStyle(
+                                          color: AppColors.textSecondary,
+                                          fontSize: 13,
+                                        ),
                                         maxLines: 2,
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -590,7 +811,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ),
                                 if (isSelected)
-                                  const Icon(Icons.check_circle, color: AppColors.brandRed),
+                                  const Icon(
+                                    Icons.check_circle,
+                                    color: AppColors.brandRed,
+                                  ),
                               ],
                             ),
                           ),
@@ -598,7 +822,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                     ),
                   ),
-                  
+
                   const SizedBox(height: 16),
                   CustomButton(
                     text: 'ADD NEW ADDRESS',
@@ -621,26 +845,46 @@ class _HomeScreenState extends State<HomeScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Add New Address', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Add New Address',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CustomTextField(controller: labelController, label: 'Label (e.g. Other, Gym)'),
+            CustomTextField(
+              controller: labelController,
+              label: 'Label (e.g. Other, Gym)',
+            ),
             const SizedBox(height: 12),
-            CustomTextField(controller: addressController, label: 'Address Line'),
+            CustomTextField(
+              controller: addressController,
+              label: 'Address Line',
+            ),
             const SizedBox(height: 12),
             CustomTextField(controller: areaController, label: 'Area/Sector'),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('CANCEL', style: TextStyle(color: AppColors.textSecondary))),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'CANCEL',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+          ),
           SizedBox(
             width: 100,
             child: CustomButton(
               text: 'SAVE',
               onPressed: () {
-                if (labelController.text.isNotEmpty && addressController.text.isNotEmpty) {
-                  provider.addAddress(labelController.text, addressController.text, areaController.text);
+                if (labelController.text.isNotEmpty &&
+                    addressController.text.isNotEmpty) {
+                  provider.addAddress(
+                    labelController.text,
+                    addressController.text,
+                    areaController.text,
+                  );
                   Navigator.pop(context); // Close dialog
                   Navigator.pop(context); // Close bottom sheet
                 }
@@ -676,7 +920,7 @@ class _HomeScreenState extends State<HomeScreen> {
             color: Colors.cyan.withValues(alpha: 0.15),
             blurRadius: 10,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Row(
@@ -690,10 +934,16 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Text(
                   'ShopVerse Coins: ${wallet.coinsBalance}',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 15),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 15,
+                  ),
                 ),
                 Text(
-                  wallet.hasSpunToday ? 'You spun today! Come back tomorrow.' : 'Spin the Daily Wheel to win coins!',
+                  wallet.hasSpunToday
+                      ? 'You spun today! Come back tomorrow.'
+                      : 'Spin the Daily Wheel to win coins!',
                   style: const TextStyle(color: Colors.white70, fontSize: 11),
                 ),
               ],
@@ -713,7 +963,9 @@ class _HomeScreenState extends State<HomeScreen> {
               foregroundColor: Colors.black87,
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             child: Text(
               wallet.hasSpunToday ? 'SPUN' : 'SPIN',
@@ -739,7 +991,11 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.videogame_asset_outlined, color: Colors.white, size: 28),
+          const Icon(
+            Icons.videogame_asset_outlined,
+            color: Colors.white,
+            size: 28,
+          ),
           const SizedBox(width: 14),
           const Expanded(
             child: Column(
@@ -747,7 +1003,11 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Text(
                   'Balloon Pop Arcade Game',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                 ),
                 Text(
                   'Pop balloons in 10s to win coins!',
@@ -758,14 +1018,22 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const BalloonPopScreen()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const BalloonPopScreen()),
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: Colors.pink,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
-            child: const Text('PLAY', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'PLAY',
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -786,7 +1054,11 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.video_library_rounded, color: Colors.white, size: 28),
+          const Icon(
+            Icons.video_library_rounded,
+            color: Colors.white,
+            size: 28,
+          ),
           const SizedBox(width: 14),
           const Expanded(
             child: Column(
@@ -794,7 +1066,11 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Text(
                   'Community Unboxings Feed',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                 ),
                 Text(
                   'Watch short videos & buy instantly!',
@@ -805,14 +1081,22 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const ShoppableFeedScreen()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ShoppableFeedScreen()),
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: Colors.blueAccent,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
-            child: const Text('WATCH', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'WATCH',
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -841,7 +1125,11 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Text(
                   'Mystery Box Spinner Deal',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                 ),
                 Text(
                   'Spin to win random high-discount deals!',
@@ -860,9 +1148,14 @@ class _HomeScreenState extends State<HomeScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: Colors.green,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
-            child: const Text('SPIN', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'SPIN',
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -875,8 +1168,18 @@ class _HomeScreenState extends State<HomeScreen> {
       margin: const EdgeInsets.symmetric(vertical: 16),
       child: PageView(
         children: [
-          _promoCard('GET 50% OFF', 'On your first 3 orders', 'USE CODE: SHOP50', Colors.orange),
-          _promoCard('FRESH FRUITS', 'Organic & Handpicked', 'SHOP NOW', Colors.green),
+          _promoCard(
+            'GET 50% OFF',
+            'On your first 3 orders',
+            'USE CODE: SHOP50',
+            Colors.orange,
+          ),
+          _promoCard(
+            'FRESH FRUITS',
+            'Organic & Handpicked',
+            'SHOP NOW',
+            Colors.green,
+          ),
         ],
       ),
     );
@@ -890,7 +1193,9 @@ class _HomeScreenState extends State<HomeScreen> {
         color: color,
         borderRadius: BorderRadius.circular(20),
         image: const DecorationImage(
-          image: NetworkImage('https://images.unsplash.com/photo-1542838132-92c53300491e?w=800'),
+          image: NetworkImage(
+            'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800',
+          ),
           fit: BoxFit.cover,
           alignment: Alignment.centerRight,
           opacity: 0.3,
@@ -900,13 +1205,30 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 24)),
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 24,
+            ),
+          ),
           Text(sub, style: const TextStyle(color: Colors.white, fontSize: 14)),
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
-            child: Text(code, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12)),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              code,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
           ),
         ],
       ),
@@ -945,7 +1267,8 @@ class _HomeScreenState extends State<HomeScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => SearchScreen(initialQuery: categories[i]['n'] as String),
+                builder: (_) =>
+                    SearchScreen(initialQuery: categories[i]['n'] as String),
               ),
             );
           },
@@ -958,12 +1281,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: (categories[i]['c'] as Color).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(categories[i]['i'] as IconData, color: categories[i]['c'] as Color, size: 26),
+                child: Icon(
+                  categories[i]['i'] as IconData,
+                  color: categories[i]['c'] as Color,
+                  size: 26,
+                ),
               ),
               const SizedBox(height: 6),
               Text(
                 categories[i]['n'] as String,
-                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -1015,11 +1346,28 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(16),
                       gradient: LinearGradient(
                         colors: [
-                          [Colors.blue, Colors.purple, Colors.orange, Colors.teal][i % 4].withValues(alpha: 0.1),
-                          [Colors.blue, Colors.purple, Colors.orange, Colors.teal][i % 4].withValues(alpha: 0.05),
+                          [
+                            Colors.blue,
+                            Colors.purple,
+                            Colors.orange,
+                            Colors.teal,
+                          ][i % 4].withValues(alpha: 0.1),
+                          [
+                            Colors.blue,
+                            Colors.purple,
+                            Colors.orange,
+                            Colors.teal,
+                          ][i % 4].withValues(alpha: 0.05),
                         ],
                       ),
-                      border: Border.all(color: [Colors.blue, Colors.purple, Colors.orange, Colors.teal][i % 4].withValues(alpha: 0.2)),
+                      border: Border.all(
+                        color: [
+                          Colors.blue,
+                          Colors.purple,
+                          Colors.orange,
+                          Colors.teal,
+                        ][i % 4].withValues(alpha: 0.2),
+                      ),
                     ),
                     child: Stack(
                       children: [
@@ -1028,7 +1376,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           bottom: -10,
                           child: Opacity(
                             opacity: 0.5,
-                            child: CachedNetworkImage(imageUrl: deals[i].imageUrl, width: 80),
+                            child: CachedNetworkImage(
+                              imageUrl: deals[i].imageUrl,
+                              width: 80,
+                            ),
                           ),
                         ),
                         Padding(
@@ -1036,14 +1387,45 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(deals[i].name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1),
+                              Text(
+                                deals[i].name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                                maxLines: 1,
+                              ),
                               const SizedBox(height: 4),
-                              Text('Flat ₹${(deals[i].oldPrice - deals[i].price).toInt()} OFF', style: TextStyle(color: [Colors.blue, Colors.purple, Colors.orange, Colors.teal][i % 4], fontWeight: FontWeight.w900, fontSize: 12)),
+                              Text(
+                                'Flat ₹${(deals[i].oldPrice - deals[i].price).toInt()} OFF',
+                                style: TextStyle(
+                                  color: [
+                                    Colors.blue,
+                                    Colors.purple,
+                                    Colors.orange,
+                                    Colors.teal,
+                                  ][i % 4],
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 12,
+                                ),
+                              ),
                               const Spacer(),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
-                                child: const Text('GRAB NOW', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Text(
+                                  'GRAB NOW',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -1097,7 +1479,7 @@ class _HomeScreenState extends State<HomeScreen> {
             color: const Color(0xFFFF416C).withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Row(
@@ -1108,15 +1490,37 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 const Text(
                   'Flash Sale Ending In',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
                     _TimerBox(value: _formatDuration(_timeLeft.inHours)),
-                    const Padding(padding: EdgeInsets.symmetric(horizontal: 4), child: Text(':', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 4),
+                      child: Text(
+                        ':',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                     _TimerBox(value: _formatDuration(_timeLeft.inMinutes % 60)),
-                    const Padding(padding: EdgeInsets.symmetric(horizontal: 4), child: Text(':', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 4),
+                      child: Text(
+                        ':',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                     _TimerBox(value: _formatDuration(_timeLeft.inSeconds % 60)),
                   ],
                 ),
@@ -1131,11 +1535,197 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: const Text(
               'View All',
-              style: TextStyle(color: Color(0xFFFF416C), fontWeight: FontWeight.w900, fontSize: 12),
+              style: TextStyle(
+                color: Color(0xFFFF416C),
+                fontWeight: FontWeight.w900,
+                fontSize: 12,
+              ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSmartListBanner(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF8B5CF6), Color(0xFFD946EF)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF8B5CF6).withValues(alpha: 0.25),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.playlist_add_check_rounded, color: Colors.white, size: 28),
+          const SizedBox(width: 14),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'AI Shopping List Importer',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                Text(
+                  'Paste or record a list to add all items at once!',
+                  style: TextStyle(color: Colors.white70, fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const SmartListScreen()));
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: const Color(0xFF8B5CF6),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              elevation: 0,
+            ),
+            child: const Text('IMPORT', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAIHub(BuildContext context) {
+    final tools = [
+      {
+        'title': 'Smart List Importer',
+        'sub': 'Import text/voice list',
+        'icon': Icons.playlist_add_check_rounded,
+        'gradient': [const Color(0xFF8B5CF6), const Color(0xFFD946EF)],
+        'screen': const SmartListScreen(),
+      },
+      {
+        'title': 'AI Virtual Fit Try-On',
+        'sub': 'Try clothes on avatar',
+        'icon': Icons.face_retouching_natural,
+        'gradient': [const Color(0xFFFF5722), const Color(0xFFFF9800)],
+        'screen': const VirtualTryonScreen(),
+      },
+      {
+        'title': 'Sneaker Designer',
+        'sub': 'Customize variant style',
+        'icon': Icons.palette_outlined,
+        'gradient': [const Color(0xFF2196F3), const Color(0xFF00BCD4)],
+        'screen': const VariantDesignerScreen(),
+      },
+      {
+        'title': 'Spatial Room AR',
+        'sub': 'Furnish space in 3D',
+        'icon': Icons.door_sliding_outlined,
+        'gradient': [const Color(0xFF4CAF50), const Color(0xFF8BC34A)],
+        'screen': const SpatialRoomScreen(),
+      },
+      {
+        'title': 'Group Cart Splitter',
+        'sub': 'Shop together with friends',
+        'icon': Icons.group_work_outlined,
+        'gradient': [const Color(0xFFE91E63), const Color(0xFF9C27B0)],
+        'screen': const SharedCartScreen(),
+      },
+      {
+        'title': 'Recipe-to-Cart',
+        'sub': 'Order complete recipes',
+        'icon': Icons.soup_kitchen_outlined,
+        'gradient': [const Color(0xFF795548), const Color(0xFFFF9800)],
+        'screen': const RecipeBuilderScreen(),
+      },
+      {
+        'title': 'Smart Shelf Pantry',
+        'sub': 'Track home essentials',
+        'icon': Icons.kitchen_outlined,
+        'gradient': [const Color(0xFF607D8B), const Color(0xFF9E9E9E)],
+        'screen': const PantryTrackerScreen(),
+      },
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader('AI Assistants & Tools Hub', 'Interactive smart shopping assistants', isAI: true),
+        SizedBox(
+          height: 110,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            itemCount: tools.length,
+            itemBuilder: (context, index) {
+              final tool = tools[index];
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => tool['screen'] as Widget),
+                  );
+                },
+                child: Container(
+                  width: 170,
+                  margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: tool['gradient'] as List<Color>,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: (tool['gradient'] as List<Color>).first.withValues(alpha: 0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      )
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Icon(tool['icon'] as IconData, color: Colors.white, size: 22),
+                          const Icon(Icons.arrow_forward_rounded, color: Colors.white70, size: 14),
+                        ],
+                      ),
+                      const Spacer(),
+                      Text(
+                        tool['title'] as String,
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        tool['sub'] as String,
+                        style: const TextStyle(color: Colors.white70, fontSize: 9),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
@@ -1154,7 +1744,11 @@ class _TimerBox extends StatelessWidget {
       ),
       child: Text(
         value,
-        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16),
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w900,
+          fontSize: 16,
+        ),
       ),
     );
   }
@@ -1167,7 +1761,12 @@ class _AiProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetailsScreen(product: product))),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ProductDetailsScreen(product: product),
+        ),
+      ),
       child: Container(
         width: 140,
         margin: const EdgeInsets.all(6),
@@ -1179,7 +1778,7 @@ class _AiProductCard extends StatelessWidget {
               color: Colors.amber.withValues(alpha: 0.1),
               blurRadius: 8,
               spreadRadius: 1,
-            )
+            ),
           ],
           border: Border.all(color: Colors.amber.withValues(alpha: 0.2)),
         ),
@@ -1202,12 +1801,18 @@ class _AiProductCard extends StatelessWidget {
                     product.name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '₹${product.price.toInt()}',
-                    style: const TextStyle(fontWeight: FontWeight.w900, color: AppColors.textPrimary),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                 ],
               ),
@@ -1223,9 +1828,16 @@ class _StickySearchDelegate extends SliverPersistentHeaderDelegate {
   const _StickySearchDelegate();
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     return GestureDetector(
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SearchScreen())),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const SearchScreen()),
+      ),
       child: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -1245,7 +1857,7 @@ class _StickySearchDelegate extends SliverPersistentHeaderDelegate {
                 color: Colors.black.withValues(alpha: 0.08),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
-              )
+              ),
             ],
           ),
           child: const Row(
@@ -1270,7 +1882,8 @@ class _StickySearchDelegate extends SliverPersistentHeaderDelegate {
   @override
   double get minExtent => 60;
   @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => false;
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) =>
+      false;
 }
 
 class _ProductCard extends StatelessWidget {
@@ -1280,7 +1893,12 @@ class _ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetailsScreen(product: product))),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ProductDetailsScreen(product: product),
+        ),
+      ),
       child: Container(
         width: 160,
         margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
@@ -1302,7 +1920,9 @@ class _ProductCard extends StatelessWidget {
               child: Stack(
                 children: [
                   ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(20),
+                    ),
                     child: Container(
                       color: const Color(0xFFF6F7FB),
                       child: Center(
@@ -1310,8 +1930,16 @@ class _ProductCard extends StatelessWidget {
                           padding: const EdgeInsets.all(12),
                           child: CachedNetworkImage(
                             imageUrl: product.imageUrl,
-                            placeholder: (c, u) => const Center(child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary)),
-                            errorWidget: (c, u, e) => const Icon(Icons.shopping_bag_outlined, color: Colors.grey),
+                            placeholder: (c, u) => const Center(
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            errorWidget: (c, u, e) => const Icon(
+                              Icons.shopping_bag_outlined,
+                              color: Colors.grey,
+                            ),
                             fit: BoxFit.contain,
                           ),
                         ),
@@ -1323,12 +1951,22 @@ class _ProductCard extends StatelessWidget {
                       top: 10,
                       left: 10,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           gradient: AppColors.primaryGradient,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Text('${product.discount}% OFF', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 9)),
+                        child: Text(
+                          '${product.discount}% OFF',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 9,
+                          ),
+                        ),
                       ),
                     ),
                   Positioned(
@@ -1348,12 +1986,16 @@ class _ProductCard extends StatelessWidget {
                                 color: Colors.black.withValues(alpha: 0.08),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
-                              )
+                              ),
                             ],
                           ),
                           child: Icon(
-                            wishlist.isFavorite(product.id) ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                            color: wishlist.isFavorite(product.id) ? Colors.red : Colors.grey[400],
+                            wishlist.isFavorite(product.id)
+                                ? Icons.favorite_rounded
+                                : Icons.favorite_border_rounded,
+                            color: wishlist.isFavorite(product.id)
+                                ? Colors.red
+                                : Colors.grey[400],
                             size: 16,
                           ),
                         ),
@@ -1372,10 +2014,20 @@ class _ProductCard extends StatelessWidget {
                     product.name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: AppColors.textPrimary),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                   const SizedBox(height: 2),
-                  Text(product.unit, style: const TextStyle(fontSize: 10, color: AppColors.textMuted)),
+                  Text(
+                    product.unit,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1383,9 +2035,23 @@ class _ProductCard extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('₹${product.price.toInt()}', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: AppColors.textPrimary)),
+                          Text(
+                            '₹${product.price.toInt()}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 15,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
                           if (product.oldPrice > product.price)
-                            Text('₹${product.oldPrice.toInt()}', style: const TextStyle(decoration: TextDecoration.lineThrough, color: AppColors.textMuted, fontSize: 10)),
+                            Text(
+                              '₹${product.oldPrice.toInt()}',
+                              style: const TextStyle(
+                                decoration: TextDecoration.lineThrough,
+                                color: AppColors.textMuted,
+                                fontSize: 10,
+                              ),
+                            ),
                         ],
                       ),
                       _AddButtonSmall(product: product),
@@ -1426,7 +2092,7 @@ class _AddButtonSmall extends StatelessWidget {
                     color: AppColors.primary.withValues(alpha: 0.12),
                     blurRadius: 6,
                     offset: const Offset(0, 2),
-                  )
+                  ),
                 ],
               ),
               child: const Text(
