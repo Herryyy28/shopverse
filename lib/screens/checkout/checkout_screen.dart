@@ -802,15 +802,31 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
 
     if (!context.mounted) return;
-    _showSuccessDialog(context, total, cart.items.values.toList());
-    cart.clear();
+    _showSuccessDialog(context, total, cart, _selectedPaymentMethod);
     setState(() => _isProcessing = false);
   }
 
-  void _showSuccessDialog(BuildContext context, double total, List cartItems) async {
+  void _showSuccessDialog(BuildContext context, double total, CartProvider cart, int paymentMethodIndex) async {
     final orderProv = Provider.of<OrderProvider>(context, listen: false);
-    final orderId = await orderProv.addOrder(total, cartItems);
-    final shortId = 'ORD-${orderId.substring(orderId.length - 6).toUpperCase()}';
+    final locationProv = Provider.of<LocationProvider>(context, listen: false);
+    final couponProv = Provider.of<CouponProvider>(context, listen: false);
+    
+    final paymentMethods = ['ShopVerse Wallet', 'UPI', 'Credit / Debit Card', 'Cash on Delivery'];
+    
+    final orderId = await orderProv.addOrder(
+      items: cart.items.values.toList(),
+      totalAmount: total,
+      deliveryFee: 25.0, // Assuming static for now or fetch from logic
+      tax: cart.totalAmount * 0.05,
+      discount: couponProv.getDiscount(cart.totalAmount),
+      deliveryAddress: '${locationProv.selectedAddress.addressLine}, ${locationProv.selectedAddress.area}',
+      paymentMethod: paymentMethods[paymentMethodIndex],
+    );
+    
+    cart.clear();
+    couponProv.applyCoupon(null);
+    
+    final shortId = orderId;
 
     if (!context.mounted) return;
 

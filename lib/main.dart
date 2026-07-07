@@ -20,6 +20,7 @@ import 'package:shopverse/providers/theme_provider.dart';
 import 'package:shopverse/providers/compare_provider.dart';
 import 'package:shopverse/providers/review_provider.dart';
 import 'package:shopverse/providers/coupon_provider.dart';
+import 'package:shopverse/providers/feed_provider.dart';
 import 'package:shopverse/services/firebase_service.dart';
 import 'package:shopverse/utils/app_theme.dart';
 
@@ -50,6 +51,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => RecentProvider()),
         ChangeNotifierProvider(create: (_) => ReviewProvider()),
         ChangeNotifierProvider(create: (_) => CouponProvider()),
+        ChangeNotifierProvider(create: (_) => FeedProvider()),
       ],
       child: const ShopVerseApp(),
     ),

@@ -5,7 +5,7 @@ import 'package:shopverse/providers/order_provider.dart';
 import 'package:shopverse/providers/user_provider.dart';
 import 'package:shopverse/providers/notification_provider.dart';
 import 'package:shopverse/models/product.dart';
-import 'package:shopverse/models/order_item.dart';
+import 'package:shopverse/models/order_model.dart';
 import 'package:shopverse/services/firebase_service.dart';
 import 'package:shopverse/screens/admin/admin_orders_screen.dart';
 import 'package:shopverse/screens/admin/add_product_screen.dart';
@@ -57,12 +57,20 @@ class AdminDashboard extends StatelessWidget {
             child: StreamBuilder<List<Product>>(
               stream: productProv.productsStream,
               builder: (context, productSnapshot) {
-                return StreamBuilder<List<OrderItem>>(
-                  stream: orderProv.ordersStream,
-                  builder: (context, orderSnapshot) {
-                    final products = productSnapshot.data ?? productProv.products;
-                    final orders = orderSnapshot.data ?? orderProv.orders;
-                    final totalRevenue = orders.fold(0.0, (sum, order) => sum + order.amount);
+                return StreamBuilder<List<OrderModel>>(
+      stream: Provider.of<OrderProvider>(context).ordersStream,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+        
+        final orders = snapshot.data!;
+        final todayOrders = orders.where((o) => 
+          o.createdAt.year == DateTime.now().year &&
+          o.createdAt.month == DateTime.now().month &&
+          o.createdAt.day == DateTime.now().day
+        ).toList();
+        
+        final revenue = todayOrders.fold(0.0, (sum, order) => sum + order.totalAmount);
+        final products = productSnapshot.data ?? productProv.products;
 
                     return Padding(
                       padding: const EdgeInsets.all(16.0),
@@ -82,7 +90,7 @@ class AdminDashboard extends StatelessWidget {
                                 ),
                               );
                             },
-                            child: _buildSummaryGrid(totalRevenue, orders.length, products.length),
+                            child: _buildSummaryGrid(revenue, orders.length, products.length),
                           ),
                           const SizedBox(height: 24),
                           const Text('Inventory Actions', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),

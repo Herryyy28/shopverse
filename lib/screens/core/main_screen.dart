@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shopverse/screens/shop/home_screen.dart';
 import 'package:shopverse/screens/shop/search_screen.dart';
-import 'package:shopverse/screens/core/print_screen.dart';
+import 'package:shopverse/screens/shop/shoppable_feed_screen.dart';
 import 'package:shopverse/screens/profile/profile_screen.dart';
 import 'package:shopverse/providers/cart_provider.dart';
 import 'package:shopverse/screens/checkout/cart_screen.dart';
@@ -22,7 +22,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _screens = [
     const HomeScreen(),
     const SearchScreen(),
-    const PrintScreen(),
+    const ShoppableFeedScreen(),
     const ProfileScreen(),
   ];
 
@@ -62,7 +62,7 @@ class _MainScreenState extends State<MainScreen> {
     final items = [
       _NavItem(icon: Icons.home_outlined, activeIcon: Icons.home_rounded, label: 'Home'),
       _NavItem(icon: Icons.search_outlined, activeIcon: Icons.manage_search_rounded, label: 'Browse'),
-      _NavItem(icon: Icons.print_outlined, activeIcon: Icons.print_rounded, label: 'Print'),
+      _NavItem(icon: Icons.play_circle_outline_rounded, activeIcon: Icons.play_circle_fill_rounded, label: 'ShopTok'),
       _NavItem(icon: Icons.person_outline_rounded, activeIcon: Icons.person_rounded, label: 'Profile'),
     ];
 

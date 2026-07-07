@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shopverse/providers/order_provider.dart';
-import 'package:shopverse/models/order_item.dart';
+import 'package:shopverse/models/order_model.dart';
 import 'package:intl/intl.dart';
 import 'package:shopverse/utils/app_colors.dart';
 
@@ -30,19 +30,19 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   Widget build(BuildContext context) {
     final orderProv = Provider.of<OrderProvider>(context);
     
-    return StreamBuilder<List<OrderItem>>(
+    return StreamBuilder<List<OrderModel>>(
       stream: orderProv.ordersStream,
       builder: (context, snapshot) {
         var allOrders = snapshot.data ?? orderProv.orders;
-        var orders = List<OrderItem>.from(allOrders);
+        var orders = List<OrderModel>.from(allOrders);
         
         // Calculate Statistics for Dashboard
-        final totalRevenue = allOrders.fold(0.0, (sum, item) => sum + item.amount);
-        final pendingOrdersCount = allOrders.where((o) => o.status == 'Pending').length;
+        final totalRevenue = allOrders.fold(0.0, (sum, item) => sum + item.totalAmount);
+        final pendingOrdersCount = allOrders.where((o) => o.status.toString().split('.').last.toUpperCase() == 'PENDING').length;
 
         // Apply Filter
         if (_filterStatus != 'All') {
-          orders = orders.where((o) => o.status == _filterStatus).toList();
+          orders = orders.where((o) => o.status.toString().split('.').last.toUpperCase() == _filterStatus.toUpperCase()).toList();
         }
 
         return DefaultTabController(
@@ -85,7 +85,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     );
   }
 
-  Widget _buildOrdersTab(List<OrderItem> orders, double totalRevenue, int pendingOrdersCount, List<OrderItem> allOrders, AsyncSnapshot snapshot, OrderProvider orderProv) {
+  Widget _buildOrdersTab(List<OrderModel> orders, double totalRevenue, int pendingOrdersCount, List<OrderModel> allOrders, AsyncSnapshot snapshot, OrderProvider orderProv) {
     return Column(
       children: [
         // Dashboard Summary Stats
@@ -153,7 +153,8 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                     itemCount: orders.length,
                     itemBuilder: (context, index) {
                       final order = orders[index];
-                      final statusColor = _getStatusColor(order.status);
+                      final statusString = order.status.toString().split('.').last.toUpperCase();
+                      final statusColor = _getStatusColor(statusString);
                       
                       return Card(
                         margin: const EdgeInsets.only(bottom: 12),
@@ -179,12 +180,12 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                                 Text('#${order.id.length > 5 ? order.id.substring(order.id.length - 5).toUpperCase() : order.id}',
                                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                                 const Spacer(),
-                                Text('₹${order.amount}', style: const TextStyle(fontWeight: FontWeight.w900, color: AppColors.brandRed)),
+                                Text('₹${order.totalAmount}', style: const TextStyle(fontWeight: FontWeight.w900, color: AppColors.brandRed)),
                               ],
                             ),
                             subtitle: Row(
                               children: [
-                                Text(DateFormat('dd MMM, hh:mm a').format(order.dateTime), 
+                                Text(DateFormat('dd MMM, hh:mm a').format(order.createdAt), 
                                   style: TextStyle(color: Colors.grey[600], fontSize: 12)),
                                 const SizedBox(width: 8),
                                 Container(
@@ -193,7 +194,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                                     color: statusColor.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
-                                  child: Text(order.status, 
+                                  child: Text(statusString, 
                                     style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold)),
                                 ),
                               ],
@@ -217,7 +218,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                                     const SizedBox(height: 16),
                                     const Text('Order Items', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                                     const SizedBox(height: 8),
-                                    ...order.products.map((p) => Padding(
+                                    ...order.items.map((p) => Padding(
                                       padding: const EdgeInsets.symmetric(vertical: 4),
                                       child: Row(
                                         children: [
@@ -226,10 +227,10 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                                             decoration: const BoxDecoration(color: Colors.grey, shape: BoxShape.circle),
                                           ),
                                           const SizedBox(width: 12),
-                                          Expanded(child: Text(p['name'] ?? 'Product', style: const TextStyle(fontSize: 14))),
-                                          Text('x${p['quantity'] ?? 1}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                          Expanded(child: Text(p.product.name, style: const TextStyle(fontSize: 14))),
+                                          Text('x${p.quantity}', style: const TextStyle(fontWeight: FontWeight.bold)),
                                           const SizedBox(width: 12),
-                                          Text('₹${((p['price'] ?? 0) * (p['quantity'] ?? 1)).toStringAsFixed(0)}', style: const TextStyle(fontSize: 14)),
+                                          Text('₹${(p.product.price * p.quantity).toStringAsFixed(0)}', style: const TextStyle(fontSize: 14)),
                                         ],
                                       ),
                                     )),
@@ -240,7 +241,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                                       scrollDirection: Axis.horizontal,
                                       child: Row(
                                         children: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'].map((status) {
-                                          final isSelected = order.status == status;
+                                          final isSelected = statusString == status.toUpperCase();
                                           return Padding(
                                             padding: const EdgeInsets.only(right: 8),
                                             child: ChoiceChip(
@@ -253,7 +254,14 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                                                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                                               ),
                                               onSelected: (selected) {
-                                                if (selected) orderProv.updateOrderStatus(order.id, status);
+                                                if (selected) {
+                                                  // Map string to OrderStatus enum
+                                                  final enumValue = OrderStatus.values.firstWhere(
+                                                    (e) => e.toString().split('.').last.toUpperCase() == status.toUpperCase(),
+                                                    orElse: () => OrderStatus.pending,
+                                                  );
+                                                  orderProv.updateOrderStatus(order.id, enumValue);
+                                                }
                                               },
                                             ),
                                           );
@@ -275,7 +283,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     );
   }
 
-  Widget _buildAnalyticsTab(List<OrderItem> orders, double totalRevenue) {
+  Widget _buildAnalyticsTab(List<OrderModel> orders, double totalRevenue) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(

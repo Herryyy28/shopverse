@@ -1,243 +1,192 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
-import 'package:shopverse/models/product.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shopverse/models/shoppable_video.dart';
+import 'package:shopverse/providers/feed_provider.dart';
+import 'package:shopverse/providers/product_provider.dart';
 import 'package:shopverse/providers/cart_provider.dart';
+import 'package:shopverse/screens/shop/product_details_screen.dart';
 import 'package:shopverse/utils/app_colors.dart';
 
-class ShoppableFeedScreen extends StatefulWidget {
+class ShoppableFeedScreen extends StatelessWidget {
   const ShoppableFeedScreen({super.key});
-
-  @override
-  State<ShoppableFeedScreen> createState() => _ShoppableFeedScreenState();
-}
-
-class _ShoppableFeedScreenState extends State<ShoppableFeedScreen> {
-  final PageController _pageController = PageController();
-
-  final List<Map<String, dynamic>> _feedData = [
-    {
-      'videoUrl': 'https://assets.mixkit.co/videos/preview/mixkit-shoes-in-a-shoe-box-43308-large.mp4',
-      'creator': 'Rider Herry',
-      'caption': 'Unboxing the new Swift-Run Nitro Sneaker! The cushioning is crazy comfort.',
-      'product': Product(
-        id: 'p_shoes_feed',
-        name: 'Swift-Run Nitro Running Shoes',
-        brand: 'SHOPVERSE RUN',
-        description: 'Super responsive running shoes',
-        price: 120.0,
-        imageUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800',
-        category: 'Footwear',
-      ),
-    },
-    {
-      'videoUrl': 'https://assets.mixkit.co/videos/preview/mixkit-holding-wireless-headphones-close-up-43283-large.mp4',
-      'creator': 'Priya S.',
-      'caption': 'Midnight Purple wireless headphones soundcheck. Bass goes deep!',
-      'product': Product(
-        id: 'p_headphones_feed',
-        name: 'Aura Pro Wireless Headphones',
-        brand: 'AURA',
-        description: 'Noise cancelling purple headphones',
-        price: 299.0,
-        imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800',
-        category: 'Electronics',
-      ),
-    }
-  ];
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: PageView.builder(
-        controller: _pageController,
-        scrollDirection: Axis.vertical,
-        itemCount: _feedData.length,
-        itemBuilder: (context, index) {
-          final data = _feedData[index];
-          return _FeedVideoItem(
-            videoUrl: data['videoUrl'] as String,
-            creator: data['creator'] as String,
-            caption: data['caption'] as String,
-            product: data['product'] as Product,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text('ShopTok', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 24)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search, color: Colors.white, size: 28),
+            onPressed: () {},
+          ),
+        ],
+      ),
+      body: Consumer<FeedProvider>(
+        builder: (context, feedProv, _) {
+          if (feedProv.isLoading) {
+            return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+          }
+          if (feedProv.videos.isEmpty) {
+            return const Center(child: Text('No videos available', style: TextStyle(color: Colors.white)));
+          }
+
+          return PageView.builder(
+            scrollDirection: Axis.vertical,
+            itemCount: feedProv.videos.length,
+            onPageChanged: (index) {
+              feedProv.setCurrentIndex(index);
+            },
+            itemBuilder: (context, index) {
+              final video = feedProv.videos[index];
+              return Stack(
+                children: [
+                  // Video Player
+                  VideoPlayerItem(
+                    videoUrl: video.videoUrl,
+                    isActive: feedProv.currentIndex == index,
+                  ),
+
+                  // Overlay Content
+                  SafeArea(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        // Left side: Description and Product Card
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 8, 24),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 20,
+                                      backgroundImage: CachedNetworkImageProvider(video.creatorAvatarUrl),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      video.creatorName,
+                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  video.description,
+                                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 20),
+                                _buildProductCard(context, video.productId),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        // Right side: Interaction Buttons
+                        Padding(
+                          padding: const EdgeInsets.only(right: 12, bottom: 24),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              _buildInteractionButton(
+                                icon: video.isLiked ? Icons.favorite : Icons.favorite_border,
+                                color: video.isLiked ? Colors.red : Colors.white,
+                                label: '${video.likes}',
+                                onTap: () {
+                                  HapticFeedback.lightImpact();
+                                  feedProv.toggleLike(video.id);
+                                },
+                              ),
+                              const SizedBox(height: 20),
+                              _buildInteractionButton(
+                                icon: Icons.comment_rounded,
+                                color: Colors.white,
+                                label: '${video.comments}',
+                                onTap: () {},
+                              ),
+                              const SizedBox(height: 20),
+                              _buildInteractionButton(
+                                icon: Icons.share_rounded,
+                                color: Colors.white,
+                                label: 'Share',
+                                onTap: () {},
+                              ),
+                              const SizedBox(height: 40), // Space above product card
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            },
           );
         },
       ),
     );
   }
-}
 
-class _FeedVideoItem extends StatefulWidget {
-  final String videoUrl;
-  final String creator;
-  final String caption;
-  final Product product;
-
-  const _FeedVideoItem({
-    required this.videoUrl,
-    required this.creator,
-    required this.caption,
-    required this.product,
-  });
-
-  @override
-  State<_FeedVideoItem> createState() => _FeedVideoItemState();
-}
-
-class _FeedVideoItemState extends State<_FeedVideoItem> {
-  late VideoPlayerController _controller;
-  bool _initialized = false;
-  bool _showHeart = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl))
-      ..initialize().then((_) {
-        setState(() {
-          _initialized = true;
-        });
-        _controller.setLooping(true);
-        _controller.play();
-        _controller.setVolume(0.0); // start muted to avoid browser/os limits
-      }).catchError((e) {
-        debugPrint('Feed unboxing video error: $e');
-      });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _triggerLike() {
-    setState(() {
-      _showHeart = true;
-    });
-    Future.delayed(const Duration(milliseconds: 800), () {
-      if (mounted) {
-        setState(() {
-          _showHeart = false;
-        });
-      }
-    });
-  }
-
-  void _buyItem() {
-    final cart = Provider.of<CartProvider>(context, listen: false);
-    cart.addItem(widget.product);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Added ${widget.product.name} to bag!'),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
+  Widget _buildInteractionButton({required IconData icon, required Color color, required String label, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 36),
+          const SizedBox(height: 6),
+          Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12)),
+        ],
       ),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Video viewport card
-        Positioned.fill(
-          child: GestureDetector(
-            onDoubleTap: _triggerLike,
-            onTap: () {
-              if (_controller.value.isPlaying) {
-                _controller.pause();
-              } else {
-                _controller.play();
-              }
-            },
-            child: _initialized
-                ? FittedBox(
-                    fit: BoxFit.cover,
-                    clipBehavior: Clip.hardEdge,
-                    child: SizedBox(
-                      width: _controller.value.size.width,
-                      height: _controller.value.size.height,
-                      child: VideoPlayer(_controller),
-                    ),
-                  )
-                : const Center(child: CircularProgressIndicator(color: Colors.white)),
-          ),
-        ),
+  Widget _buildProductCard(BuildContext context, String productId) {
+    return Consumer2<ProductProvider, CartProvider>(
+      builder: (context, productProv, cart, _) {
+        final product = productProv.products.firstWhere(
+          (p) => p.id == productId,
+          orElse: () => productProv.products.first,
+        );
+        final isInCart = cart.items.containsKey(product.id);
 
-        // Hearts pop overlays
-        if (_showHeart)
-          const Center(
-            child: Icon(Icons.favorite, color: Colors.redAccent, size: 90),
-          ),
-
-        // Bottom Details text and Captions
-        Positioned(
-          left: 16,
-          bottom: 120,
-          right: 80,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '@${widget.creator}',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                widget.caption,
-                style: const TextStyle(color: Colors.white70, fontSize: 13),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-
-        // Right Action controls panel
-        Positioned(
-          right: 16,
-          bottom: 120,
-          child: Column(
-            children: [
-              _buildActionButton(Icons.favorite, '2.4k', () {}),
-              const SizedBox(height: 16),
-              _buildActionButton(Icons.mode_comment, '184', () {}),
-              const SizedBox(height: 16),
-              _buildActionButton(Icons.share, 'Share', () {}),
-            ],
-          ),
-        ),
-
-        // Floating Glass product card with Buy button at the bottom
-        Positioned(
-          left: 16,
-          right: 16,
-          bottom: 24,
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetailsScreen(product: product)));
+          },
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: Colors.black.withValues(alpha: 0.6),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white10),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 10),
+              ],
             ),
             child: Row(
               children: [
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    widget.product.imageUrl,
-                    width: 48,
-                    height: 48,
-                    fit: BoxFit.cover,
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    color: Colors.white,
+                    width: 50,
+                    height: 50,
+                    child: CachedNetworkImage(
+                      imageUrl: product.imageUrl,
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -246,45 +195,138 @@ class _FeedVideoItemState extends State<_FeedVideoItem> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.product.name,
+                        product.name,
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 4),
                       Text(
-                        '₹${widget.product.price.toInt()}',
-                        style: const TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold),
+                        '₹${product.price.toInt()}',
+                        style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w900, fontSize: 14),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(width: 12),
-                ElevatedButton(
-                  onPressed: _buyItem,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black87,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                GestureDetector(
+                  onTap: () {
+                    if (!isInCart) {
+                      HapticFeedback.mediumImpact();
+                      cart.addItem(product);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Added to cart from ShopTok! 🛍️'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: isInCart ? Colors.green : AppColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isInCart ? Icons.check : Icons.add_shopping_cart,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
-                  child: const Text('BUY NOW', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
           ),
-        ),
-      ],
+        );
+      },
     );
   }
+}
 
-  Widget _buildActionButton(IconData icon, String label, VoidCallback onTap) {
+class VideoPlayerItem extends StatefulWidget {
+  final String videoUrl;
+  final bool isActive;
+
+  const VideoPlayerItem({super.key, required this.videoUrl, required this.isActive});
+
+  @override
+  State<VideoPlayerItem> createState() => _VideoPlayerItemState();
+}
+
+class _VideoPlayerItemState extends State<VideoPlayerItem> {
+  late VideoPlayerController _controller;
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initVideo();
+  }
+
+  void _initVideo() {
+    _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl))
+      ..initialize().then((_) {
+        setState(() {
+          _isInitialized = true;
+          _controller.setLooping(true);
+          if (widget.isActive) {
+            _controller.play();
+          }
+        });
+      }).catchError((error) {
+        debugPrint("Error initializing video: $error");
+      });
+  }
+
+  @override
+  void didUpdateWidget(VideoPlayerItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_isInitialized) {
+      if (widget.isActive && !oldWidget.isActive) {
+        _controller.play();
+      } else if (!widget.isActive && oldWidget.isActive) {
+        _controller.pause();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_isInitialized) {
+      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+    }
+
     return GestureDetector(
-      onTap: onTap,
-      child: Column(
+      onTap: () {
+        if (_controller.value.isPlaying) {
+          _controller.pause();
+        } else {
+          _controller.play();
+        }
+        setState(() {}); // Update play/pause icon overlay
+      },
+      child: Stack(
+        fit: StackFit.expand,
         children: [
-          Icon(icon, color: Colors.white, size: 28),
-          const SizedBox(height: 4),
-          Text(label, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+          FittedBox(
+            fit: BoxFit.cover,
+            child: SizedBox(
+              width: _controller.value.size.width,
+              height: _controller.value.size.height,
+              child: VideoPlayer(_controller),
+            ),
+          ),
+          if (!_controller.value.isPlaying)
+            const Center(
+              child: Icon(Icons.play_arrow, color: Colors.white54, size: 80),
+            ),
         ],
       ),
     );

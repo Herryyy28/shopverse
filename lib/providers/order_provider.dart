@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:shopverse/models/order_item.dart';
+import 'package:shopverse/models/order_model.dart';
+import 'package:shopverse/models/cart_item.dart';
+import 'package:shopverse/models/product.dart';
 
 class OrderProvider with ChangeNotifier {
-  List<OrderItem> _orders = [];
+  List<OrderModel> _orders = [];
 
   FirebaseFirestore get _firestore => FirebaseFirestore.instance;
   FirebaseAuth get _auth => FirebaseAuth.instance;
 
-  List<OrderItem> get orders => [..._orders];
+  List<OrderModel> get orders => [..._orders];
 
   OrderProvider() {
     _safeFetchOrders();
@@ -31,36 +33,71 @@ class OrderProvider with ChangeNotifier {
 
   void _loadMockOrders() {
     _orders = [
-      OrderItem(
+      OrderModel(
         id: 'ORD-8821',
-        amount: 2150.0,
-        products: [
-          {'name': 'Neon Velocity G7', 'quantity': 1, 'price': 1890.0},
-          {'name': 'Sport Socks', 'quantity': 2, 'price': 130.0},
-        ],
-        dateTime: DateTime.now().subtract(const Duration(hours: 2)),
         userId: 'u1',
-        status: 'Processing',
+        items: [
+          CartItem(
+            product: Product(
+              id: 'p0',
+              name: 'Neon Velocity G7',
+              price: 1890.0,
+              imageUrl: 'https://images.unsplash.com/photo-1605405748283-9463ae74c65e?w=200',
+              categoryId: 'c1',
+              description: 'Awesome sneakers',
+              rating: 4.5,
+              reviews: 120,
+              isSale: false,
+            ),
+            quantity: 1,
+          ),
+          CartItem(
+            product: Product(
+              id: 'p1',
+              name: 'Sport Socks',
+              price: 130.0,
+              imageUrl: 'https://images.unsplash.com/photo-1582966772680-860e372bb558?w=200',
+              categoryId: 'c1',
+              description: 'Comfortable socks',
+              rating: 4.0,
+              reviews: 40,
+              isSale: false,
+            ),
+            quantity: 2,
+          ),
+        totalAmount: 2150.0,
+        deliveryFee: 25.0,
+        tax: 15.0,
+        deliveryAddress: '123 Main St, Apartment 4B\nNew York, NY 10001',
+        status: OrderStatus.processing,
+        paymentMethod: 'Credit Card (Stripe)',
+        createdAt: DateTime.now().subtract(const Duration(hours: 2)),
       ),
-      OrderItem(
+      OrderModel(
         id: 'ORD-7742',
-        amount: 540.0,
-        products: [
-          {'name': 'Amul Taaza 1L', 'quantity': 4, 'price': 135.0},
+        userId: 'u1',
+        items: [
+          CartItem(
+            product: Product(
+              id: 'p2',
+              name: 'Amul Taaza 1L',
+              price: 135.0,
+              imageUrl: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=200',
+              categoryId: 'c2',
+              description: 'Fresh milk',
+              rating: 4.8,
+              reviews: 200,
+              isSale: false,
+            ),
+            quantity: 4,
+          ),
         ],
-        dateTime: DateTime.now().subtract(const Duration(days: 1)),
-        userId: 'u2',
-        status: 'Delivered',
-      ),
-      OrderItem(
-        id: 'ORD-9910',
-        amount: 1200.0,
-        products: [
-          {'name': 'Wireless Mouse', 'quantity': 1, 'price': 1200.0},
-        ],
-        dateTime: DateTime.now().subtract(const Duration(minutes: 45)),
-        userId: 'u3',
-        status: 'Pending',
+        totalAmount: 540.0,
+        deliveryFee: 10.0,
+        deliveryAddress: '123 Main St, Apartment 4B\nNew York, NY 10001',
+        status: OrderStatus.delivered,
+        paymentMethod: 'Wallet',
+        createdAt: DateTime.now().subtract(const Duration(days: 1)),
       ),
     ];
     notifyListeners();
@@ -72,7 +109,7 @@ class OrderProvider with ChangeNotifier {
           .collection('orders')
           .orderBy('dateTime', descending: true)
           .get();
-      _orders = snapshot.docs.map((doc) => OrderItem.fromJson(doc.data())).toList();
+      _orders = snapshot.docs.map((doc) => OrderModel.fromJson(doc.data())).toList();
       notifyListeners();
     } catch (e) {
       debugPrint('Error fetching orders: $e');
@@ -80,50 +117,69 @@ class OrderProvider with ChangeNotifier {
     }
   }
 
-  Future<void> updateOrderStatus(String orderId, String newStatus) async {
-    // Update local state first for instant UI feedback
+  Future<void> updateOrderStatus(String orderId, OrderStatus newStatus) async {
     final index = _orders.indexWhere((o) => o.id == orderId);
     if (index >= 0) {
       final current = _orders[index];
-      _orders[index] = OrderItem(
+      _orders[index] = OrderModel(
         id: current.id,
-        amount: current.amount,
-        products: current.products,
-        dateTime: current.dateTime,
         userId: current.userId,
+        items: current.items,
+        totalAmount: current.totalAmount,
+        deliveryFee: current.deliveryFee,
+        tax: current.tax,
+        discount: current.discount,
+        deliveryAddress: current.deliveryAddress,
         status: newStatus,
+        paymentMethod: current.paymentMethod,
+        createdAt: current.createdAt,
+        trackingId: current.trackingId,
       );
       notifyListeners();
     }
 
     try {
       if (Firebase.apps.isNotEmpty) {
-        await _firestore.collection('orders').doc(orderId).update({'status': newStatus});
+        await _firestore.collection('orders').doc(orderId).update({'status': newStatus.toString().split('.').last});
       }
     } catch (e) {
       debugPrint('Error syncing status to Firebase: $e');
     }
   }
 
-  Stream<List<OrderItem>> get ordersStream {
+  Stream<List<OrderModel>> get ordersStream {
     try {
       if (Firebase.apps.isEmpty) return Stream.value(_orders);
-      return _firestore.collection('orders').orderBy('dateTime', descending: true).snapshots().map((snapshot) {
-        return snapshot.docs.map((doc) => OrderItem.fromJson(doc.data())).toList();
+      return _firestore.collection('orders').orderBy('createdAt', descending: true).snapshots().map((snapshot) {
+        return snapshot.docs.map((doc) => OrderModel.fromJson(doc.data())).toList();
       });
     } catch (e) {
       return Stream.value(_orders);
     }
   }
 
-  Future<String> addOrder(double total, List<dynamic> cartItems) async {
-    final orderId = 'ORD-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
-    final newOrder = OrderItem(
+  Future<String> addOrder({
+    required List<CartItem> items,
+    required double totalAmount,
+    required double deliveryFee,
+    required double tax,
+    required double discount,
+    required String deliveryAddress,
+    required String paymentMethod,
+  }) async {
+    final orderId = 'ORD-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}';
+    final newOrder = OrderModel(
       id: orderId,
-      amount: total,
-      products: cartItems,
-      dateTime: DateTime.now(),
       userId: Firebase.apps.isNotEmpty ? _auth.currentUser?.uid ?? 'guest' : 'guest',
+      items: items,
+      totalAmount: totalAmount,
+      deliveryFee: deliveryFee,
+      tax: tax,
+      discount: discount,
+      deliveryAddress: deliveryAddress,
+      status: OrderStatus.confirmed,
+      paymentMethod: paymentMethod,
+      createdAt: DateTime.now(),
     );
 
     _orders.insert(0, newOrder);

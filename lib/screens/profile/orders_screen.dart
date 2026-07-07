@@ -30,7 +30,7 @@ class OrdersScreen extends StatelessWidget {
               itemCount: orders.length,
               itemBuilder: (context, index) {
                 final order = orders[index];
-                final isLive = index == 0 && DateTime.now().difference(order.dateTime).inMinutes < 15;
+                final isLive = index == 0 && DateTime.now().difference(order.createdAt).inMinutes < 15;
 
                 return Container(
                   margin: const EdgeInsets.only(bottom: 16),
@@ -57,7 +57,7 @@ class OrdersScreen extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  DateFormat('dd MMM yyyy, hh:mm a').format(order.dateTime),
+                                  DateFormat('dd MMM yyyy, hh:mm a').format(order.createdAt),
                                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                                 ),
                                 Text(
@@ -73,7 +73,7 @@ class OrdersScreen extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
-                                isLive ? 'LIVE' : order.status.toUpperCase(),
+                                isLive ? 'LIVE' : order.status.toString().split('.').last.toUpperCase(),
                                 style: TextStyle(
                                   color: isLive ? const Color(0xFF2E7D32) : Colors.grey[700],
                                   fontWeight: FontWeight.w900,
@@ -105,11 +105,11 @@ class OrdersScreen extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    '${order.products.length} Items',
+                                    '${order.items.length} Items',
                                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                                   ),
                                   Text(
-                                    '₹${order.amount.toStringAsFixed(2)}',
+                                    '₹${order.totalAmount.toStringAsFixed(2)}',
                                     style: const TextStyle(color: AppColors.brandRed, fontWeight: FontWeight.bold, fontSize: 13),
                                   ),
                                 ],
@@ -136,16 +136,10 @@ class OrdersScreen extends StatelessWidget {
                                 onPressed: () {
                                   final cartProv = Provider.of<CartProvider>(context, listen: false);
                                   int added = 0;
-                                  for (var item in order.products) {
+                                  for (var item in order.items) {
                                     try {
-                                      if (item is CartItem) {
-                                        cartProv.addItem(item.product);
-                                        added++;
-                                      } else if (item is Map<String, dynamic> && item.containsKey('product')) {
-                                        final cartItem = CartItem.fromJson(item);
-                                        cartProv.addItem(cartItem.product);
-                                        added++;
-                                      }
+                                      cartProv.addItem(item.product);
+                                      added++;
                                     } catch (e) {
                                       // Skip invalid legacy items
                                     }

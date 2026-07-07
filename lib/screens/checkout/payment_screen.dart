@@ -150,14 +150,23 @@ class _PaymentScreenState extends State<PaymentScreen> {
     final cart = Provider.of<CartProvider>(context, listen: false);
     final orderProv = Provider.of<OrderProvider>(context, listen: false);
     
-    orderProv.addOrder(widget.amount, cart.items.values.toList());
+    final orderId = await orderProv.addOrder(
+      items: cart.items.values.toList(),
+      totalAmount: widget.amount,
+      deliveryFee: 0.0,
+      tax: 0.0,
+      discount: 0.0,
+      deliveryAddress: 'Default Address',
+      paymentMethod: _selectedMethod.toUpperCase(),
+    );
+    
     cart.clear();
 
     if (!context.mounted) return;
     
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const TrackingScreen(orderId: 'ORD-7742')),
+      MaterialPageRoute(builder: (_) => TrackingScreen(orderId: orderId)),
     );
   }
 }
