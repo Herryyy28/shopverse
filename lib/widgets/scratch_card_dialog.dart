@@ -14,7 +14,7 @@ class ScratchCardDialog extends StatefulWidget {
 class _ScratchCardDialogState extends State<ScratchCardDialog> {
   final List<Offset?> _points = [];
   bool _revealed = false;
-  double _scratchPercentage = 0.0;
+
 
   void _checkReveal(Size size) {
     if (_revealed) return;

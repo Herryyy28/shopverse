@@ -196,7 +196,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   const SizedBox(height: 16),
 
                   DropdownButtonFormField<String>(
-                    value: categories.any((c) => c.name == _selectedCategory) ? _selectedCategory : (categories.isNotEmpty ? categories.first.name : null),
+                    initialValue: categories.any((c) => c.name == _selectedCategory) ? _selectedCategory : (categories.isNotEmpty ? categories.first.name : null),
                     items: categories.map((c) => DropdownMenuItem(value: c.name, child: Text(c.name))).toList(),
                     onChanged: (v) => setState(() => _selectedCategory = v!),
                     decoration: const InputDecoration(labelText: 'Category', border: OutlineInputBorder()),

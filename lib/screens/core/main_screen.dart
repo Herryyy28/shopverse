@@ -5,7 +5,7 @@ import 'package:shopverse/screens/shop/search_screen.dart';
 import 'package:shopverse/screens/shop/shoppable_feed_screen.dart';
 import 'package:shopverse/screens/profile/profile_screen.dart';
 import 'package:shopverse/providers/cart_provider.dart';
-import 'package:shopverse/screens/checkout/cart_screen.dart';
+
 import 'package:shopverse/utils/app_colors.dart';
 import 'package:shopverse/widgets/cart_drawer.dart';
 

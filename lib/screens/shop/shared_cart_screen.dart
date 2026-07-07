@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shopverse/models/product.dart';
-import 'package:shopverse/providers/cart_provider.dart';
+
 import 'package:shopverse/providers/wallet_provider.dart';
 import 'package:shopverse/utils/app_colors.dart';
 import 'package:shopverse/widgets/custom_button.dart';
@@ -15,7 +14,7 @@ class SharedCartScreen extends StatefulWidget {
 
 class _SharedCartScreenState extends State<SharedCartScreen> {
   final String _roomId = "SV-7829";
-  bool _joined = false;
+
   
   final List<Map<String, dynamic>> _groupMembers = [
     {

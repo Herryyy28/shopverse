@@ -203,7 +203,7 @@ class _SmartListScreenState extends State<SmartListScreen> {
                                     width: 40,
                                     height: 40,
                                     fit: BoxFit.contain,
-                                    errorWidget: (_, __, ___) => const Icon(Icons.shopping_bag_outlined),
+                                    errorWidget: (context, url, error) => const Icon(Icons.shopping_bag_outlined),
                                   ),
                                   title: Text(product.name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
                                   subtitle: Text('₹${product.price.toInt()} • ${product.category}'),

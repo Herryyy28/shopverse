@@ -105,7 +105,7 @@ class _PantryTrackerScreenState extends State<PantryTrackerScreen> {
                     ),
                     Switch(
                       value: _alertsEnabled,
-                      activeColor: Colors.orangeAccent,
+                      activeThumbColor: Colors.orangeAccent,
                       onChanged: (val) {
                         setState(() {
                           _alertsEnabled = val;

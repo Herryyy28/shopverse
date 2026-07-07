@@ -78,7 +78,7 @@ class _SpatialRoomScreenState extends State<SpatialRoomScreen> {
                         interval: 100,
                         divisions: 2,
                         subdivisions: 2,
-                        child: Container(width: double.infinity, height: double.infinity),
+                        child: const SizedBox(width: double.infinity, height: double.infinity),
                       ),
                     ),
 

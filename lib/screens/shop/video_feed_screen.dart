@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:shopverse/models/product.dart';
 import 'package:shopverse/providers/cart_provider.dart';
-import 'package:shopverse/utils/app_colors.dart';
+
 
 class VideoFeedScreen extends StatefulWidget {
   const VideoFeedScreen({super.key});

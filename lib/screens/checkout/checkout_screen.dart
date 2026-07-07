@@ -8,6 +8,7 @@ import 'package:shopverse/providers/wallet_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:shopverse/providers/order_provider.dart';
+import 'package:shopverse/providers/coupon_provider.dart';
 import 'package:shopverse/screens/checkout/tracking_screen.dart';
 import 'package:shopverse/screens/checkout/location_picker_screen.dart';
 import 'package:shopverse/screens/checkout/receipt_screen.dart';
@@ -432,7 +433,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   ),
                   Switch(
                     value: _carbonNeutral,
-                    activeColor: Colors.green,
+                    activeThumbColor: Colors.green,
                     onChanged: (val) {
                       setState(() {
                         _carbonNeutral = val;
@@ -487,7 +488,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   ),
                   Switch(
                     value: _ecoCargo,
-                    activeColor: Colors.green,
+                    activeThumbColor: Colors.green,
                     onChanged: (val) {
                       setState(() {
                         _ecoCargo = val;
@@ -824,7 +825,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
     
     cart.clear();
-    couponProv.applyCoupon(null);
+    couponProv.removeCoupon();
     
     final shortId = orderId;
 

@@ -348,7 +348,7 @@ class ReviewSectionWidget extends StatelessWidget {
                       child: CachedNetworkImage(
                         imageUrl: review.images[i],
                         fit: BoxFit.cover,
-                        placeholder: (_, __) => Container(color: Colors.grey[100]),
+                        placeholder: (context, url) => Container(color: Colors.grey[100]),
                       ),
                     ),
                   );

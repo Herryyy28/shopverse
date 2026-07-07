@@ -7,7 +7,7 @@ import 'package:shopverse/providers/cart_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shopverse/services/ai_service.dart';
 import 'package:shopverse/widgets/barcode_scanner_dialog.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
+
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shopverse/utils/app_colors.dart';
@@ -28,8 +28,8 @@ class _SearchScreenState extends State<SearchScreen> {
   bool _isSearching = false;
   
   // Advanced Search States
-  final stt.SpeechToText _speech = stt.SpeechToText();
-  bool _isListening = false;
+
+
   List<String> _searchHistory = [];
   List<String> _aiSuggestions = [];
   final ImagePicker _picker = ImagePicker();
@@ -200,7 +200,7 @@ class _SearchScreenState extends State<SearchScreen> {
       appBar: AppBar(
         title: const Text('ShopVerse', style: TextStyle(color: AppColors.brandRed, fontWeight: FontWeight.w900)),
         actions: [
-          IconButton(icon: Icon(_isListening ? Icons.graphic_eq : Icons.mic, color: AppColors.brandRed), onPressed: _startListening),
+          IconButton(icon: const Icon(Icons.mic, color: AppColors.brandRed), onPressed: _startListening),
           IconButton(icon: const Icon(Icons.qr_code_scanner, color: AppColors.textPrimary), onPressed: _scanBarcode),
           IconButton(icon: const Icon(Icons.image_outlined, color: AppColors.textPrimary), onPressed: _pickImage),
         ],
@@ -217,7 +217,7 @@ class _SearchScreenState extends State<SearchScreen> {
               onChanged: _onSearchChanged,
               onSubmitted: _saveSearchHistory,
               decoration: InputDecoration(
-                hintText: _isListening ? 'Listening...' : 'Search products, brands...',
+                hintText: 'Search products, brands...',
                 prefixIcon: const Icon(Icons.search, color: AppColors.textMuted),
                 suffixIcon: _searchController.text.isNotEmpty 
                   ? IconButton(
@@ -788,7 +788,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     title: const Text('On Sale Only', style: TextStyle(fontWeight: FontWeight.w600)),
                     subtitle: const Text('Show items with discounts'),
                     value: _onSaleOnly,
-                    activeColor: AppColors.brandRed,
+                    activeThumbColor: AppColors.brandRed,
                     contentPadding: EdgeInsets.zero,
                     onChanged: (v) => setModalState(() => _onSaleOnly = v),
                   ),
@@ -796,7 +796,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     title: const Text('In Stock Only', style: TextStyle(fontWeight: FontWeight.w600)),
                     subtitle: const Text('Hide out-of-stock items'),
                     value: _inStockOnly,
-                    activeColor: AppColors.brandRed,
+                    activeThumbColor: AppColors.brandRed,
                     contentPadding: EdgeInsets.zero,
                     onChanged: (v) => setModalState(() => _inStockOnly = v),
                   ),

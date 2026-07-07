@@ -63,6 +63,8 @@ class _MysteryBoxScreenState extends State<MysteryBoxScreen> with SingleTickerPr
     final random = Random();
     final reward = _rewardsList[random.nextInt(_rewardsList.length)];
     
+    if (!mounted) return;
+    
     // Add coins if won
     if (reward['coins'] > 0) {
       Provider.of<WalletProvider>(context, listen: false).addCoins(reward['coins'] as int, 'Mystery Box Reward');

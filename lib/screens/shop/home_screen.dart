@@ -4,13 +4,12 @@ import 'package:shimmer/shimmer.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shopverse/models/product.dart';
-import 'package:shopverse/providers/cart_provider.dart';
-import 'package:shopverse/providers/wishlist_provider.dart';
+
 import 'package:shopverse/providers/location_provider.dart';
 import 'package:shopverse/providers/recent_provider.dart';
 import 'package:shopverse/providers/wallet_provider.dart';
 import 'package:shopverse/screens/shop/search_screen.dart';
-import 'package:shopverse/screens/shop/product_details_screen.dart';
+
 import 'package:shopverse/services/ai_service.dart';
 import 'package:shopverse/services/firebase_service.dart';
 import 'package:shopverse/providers/product_provider.dart';
@@ -20,6 +19,8 @@ import 'package:shopverse/widgets/custom_text_field.dart';
 import 'package:shopverse/widgets/spin_wheel_dialog.dart';
 import 'package:shopverse/widgets/delivery_eta_banner.dart';
 import 'package:shopverse/widgets/flash_deal_radar.dart';
+
+import 'package:shopverse/widgets/product_card.dart';
 import 'package:shopverse/widgets/autopilot_restock_widget.dart';
 import 'package:shopverse/screens/shop/balloon_pop_screen.dart';
 import 'package:shopverse/screens/shop/shoppable_feed_screen.dart';
@@ -120,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
               displacement: 60,
               onRefresh: () async {
                 await Future.delayed(const Duration(milliseconds: 1500));
-                if (mounted) {
+                if (context.mounted) {
                   productProv.refreshProducts();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -160,8 +161,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         // Recently Viewed Section
                         Consumer<RecentProvider>(
                           builder: (context, recentProv, _) {
-                            if (recentProv.recentlyViewed.isEmpty)
+                            if (recentProv.recentlyViewed.isEmpty) {
                               return const SizedBox.shrink();
+                            }
                             return Column(
                               children: [
                                 _buildSectionHeader(
@@ -538,7 +540,7 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 12),
         itemCount: recommendations.length,
         itemBuilder: (context, i) =>
-            _AiProductCard(product: recommendations[i]),
+            ProductCard(product: recommendations[i]),
       ),
     );
   }
@@ -1330,7 +1332,7 @@ class _HomeScreenState extends State<HomeScreen> {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         itemCount: products.length,
-        itemBuilder: (context, i) => _ProductCard(product: products[i]),
+        itemBuilder: (context, i) => ProductCard(product: products[i]),
       ),
     );
   }
@@ -1477,7 +1479,7 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisSpacing: 16,
         ),
         itemCount: products.length,
-        itemBuilder: (context, i) => _ProductCard(product: products[i]),
+        itemBuilder: (context, i) => ProductCard(product: products[i]),
       ),
     );
   }
@@ -1773,76 +1775,6 @@ class _TimerBox extends StatelessWidget {
   }
 }
 
-class _AiProductCard extends StatelessWidget {
-  final Product product;
-  const _AiProductCard({required this.product});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ProductDetailsScreen(product: product),
-        ),
-      ),
-      child: Container(
-        width: 140,
-        margin: const EdgeInsets.all(6),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.amber.withValues(alpha: 0.1),
-              blurRadius: 8,
-              spreadRadius: 1,
-            ),
-          ],
-          border: Border.all(color: Colors.amber.withValues(alpha: 0.2)),
-        ),
-        child: Column(
-          children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: CachedNetworkImage(
-                  imageUrl: product.imageUrl,
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-              child: Column(
-                children: [
-                  Text(
-                    product.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '₹${product.price.toInt()}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _StickySearchDelegate extends SliverPersistentHeaderDelegate {
   const _StickySearchDelegate();
 
@@ -1905,261 +1837,3 @@ class _StickySearchDelegate extends SliverPersistentHeaderDelegate {
       false;
 }
 
-class _ProductCard extends StatelessWidget {
-  final Product product;
-  const _ProductCard({required this.product});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ProductDetailsScreen(product: product),
-        ),
-      ),
-      child: Container(
-        width: 160,
-        margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 15,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(20),
-                    ),
-                    child: Container(
-                      color: const Color(0xFFF6F7FB),
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: CachedNetworkImage(
-                            imageUrl: product.imageUrl,
-                            placeholder: (c, u) => const Center(
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                            errorWidget: (c, u, e) => const Icon(
-                              Icons.shopping_bag_outlined,
-                              color: Colors.grey,
-                            ),
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  if (product.discount > 0)
-                    Positioned(
-                      top: 10,
-                      left: 10,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          gradient: AppColors.primaryGradient,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          '${product.discount}% OFF',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 9,
-                          ),
-                        ),
-                      ),
-                    ),
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Consumer<WishlistProvider>(
-                      builder: (context, wishlist, _) => GestureDetector(
-                        onTap: () => wishlist.toggleWishlist(product),
-                        child: Container(
-                          width: 30,
-                          height: 30,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.08),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            wishlist.isFavorite(product.id)
-                                ? Icons.favorite_rounded
-                                : Icons.favorite_border_rounded,
-                            color: wishlist.isFavorite(product.id)
-                                ? Colors.red
-                                : Colors.grey[400],
-                            size: 16,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    product.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 12,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    product.unit,
-                    style: const TextStyle(
-                      fontSize: 10,
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '₹${product.price.toInt()}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 15,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          if (product.oldPrice > product.price)
-                            Text(
-                              '₹${product.oldPrice.toInt()}',
-                              style: const TextStyle(
-                                decoration: TextDecoration.lineThrough,
-                                color: AppColors.textMuted,
-                                fontSize: 10,
-                              ),
-                            ),
-                        ],
-                      ),
-                      _AddButtonSmall(product: product),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _AddButtonSmall extends StatelessWidget {
-  final Product product;
-  const _AddButtonSmall({required this.product});
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<CartProvider>(
-      builder: (context, cart, _) {
-        final cartItem = cart.items[product.id];
-        final isInCart = cartItem != null;
-
-        if (!isInCart) {
-          return GestureDetector(
-            onTap: () => cart.addItem(product),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.primary),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.12),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: const Text(
-                'ADD',
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 12,
-                ),
-              ),
-            ),
-          );
-        }
-
-        return Container(
-          decoration: BoxDecoration(
-            gradient: AppColors.primaryGradient,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              GestureDetector(
-                onTap: () => cart.removeSingleItem(product.id),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                  child: Icon(Icons.remove, color: Colors.white, size: 16),
-                ),
-              ),
-              Text(
-                '${cartItem.quantity}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 13,
-                ),
-              ),
-              GestureDetector(
-                onTap: () => cart.addItem(product),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                  child: Icon(Icons.add, color: Colors.white, size: 16),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}

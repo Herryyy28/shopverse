@@ -79,6 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _biometricSignIn() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final authenticated = await authProvider.authenticateBiometric();
+    if (!mounted) return;
     if (authenticated) {
       // In a real app, you'd check if a user was previously logged in on this device
       // For this demo, we'll simulate a login if biometrics succeed
@@ -106,9 +107,9 @@ class _LoginScreenState extends State<LoginScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (context) => Padding(
+      builder: (ctx) => Padding(
         padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
+          bottom: MediaQuery.of(ctx).viewInsets.bottom,
           left: 24,
           right: 24,
           top: 24,
@@ -160,12 +161,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     _phoneController.text,
                     otpController.text,
                   );
-                  if (mounted) {
+                  if (ctx.mounted) {
                     if (error == null) {
-                      Navigator.pop(context);
+                      Navigator.pop(ctx);
                     } else {
                       ScaffoldMessenger.of(
-                        context,
+                        ctx,
                       ).showSnackBar(SnackBar(content: Text(error)));
                     }
                   }
@@ -373,7 +374,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Expanded(
                       child: _buildSocialButton(
                         'Google',
-                        'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_\"G\"_logo.svg/768px-Google_\"G\"_logo.svg.png',
+                        'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_"G"_logo.svg/768px-Google_"G"_logo.svg.png',
                         _googleSignIn,
                       ),
                     ),

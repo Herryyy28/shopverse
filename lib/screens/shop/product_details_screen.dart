@@ -423,7 +423,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         TextButton.icon(
                           onPressed: () async {
                             final recommendation = await AIService.getSizeRecommendation(product.id, {});
-                            if (mounted) {
+                            if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(recommendation),
@@ -549,7 +549,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         context,
                         MaterialPageRoute(builder: (_) => const ARDimensionCalculator()),
                       );
-                      if (sizeRec != null && mounted) {
+                      if (sizeRec != null && context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Calculated sizing: $sizeRec applied!'), backgroundColor: Colors.blueAccent),
                         );
@@ -952,76 +952,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     );
   }
 
-  Widget _buildRatingsSection(Product product) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('Ratings & Reviews', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w900)),
-            TextButton(onPressed: () {}, child: const Text('View All', style: TextStyle(color: AppColors.brandRed))),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Column(
-              children: [
-                Text('${product.rating}', style: const TextStyle(fontSize: 48, fontWeight: FontWeight.w900)),
-                const Row(
-                  children: [
-                    Icon(Icons.star, color: Colors.amber, size: 16),
-                    Icon(Icons.star, color: Colors.amber, size: 16),
-                    Icon(Icons.star, color: Colors.amber, size: 16),
-                    Icon(Icons.star, color: Colors.amber, size: 16),
-                    Icon(Icons.star_half, color: Colors.amber, size: 16),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text('${product.reviews} ratings', style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
-              ],
-            ),
-            const SizedBox(width: 32),
-            Expanded(
-              child: Column(
-                children: [
-                  _buildRatingBar(5, 0.8),
-                  _buildRatingBar(4, 0.15),
-                  _buildRatingBar(3, 0.03),
-                  _buildRatingBar(2, 0.01),
-                  _buildRatingBar(1, 0.01),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRatingBar(int star, double progress) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        children: [
-          Text('$star', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-          const SizedBox(width: 8),
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(2),
-              child: LinearProgressIndicator(
-                value: progress,
-                backgroundColor: Colors.black.withValues(alpha: 0.05),
-                color: Colors.green,
-                minHeight: 4,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildQASection() {
     return Column(

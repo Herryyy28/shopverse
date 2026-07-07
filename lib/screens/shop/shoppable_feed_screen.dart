@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:shopverse/models/shoppable_video.dart';
+
 import 'package:shopverse/providers/feed_provider.dart';
 import 'package:shopverse/providers/product_provider.dart';
 import 'package:shopverse/providers/cart_provider.dart';

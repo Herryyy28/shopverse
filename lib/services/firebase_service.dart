@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
@@ -11,10 +12,10 @@ class FirebaseService {
       // Attempt to initialize Firebase. 
       // On Windows, this may fail if FirebaseOptions are not provided.
       await Firebase.initializeApp();
-      print('Firebase initialized successfully');
+      debugPrint('Firebase initialized successfully');
       await _setupFCM();
     } catch (e) {
-      print('Firebase initialization error: $e');
+      debugPrint('Firebase initialization error: $e');
       // On Windows, if flutterfire configure hasn't been run, this will fail.
       // We catch it so the app can still boot for UI testing.
     } finally {
@@ -33,21 +34,21 @@ class FirebaseService {
       );
 
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-        print('User granted notification permission');
+        debugPrint('User granted notification permission');
         
         // Subscribe to a topic for broadcast notifications
         await messaging.subscribeToTopic('all_users');
         
         String? token = await messaging.getToken();
-        print('FCM Token: $token');
+        debugPrint('FCM Token: $token');
       }
     } catch (e) {
-      print('FCM Setup error: $e');
+      debugPrint('FCM Setup error: $e');
     }
   }
 
   static Future<void> sendBroadcastNotification(String title, String body) async {
-    print('Sending Broadcast: $title - $body');
+    debugPrint('Sending Broadcast: $title - $body');
     await Future.delayed(const Duration(seconds: 1));
   }
 
@@ -69,7 +70,7 @@ class FirebaseService {
 
   static Future<void> saveProduct(Map<String, dynamic> productData) async {
     await Future.delayed(const Duration(seconds: 1));
-    print('Product saved to Firestore: ${productData['name']}');
+    debugPrint('Product saved to Firestore: ${productData['name']}');
   }
 
   static Future<List<Map<String, dynamic>>> fetchProducts() async {

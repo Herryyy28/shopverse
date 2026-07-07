@@ -24,7 +24,7 @@ class AdminDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final productProv = Provider.of<ProductProvider>(context);
-    final orderProv = Provider.of<OrderProvider>(context);
+
     
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
@@ -64,7 +64,7 @@ class AdminDashboard extends StatelessWidget {
         if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         
         final bool isVendor = vendorId != null;
-        
+        final orders = snapshot.data ?? [];
         var scopedOrders = orders;
         var scopedProducts = productSnapshot.data ?? productProv.products;
         
@@ -390,13 +390,15 @@ class AdminDashboard extends StatelessWidget {
                   await FirebaseService.sendBroadcastNotification(titleController.text, bodyController.text);
                   
                   if (ctx.mounted) {
+                    Navigator.pop(ctx);
+                  }
+                  if (context.mounted) {
                     Provider.of<NotificationProvider>(context, listen: false).addNotification(
                       titleController.text,
                       bodyController.text,
                     );
-                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sent to all users!')));
                   }
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sent to all users!')));
                 }
               },
             ),

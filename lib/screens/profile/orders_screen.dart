@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shopverse/providers/cart_provider.dart';
-import 'package:shopverse/models/cart_item.dart';
+
 import 'package:shopverse/providers/order_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:shopverse/screens/checkout/tracking_screen.dart';
