@@ -41,6 +41,8 @@ class Product {
   final String? videoUrl;
   final String? arModelUrl;
   final String? view360Url;
+  final String vendorId;
+  final String vendorName;
 
   Product({
     required this.id,
@@ -61,6 +63,8 @@ class Product {
     this.videoUrl,
     this.arModelUrl,
     this.view360Url,
+    this.vendorId = 'shopverse_official',
+    this.vendorName = 'ShopVerse Official',
   });
 
   int get discount => oldPrice > price 
@@ -87,6 +91,8 @@ class Product {
       'videoUrl': videoUrl,
       'arModelUrl': arModelUrl,
       'view360Url': view360Url,
+      'vendorId': vendorId,
+      'vendorName': vendorName,
     };
   }
 
@@ -110,6 +116,8 @@ class Product {
       videoUrl: json['videoUrl'],
       arModelUrl: json['arModelUrl'],
       view360Url: json['view360Url'],
+      vendorId: json['vendorId'] ?? 'shopverse_official',
+      vendorName: json['vendorName'] ?? 'ShopVerse Official',
     );
   }
 }

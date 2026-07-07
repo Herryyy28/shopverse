@@ -10,6 +10,10 @@ class ProductProvider with ChangeNotifier {
   FirebaseFirestore get _firestore => FirebaseFirestore.instance;
 
   List<Product> get products => [..._products];
+  
+  List<Product> getProductsByVendor(String vendorId) {
+    return _products.where((p) => p.vendorId == vendorId).toList();
+  }
 
   ProductProvider() {
     _safeFetchProducts();
@@ -59,6 +63,8 @@ class ProductProvider with ChangeNotifier {
           'Weight': '210g',
           'Style': 'Low-top'
         },
+        vendorId: 'v_fashion',
+        vendorName: 'Apex Footwear',
       ),
       Product(
         id: 'p1',
@@ -71,6 +77,8 @@ class ProductProvider with ChangeNotifier {
         unit: '500 ml',
         rating: 4.8,
         isVeg: true,
+        vendorId: 'v_grocery',
+        vendorName: 'Fresh Mart',
       ),
       Product(
         id: 'p2',
@@ -84,6 +92,8 @@ class ProductProvider with ChangeNotifier {
         unit: '1 Litre',
         rating: 4.5,
         isVeg: true,
+        vendorId: 'v_grocery',
+        vendorName: 'Fresh Mart',
       ),
       Product(
         id: 'p3',
@@ -97,6 +107,8 @@ class ProductProvider with ChangeNotifier {
         unit: '5 kg',
         rating: 4.7,
         isVeg: true,
+        vendorId: 'v_grocery',
+        vendorName: 'Fresh Mart',
       ),
       Product(
         id: 'p4',
@@ -109,6 +121,8 @@ class ProductProvider with ChangeNotifier {
         category: 'Electronics',
         rating: 4.8,
         reviews: 1240,
+        vendorId: 'v_tech',
+        vendorName: 'Tech Haven',
       ),
       Product(
         id: 'p5',
@@ -121,6 +135,8 @@ class ProductProvider with ChangeNotifier {
         category: 'Accessories',
         rating: 4.7,
         reviews: 850,
+        vendorId: 'v_fashion',
+        vendorName: 'Apex Footwear',
       ),
       Product(
         id: 'p6',
@@ -133,6 +149,8 @@ class ProductProvider with ChangeNotifier {
         category: 'Footwear',
         rating: 4.9,
         reviews: 2100,
+        vendorId: 'v_fashion',
+        vendorName: 'Apex Footwear',
       ),
       Product(
         id: 'p7',
@@ -145,6 +163,8 @@ class ProductProvider with ChangeNotifier {
         category: 'Accessories',
         rating: 4.6,
         reviews: 540,
+        vendorId: 'v_fashion',
+        vendorName: 'Apex Footwear',
       ),
     ];
     notifyListeners();

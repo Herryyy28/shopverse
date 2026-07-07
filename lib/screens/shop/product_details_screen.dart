@@ -18,7 +18,7 @@ import 'package:shopverse/widgets/price_tracker_widget.dart';
 import 'package:shopverse/widgets/subscription_scheduler_dialog.dart';
 import 'package:shopverse/widgets/bargain_arena_widget.dart';
 import 'package:shopverse/widgets/drag_to_buy_slider.dart';
-import 'package:shopverse/widgets/video_reviews_widget.dart';
+import 'package:shopverse/screens/shop/vendor_profile_screen.dart';
 import 'package:shopverse/widgets/digital_wrapper_dialog.dart';
 import 'package:shopverse/widgets/price_comparison_graph.dart';
 import 'package:shopverse/screens/shop/ar_dimension_calculator.dart';
@@ -353,6 +353,38 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   Text(
                     product.name,
                     style: const TextStyle(color: AppColors.textPrimary, fontSize: 26, fontWeight: FontWeight.w900),
+                  ),
+                  const SizedBox(height: 12),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => VendorProfileScreen(vendorId: product.vendorId),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: AppColors.brandRed.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: AppColors.brandRed.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.storefront, size: 16, color: AppColors.brandRed),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Sold by ${product.vendorName}',
+                            style: const TextStyle(color: AppColors.brandRed, fontSize: 13, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.chevron_right, size: 16, color: AppColors.brandRed),
+                        ],
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   Row(

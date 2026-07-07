@@ -53,6 +53,33 @@ class UserProvider with ChangeNotifier {
         role: 'admin',
         createdAt: DateTime.now().subtract(const Duration(days: 20)),
       ),
+      UserModel(
+        uid: 'v_fashion',
+        name: 'Apex Footwear Store',
+        email: 'vendor1@shopverse.com',
+        role: 'vendor',
+        storeName: 'Apex Footwear',
+        storeBannerUrl: 'https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=800',
+        createdAt: DateTime.now().subtract(const Duration(days: 40)),
+      ),
+      UserModel(
+        uid: 'v_grocery',
+        name: 'Fresh Mart Official',
+        email: 'vendor2@shopverse.com',
+        role: 'vendor',
+        storeName: 'Fresh Mart',
+        storeBannerUrl: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800',
+        createdAt: DateTime.now().subtract(const Duration(days: 35)),
+      ),
+      UserModel(
+        uid: 'v_tech',
+        name: 'Tech Haven Shop',
+        email: 'vendor3@shopverse.com',
+        role: 'vendor',
+        storeName: 'Tech Haven',
+        storeBannerUrl: 'https://images.unsplash.com/photo-1550009158-9efff6c97068?w=800',
+        createdAt: DateTime.now().subtract(const Duration(days: 30)),
+      ),
     ];
     notifyListeners();
   }

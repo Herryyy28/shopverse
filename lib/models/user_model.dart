@@ -8,6 +8,8 @@ class UserModel {
   final double walletBalance;
   final List<String> wishlist;
   final DateTime createdAt;
+  final String? storeName;
+  final String? storeBannerUrl;
 
   UserModel({
     required this.uid,
@@ -19,6 +21,8 @@ class UserModel {
     this.walletBalance = 0.0,
     this.wishlist = const [],
     required this.createdAt,
+    this.storeName,
+    this.storeBannerUrl,
   });
 
   Map<String, dynamic> toJson() {
@@ -32,6 +36,8 @@ class UserModel {
       'walletBalance': walletBalance,
       'wishlist': wishlist,
       'createdAt': createdAt.toIso8601String(),
+      'storeName': storeName,
+      'storeBannerUrl': storeBannerUrl,
     };
   }
 
@@ -46,6 +52,8 @@ class UserModel {
       walletBalance: (json['walletBalance'] ?? 0.0).toDouble(),
       wishlist: List<String>.from(json['wishlist'] ?? []),
       createdAt: DateTime.parse(json['createdAt']),
+      storeName: json['storeName'],
+      storeBannerUrl: json['storeBannerUrl'],
     );
   }
 
@@ -55,6 +63,8 @@ class UserModel {
     String? profileImageUrl,
     double? walletBalance,
     List<String>? wishlist,
+    String? storeName,
+    String? storeBannerUrl,
   }) {
     return UserModel(
       uid: uid,
@@ -66,6 +76,8 @@ class UserModel {
       walletBalance: walletBalance ?? this.walletBalance,
       wishlist: wishlist ?? this.wishlist,
       createdAt: createdAt,
+      storeName: storeName ?? this.storeName,
+      storeBannerUrl: storeBannerUrl ?? this.storeBannerUrl,
     );
   }
 }
