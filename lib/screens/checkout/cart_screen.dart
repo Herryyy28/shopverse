@@ -533,7 +533,8 @@ class CartScreen extends StatelessWidget {
   }
 
   Widget _buildBillDetails(CartProvider cart) {
-    final couponProv = Provider.of<CouponProvider>(context, listen: true);
+    return Consumer<CouponProvider>(
+      builder: (context, couponProv, _) {
     final itemTotal = cart.totalAmount;
     const deliveryFee = 25.0;
     const handlingFee = 5.0;
@@ -603,6 +604,8 @@ class CartScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+      },
     );
   }
 
