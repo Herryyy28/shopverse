@@ -26,9 +26,8 @@ class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   List<Product> _filteredProducts = [];
   bool _isSearching = false;
-  
-  // Advanced Search States
 
+  // Advanced Search States
 
   List<String> _searchHistory = [];
   List<String> _aiSuggestions = [];
@@ -101,9 +100,11 @@ class _SearchScreenState extends State<SearchScreen> {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (ctx) => const Center(child: CircularProgressIndicator(color: AppColors.brandRed)),
+        builder: (ctx) => const Center(
+          child: CircularProgressIndicator(color: AppColors.brandRed),
+        ),
       );
-      
+
       final tags = await AIService.analyzeImage(image.path);
       if (mounted) Navigator.pop(context); // Close loader
 
@@ -120,10 +121,12 @@ class _SearchScreenState extends State<SearchScreen> {
       id: 'p0',
       name: 'Aura Pro Wireless Headphones - Midnight Purple',
       brand: 'AURA',
-      description: 'Experience immersive sound with active noise cancellation and 40-hour battery life.',
+      description:
+          'Experience immersive sound with active noise cancellation and 40-hour battery life.',
       price: 299.0,
       oldPrice: 349.0,
-      imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800',
+      imageUrl:
+          'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800',
       category: 'Electronics',
       rating: 4.8,
       reviews: 1240,
@@ -132,10 +135,12 @@ class _SearchScreenState extends State<SearchScreen> {
       id: 'p00',
       name: 'Chronos Classic Steel Edition',
       brand: 'CHRONOS',
-      description: 'Timeless design meets modern precision. Sapphire glass and genuine leather strap.',
+      description:
+          'Timeless design meets modern precision. Sapphire glass and genuine leather strap.',
       price: 185.0,
       oldPrice: 220.0,
-      imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800',
+      imageUrl:
+          'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800',
       category: 'Accessories',
       rating: 4.7,
       reviews: 850,
@@ -144,10 +149,12 @@ class _SearchScreenState extends State<SearchScreen> {
       id: 'p000',
       name: 'Swift-Run Nitro Pro - Crimson',
       brand: 'SWIFT',
-      description: 'Ultra-lightweight running shoes with Nitro-foam technology for maximum energy return.',
+      description:
+          'Ultra-lightweight running shoes with Nitro-foam technology for maximum energy return.',
       price: 120.0,
       oldPrice: 150.0,
-      imageUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800',
+      imageUrl:
+          'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800',
       category: 'Footwear',
       rating: 4.9,
       reviews: 2100,
@@ -156,10 +163,12 @@ class _SearchScreenState extends State<SearchScreen> {
       id: 'p0000',
       name: 'Horizon Wayfarer - Tortoise Shell',
       brand: 'HORIZON',
-      description: 'Handcrafted acetate frames with polarized lenses for 100% UV protection.',
+      description:
+          'Handcrafted acetate frames with polarized lenses for 100% UV protection.',
       price: 75.0,
       oldPrice: 95.0,
-      imageUrl: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800',
+      imageUrl:
+          'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800',
       category: 'Accessories',
       rating: 4.6,
       reviews: 540,
@@ -170,7 +179,8 @@ class _SearchScreenState extends State<SearchScreen> {
       description: 'Fresh toned milk',
       price: 27.0,
       oldPrice: 30.0,
-      imageUrl: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=800',
+      imageUrl:
+          'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=800',
       category: 'Dairy',
       unit: '500 ml',
     ),
@@ -186,8 +196,11 @@ class _SearchScreenState extends State<SearchScreen> {
       setState(() {
         _aiSuggestions = suggestions;
         _filteredProducts = _allProducts
-            .where((p) => p.name.toLowerCase().contains(query.toLowerCase()) || 
-                         p.category.toLowerCase().contains(query.toLowerCase()))
+            .where(
+              (p) =>
+                  p.name.toLowerCase().contains(query.toLowerCase()) ||
+                  p.category.toLowerCase().contains(query.toLowerCase()),
+            )
             .toList();
       });
     }
@@ -198,11 +211,32 @@ class _SearchScreenState extends State<SearchScreen> {
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
-        title: const Text('ShopVerse', style: TextStyle(color: AppColors.brandRed, fontWeight: FontWeight.w900)),
+        title: const Text(
+          'ShopVerse',
+          style: TextStyle(
+            color: AppColors.brandRed,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
         actions: [
-          IconButton(icon: const Icon(Icons.mic, color: AppColors.brandRed), onPressed: _startListening),
-          IconButton(icon: const Icon(Icons.qr_code_scanner, color: AppColors.textPrimary), onPressed: _scanBarcode),
-          IconButton(icon: const Icon(Icons.image_outlined, color: AppColors.textPrimary), onPressed: _pickImage),
+          IconButton(
+            icon: const Icon(Icons.mic, color: AppColors.brandRed),
+            onPressed: _startListening,
+          ),
+          IconButton(
+            icon: const Icon(
+              Icons.qr_code_scanner,
+              color: AppColors.textPrimary,
+            ),
+            onPressed: _scanBarcode,
+          ),
+          IconButton(
+            icon: const Icon(
+              Icons.image_outlined,
+              color: AppColors.textPrimary,
+            ),
+            onPressed: _pickImage,
+          ),
         ],
       ),
       body: Column(
@@ -218,15 +252,22 @@ class _SearchScreenState extends State<SearchScreen> {
               onSubmitted: _saveSearchHistory,
               decoration: InputDecoration(
                 hintText: 'Search products, brands...',
-                prefixIcon: const Icon(Icons.search, color: AppColors.textMuted),
-                suffixIcon: _searchController.text.isNotEmpty 
-                  ? IconButton(
-                      icon: const Icon(Icons.clear), 
-                      onPressed: () {
-                        _searchController.clear();
-                        _onSearchChanged('');
-                      }) 
-                  : IconButton(icon: const Icon(Icons.mic, color: AppColors.textMuted), onPressed: _startListening),
+                prefixIcon: const Icon(
+                  Icons.search,
+                  color: AppColors.textMuted,
+                ),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchController.clear();
+                          _onSearchChanged('');
+                        },
+                      )
+                    : IconButton(
+                        icon: const Icon(Icons.mic, color: AppColors.textMuted),
+                        onPressed: _startListening,
+                      ),
               ),
             ),
           ),
@@ -242,7 +283,10 @@ class _SearchScreenState extends State<SearchScreen> {
                   const SizedBox(width: 8),
                   _buildFilterButton(),
                   const SizedBox(width: 8),
-                  if (_onSaleOnly || _minRating > 0 || _priceRange.start > 0 || _priceRange.end < 1000)
+                  if (_onSaleOnly ||
+                      _minRating > 0 ||
+                      _priceRange.start > 0 ||
+                      _priceRange.end < 1000)
                     GestureDetector(
                       onTap: () {
                         setState(() {
@@ -255,7 +299,10 @@ class _SearchScreenState extends State<SearchScreen> {
                         });
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.red.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(16),
@@ -265,7 +312,14 @@ class _SearchScreenState extends State<SearchScreen> {
                           children: [
                             Icon(Icons.clear, size: 14, color: Colors.red),
                             SizedBox(width: 4),
-                            Text('Clear', style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold)),
+                            Text(
+                              'Clear',
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -273,45 +327,62 @@ class _SearchScreenState extends State<SearchScreen> {
                 ],
               ),
             ),
-          
-          if (_isSearching && _aiSuggestions.isNotEmpty)
-            _buildAISuggestions(),
-          
+
+          if (_isSearching && _aiSuggestions.isNotEmpty) _buildAISuggestions(),
+
           if (!_isSearching) ...[
             if (_searchHistory.isNotEmpty) _buildSearchHistory(),
             Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  _buildFilterChip('Delivery Speed', AppColors.brandRed, true, Icons.bolt),
+                  _buildFilterChip(
+                    'Delivery Speed',
+                    AppColors.brandRed,
+                    true,
+                    Icons.bolt,
+                  ),
                   const SizedBox(width: 8),
-                  _buildFilterChip('Price', Colors.grey[200]!, false, Icons.keyboard_arrow_down),
+                  _buildFilterChip(
+                    'Price',
+                    Colors.grey[200]!,
+                    false,
+                    Icons.keyboard_arrow_down,
+                  ),
                   const SizedBox(width: 8),
-                  _buildFilterChip('Rating', Colors.grey[200]!, false, Icons.star_border),
+                  _buildFilterChip(
+                    'Rating',
+                    Colors.grey[200]!,
+                    false,
+                    Icons.star_border,
+                  ),
                 ],
               ),
             ),
-            
+
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
                   Icon(Icons.trending_up, color: AppColors.brandRed, size: 20),
                   SizedBox(width: 8),
-                  Text('Trending Searches', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
+                  Text(
+                    'Trending Searches',
+                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
+                  ),
                 ],
               ),
             ),
-            
+
             _buildTrendingSearches(),
           ],
 
           Expanded(
-            child: _isSearching 
-              ? _filteredProducts.isEmpty
-                  ? _buildNoResults()
-                  : _buildSearchResults()
-              : _buildRecentItemsGrid(),
+            child: _isSearching
+                ? _filteredProducts.isEmpty
+                      ? _buildNoResults()
+                      : _buildSearchResults()
+                : _buildRecentItemsGrid(),
           ),
         ],
       ),
@@ -330,20 +401,33 @@ class _SearchScreenState extends State<SearchScreen> {
               children: [
                 Icon(Icons.auto_awesome, color: Colors.purple, size: 16),
                 SizedBox(width: 8),
-                Text('AI SUGGESTIONS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.purple)),
+                Text(
+                  'AI SUGGESTIONS',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.purple,
+                  ),
+                ),
               ],
             ),
           ),
-          ..._aiSuggestions.map((s) => ListTile(
-            leading: const Icon(Icons.search, size: 18, color: AppColors.textMuted),
-            title: Text(s, style: const TextStyle(fontSize: 14)),
-            dense: true,
-            onTap: () {
-              _searchController.text = s;
-              _onSearchChanged(s);
-              _saveSearchHistory(s);
-            },
-          )),
+          ..._aiSuggestions.map(
+            (s) => ListTile(
+              leading: const Icon(
+                Icons.search,
+                size: 18,
+                color: AppColors.textMuted,
+              ),
+              title: Text(s, style: const TextStyle(fontSize: 14)),
+              dense: true,
+              onTap: () {
+                _searchController.text = s;
+                _onSearchChanged(s);
+                _saveSearchHistory(s);
+              },
+            ),
+          ),
           const Divider(),
         ],
       ),
@@ -359,14 +443,20 @@ class _SearchScreenState extends State<SearchScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Recent Searches', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text(
+                'Recent Searches',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               TextButton(
                 onPressed: () async {
                   final prefs = await SharedPreferences.getInstance();
                   await prefs.remove('search_history');
                   setState(() => _searchHistory = []);
                 },
-                child: const Text('Clear', style: TextStyle(fontSize: 12, color: AppColors.brandRed)),
+                child: const Text(
+                  'Clear',
+                  style: TextStyle(fontSize: 12, color: AppColors.brandRed),
+                ),
               ),
             ],
           ),
@@ -380,9 +470,15 @@ class _SearchScreenState extends State<SearchScreen> {
             itemBuilder: (context, i) => Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
               child: ActionChip(
-                label: Text(_searchHistory[i], style: const TextStyle(fontSize: 12)),
+                label: Text(
+                  _searchHistory[i],
+                  style: const TextStyle(fontSize: 12),
+                ),
                 backgroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: Colors.grey[200]!)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  side: BorderSide(color: Colors.grey[200]!),
+                ),
                 onPressed: () {
                   _searchController.text = _searchHistory[i];
                   _onSearchChanged(_searchHistory[i]);
@@ -395,7 +491,12 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildFilterChip(String label, Color color, bool isSelected, IconData icon) {
+  Widget _buildFilterChip(
+    String label,
+    Color color,
+    bool isSelected,
+    IconData icon,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
@@ -422,7 +523,12 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildTrendingSearches() {
-    final trends = ['Wireless Headphones', 'Smart Watches', 'Gaming Laptops', 'Skincare Sets'];
+    final trends = [
+      'Wireless Headphones',
+      'Smart Watches',
+      'Gaming Laptops',
+      'Skincare Sets',
+    ];
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Wrap(
@@ -441,7 +547,13 @@ class _SearchScreenState extends State<SearchScreen> {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.grey[200]!),
       ),
-      child: Text(text, style: const TextStyle(color: Colors.black54, fontWeight: FontWeight.w500)),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Colors.black54,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
     );
   }
 
@@ -471,7 +583,11 @@ class _SearchScreenState extends State<SearchScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
@@ -480,7 +596,9 @@ class _SearchScreenState extends State<SearchScreen> {
           Stack(
             children: [
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
                 child: CachedNetworkImage(
                   imageUrl: product.imageUrl,
                   height: 150,
@@ -494,7 +612,11 @@ class _SearchScreenState extends State<SearchScreen> {
                 child: CircleAvatar(
                   backgroundColor: Colors.white70,
                   radius: 16,
-                  child: Icon(Icons.favorite_border, size: 20, color: Colors.black87),
+                  child: Icon(
+                    Icons.favorite_border,
+                    size: 20,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
             ],
@@ -508,20 +630,31 @@ class _SearchScreenState extends State<SearchScreen> {
                   product.name,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
                     Text(
                       '₹${product.price.toInt()}',
-                      style: const TextStyle(color: AppColors.brandRed, fontWeight: FontWeight.w900, fontSize: 18),
+                      style: const TextStyle(
+                        color: AppColors.brandRed,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 18,
+                      ),
                     ),
                     const SizedBox(width: 4),
                     if (product.oldPrice > product.price)
                       Text(
                         '₹${product.oldPrice.toInt()}',
-                        style: const TextStyle(color: AppColors.textMuted, decoration: TextDecoration.lineThrough, fontSize: 11),
+                        style: const TextStyle(
+                          color: AppColors.textMuted,
+                          decoration: TextDecoration.lineThrough,
+                          fontSize: 11,
+                        ),
                       ),
                   ],
                 ),
@@ -532,7 +665,10 @@ class _SearchScreenState extends State<SearchScreen> {
                   child: CustomButton(
                     text: 'ADD',
                     onPressed: () {
-                      Provider.of<CartProvider>(context, listen: false).addItem(product);
+                      Provider.of<CartProvider>(
+                        context,
+                        listen: false,
+                      ).addItem(product);
                     },
                   ),
                 ),
@@ -551,8 +687,14 @@ class _SearchScreenState extends State<SearchScreen> {
         children: [
           Icon(Icons.search_off, size: 80, color: Colors.grey[300]),
           const SizedBox(height: 16),
-          const Text('No products found', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-          Text('Try searching for something else', style: TextStyle(color: Colors.grey[600])),
+          const Text(
+            'No products found',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          Text(
+            'Try searching for something else',
+            style: TextStyle(color: Colors.grey[600]),
+          ),
         ],
       ),
     );
@@ -565,21 +707,38 @@ class _SearchScreenState extends State<SearchScreen> {
       itemBuilder: (context, index) {
         final product = _filteredProducts[index];
         return ListTile(
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetailsScreen(product: product))),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ProductDetailsScreen(product: product),
+            ),
+          ),
           leading: Container(
             width: 50,
             height: 50,
-            decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(8)),
-            child: CachedNetworkImage(imageUrl: product.imageUrl, fit: BoxFit.contain),
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: CachedNetworkImage(
+              imageUrl: product.imageUrl,
+              fit: BoxFit.contain,
+            ),
           ),
-          title: Text(product.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+          title: Text(
+            product.name,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
           subtitle: Row(
             children: [
               Text('${product.unit} • ₹${product.price.toInt()}'),
               const SizedBox(width: 8),
               if (product.rating > 0)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 1,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.green,
                     borderRadius: BorderRadius.circular(4),
@@ -587,7 +746,14 @@ class _SearchScreenState extends State<SearchScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text('${product.rating}', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                      Text(
+                        '${product.rating}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       const Icon(Icons.star, size: 10, color: Colors.white),
                     ],
                   ),
@@ -615,27 +781,69 @@ class _SearchScreenState extends State<SearchScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Sort By', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
+                  const Text(
+                    'Sort By',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+                  ),
                   const SizedBox(height: 16),
                   ...[
-                    {'key': 'relevance', 'label': 'Relevance', 'icon': Icons.auto_awesome},
-                    {'key': 'price_low', 'label': 'Price: Low to High', 'icon': Icons.arrow_upward},
-                    {'key': 'price_high', 'label': 'Price: High to Low', 'icon': Icons.arrow_downward},
-                    {'key': 'rating', 'label': 'Highest Rating', 'icon': Icons.star},
-                    {'key': 'newest', 'label': 'Newest First', 'icon': Icons.new_releases},
-                    {'key': 'discount', 'label': 'Highest Discount', 'icon': Icons.local_offer},
+                    {
+                      'key': 'relevance',
+                      'label': 'Relevance',
+                      'icon': Icons.auto_awesome,
+                    },
+                    {
+                      'key': 'price_low',
+                      'label': 'Price: Low to High',
+                      'icon': Icons.arrow_upward,
+                    },
+                    {
+                      'key': 'price_high',
+                      'label': 'Price: High to Low',
+                      'icon': Icons.arrow_downward,
+                    },
+                    {
+                      'key': 'rating',
+                      'label': 'Highest Rating',
+                      'icon': Icons.star,
+                    },
+                    {
+                      'key': 'newest',
+                      'label': 'Newest First',
+                      'icon': Icons.new_releases,
+                    },
+                    {
+                      'key': 'discount',
+                      'label': 'Highest Discount',
+                      'icon': Icons.local_offer,
+                    },
                   ].map((option) {
                     final isSelected = _sortBy == option['key'];
                     return ListTile(
-                      leading: Icon(option['icon'] as IconData, color: isSelected ? AppColors.brandRed : AppColors.textMuted, size: 20),
+                      leading: Icon(
+                        option['icon'] as IconData,
+                        color: isSelected
+                            ? AppColors.brandRed
+                            : AppColors.textMuted,
+                        size: 20,
+                      ),
                       title: Text(
                         option['label'] as String,
                         style: TextStyle(
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                          color: isSelected ? AppColors.brandRed : AppColors.textPrimary,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                          color: isSelected
+                              ? AppColors.brandRed
+                              : AppColors.textPrimary,
                         ),
                       ),
-                      trailing: isSelected ? const Icon(Icons.check_circle, color: AppColors.brandRed) : null,
+                      trailing: isSelected
+                          ? const Icon(
+                              Icons.check_circle,
+                              color: AppColors.brandRed,
+                            )
+                          : null,
                       onTap: () {
                         setState(() {
                           _sortBy = option['key'] as String;
@@ -654,18 +862,36 @@ class _SearchScreenState extends State<SearchScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: _sortBy != 'relevance' ? AppColors.brandRed.withValues(alpha: 0.1) : Colors.grey[100],
+          color: _sortBy != 'relevance'
+              ? AppColors.brandRed.withValues(alpha: 0.1)
+              : Colors.grey[100],
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: _sortBy != 'relevance' ? AppColors.brandRed : Colors.grey[300]!),
+          border: Border.all(
+            color: _sortBy != 'relevance'
+                ? AppColors.brandRed
+                : Colors.grey[300]!,
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.sort, size: 14, color: _sortBy != 'relevance' ? AppColors.brandRed : AppColors.textMuted),
+            Icon(
+              Icons.sort,
+              size: 14,
+              color: _sortBy != 'relevance'
+                  ? AppColors.brandRed
+                  : AppColors.textMuted,
+            ),
             const SizedBox(width: 4),
             Text(
               'Sort',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _sortBy != 'relevance' ? AppColors.brandRed : AppColors.textPrimary),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: _sortBy != 'relevance'
+                    ? AppColors.brandRed
+                    : AppColors.textPrimary,
+              ),
             ),
           ],
         ),
@@ -674,30 +900,50 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildFilterButton() {
-    final hasFilters = _priceRange.start > 0 || _priceRange.end < 1000 || _minRating > 0 || _onSaleOnly;
+    final hasFilters =
+        _priceRange.start > 0 ||
+        _priceRange.end < 1000 ||
+        _minRating > 0 ||
+        _onSaleOnly;
     return GestureDetector(
       onTap: () => _showFilterSheet(),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: hasFilters ? AppColors.brandRed.withValues(alpha: 0.1) : Colors.grey[100],
+          color: hasFilters
+              ? AppColors.brandRed.withValues(alpha: 0.1)
+              : Colors.grey[100],
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: hasFilters ? AppColors.brandRed : Colors.grey[300]!),
+          border: Border.all(
+            color: hasFilters ? AppColors.brandRed : Colors.grey[300]!,
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.tune, size: 14, color: hasFilters ? AppColors.brandRed : AppColors.textMuted),
+            Icon(
+              Icons.tune,
+              size: 14,
+              color: hasFilters ? AppColors.brandRed : AppColors.textMuted,
+            ),
             const SizedBox(width: 4),
             Text(
               'Filters',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: hasFilters ? AppColors.brandRed : AppColors.textPrimary),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: hasFilters ? AppColors.brandRed : AppColors.textPrimary,
+              ),
             ),
-            if (hasFilters) ...[  
+            if (hasFilters) ...[
               const SizedBox(width: 4),
               Container(
-                width: 6, height: 6,
-                decoration: const BoxDecoration(color: AppColors.brandRed, shape: BoxShape.circle),
+                width: 6,
+                height: 6,
+                decoration: const BoxDecoration(
+                  color: AppColors.brandRed,
+                  shape: BoxShape.circle,
+                ),
               ),
             ],
           ],
@@ -725,7 +971,13 @@ class _SearchScreenState extends State<SearchScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Filters', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
+                      const Text(
+                        'Filters',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
                       TextButton(
                         onPressed: () {
                           setModalState(() {
@@ -735,20 +987,38 @@ class _SearchScreenState extends State<SearchScreen> {
                             _onSaleOnly = false;
                           });
                         },
-                        child: const Text('Reset', style: TextStyle(color: AppColors.brandRed)),
+                        child: const Text(
+                          'Reset',
+                          style: TextStyle(color: AppColors.brandRed),
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 24),
 
                   // Price Range
-                  const Text('Price Range', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  const Text(
+                    'Price Range',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  ),
                   const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('₹${_priceRange.start.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.brandRed)),
-                      Text('₹${_priceRange.end.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.brandRed)),
+                      Text(
+                        '₹${_priceRange.start.toInt()}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.brandRed,
+                        ),
+                      ),
+                      Text(
+                        '₹${_priceRange.end.toInt()}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.brandRed,
+                        ),
+                      ),
                     ],
                   ),
                   RangeSlider(
@@ -757,23 +1027,36 @@ class _SearchScreenState extends State<SearchScreen> {
                     max: 1000,
                     divisions: 20,
                     activeColor: AppColors.brandRed,
-                    labels: RangeLabels('₹${_priceRange.start.toInt()}', '₹${_priceRange.end.toInt()}'),
-                    onChanged: (values) => setModalState(() => _priceRange = values),
+                    labels: RangeLabels(
+                      '₹${_priceRange.start.toInt()}',
+                      '₹${_priceRange.end.toInt()}',
+                    ),
+                    onChanged: (values) =>
+                        setModalState(() => _priceRange = values),
                   ),
                   const SizedBox(height: 20),
 
                   // Minimum Rating
-                  const Text('Minimum Rating', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  const Text(
+                    'Minimum Rating',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  ),
                   const SizedBox(height: 8),
                   Row(
                     children: [1, 2, 3, 4, 5].map((star) {
                       final isSelected = _minRating >= star;
                       return GestureDetector(
-                        onTap: () => setModalState(() => _minRating = _minRating == star.toDouble() ? 0 : star.toDouble()),
+                        onTap: () => setModalState(
+                          () => _minRating = _minRating == star.toDouble()
+                              ? 0
+                              : star.toDouble(),
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.only(right: 8),
                           child: Icon(
-                            isSelected ? Icons.star_rounded : Icons.star_outline_rounded,
+                            isSelected
+                                ? Icons.star_rounded
+                                : Icons.star_outline_rounded,
                             color: isSelected ? Colors.amber : Colors.grey[300],
                             size: 36,
                           ),
@@ -785,7 +1068,10 @@ class _SearchScreenState extends State<SearchScreen> {
 
                   // Toggle filters
                   SwitchListTile(
-                    title: const Text('On Sale Only', style: TextStyle(fontWeight: FontWeight.w600)),
+                    title: const Text(
+                      'On Sale Only',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
                     subtitle: const Text('Show items with discounts'),
                     value: _onSaleOnly,
                     activeThumbColor: AppColors.brandRed,
@@ -793,7 +1079,10 @@ class _SearchScreenState extends State<SearchScreen> {
                     onChanged: (v) => setModalState(() => _onSaleOnly = v),
                   ),
                   SwitchListTile(
-                    title: const Text('In Stock Only', style: TextStyle(fontWeight: FontWeight.w600)),
+                    title: const Text(
+                      'In Stock Only',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
                     subtitle: const Text('Hide out-of-stock items'),
                     value: _inStockOnly,
                     activeThumbColor: AppColors.brandRed,
@@ -813,9 +1102,18 @@ class _SearchScreenState extends State<SearchScreen> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.brandRed,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                       ),
-                      child: const Text('Apply Filters', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
+                      child: const Text(
+                        'Apply Filters',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -830,11 +1128,13 @@ class _SearchScreenState extends State<SearchScreen> {
   void _applySortAndFilter() {
     final query = _searchController.text.toLowerCase();
     var results = _allProducts.where((p) {
-      final matchesQuery = query.isEmpty || 
-        p.name.toLowerCase().contains(query) || 
-        p.category.toLowerCase().contains(query) ||
-        p.brand.toLowerCase().contains(query);
-      final matchesPrice = p.price >= _priceRange.start && p.price <= _priceRange.end;
+      final matchesQuery =
+          query.isEmpty ||
+          p.name.toLowerCase().contains(query) ||
+          p.category.toLowerCase().contains(query) ||
+          p.brand.toLowerCase().contains(query);
+      final matchesPrice =
+          p.price >= _priceRange.start && p.price <= _priceRange.end;
       final matchesRating = p.rating >= _minRating;
       final matchesSale = !_onSaleOnly || p.oldPrice > p.price;
       return matchesQuery && matchesPrice && matchesRating && matchesSale;
