@@ -1129,6 +1129,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   behavior: SnackBarBehavior.floating,
                 ),
               );
+            }
           },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
