@@ -6,7 +6,8 @@ import 'package:intl/intl.dart';
 import 'package:shopverse/utils/app_colors.dart';
 
 class AdminOrdersScreen extends StatefulWidget {
-  const AdminOrdersScreen({super.key});
+  final String? vendorId; // If null, super-admin. If provided, vendor.
+  const AdminOrdersScreen({super.key, this.vendorId});
 
   @override
   State<AdminOrdersScreen> createState() => _AdminOrdersScreenState();
@@ -34,10 +35,21 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
       stream: orderProv.ordersStream,
       builder: (context, snapshot) {
         var allOrders = snapshot.data ?? orderProv.orders;
+        
+        // Scope orders to vendor if applicable
+        if (widget.vendorId != null) {
+          allOrders = allOrders.where((o) => o.items.any((i) => i.product.vendorId == widget.vendorId)).toList();
+        }
+        
         var orders = List<OrderModel>.from(allOrders);
         
         // Calculate Statistics for Dashboard
-        final totalRevenue = allOrders.fold(0.0, (sum, item) => sum + item.totalAmount);
+        final totalRevenue = allOrders.fold(0.0, (sum, item) {
+          if (widget.vendorId == null) return sum + item.totalAmount;
+          final vendorItems = item.items.where((i) => i.product.vendorId == widget.vendorId);
+          return sum + vendorItems.fold(0.0, (s, i) => s + (i.product.price * i.quantity));
+        });
+        
         final pendingOrdersCount = allOrders.where((o) => o.status.toString().split('.').last.toUpperCase() == 'PENDING').length;
 
         // Apply Filter
@@ -218,22 +230,35 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                                     const SizedBox(height: 16),
                                     const Text('Order Items', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                                     const SizedBox(height: 8),
-                                    ...order.items.map((p) => Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 4),
-                                      child: Row(
-                                        children: [
-                                          Container(
-                                            width: 4, height: 4,
-                                            decoration: const BoxDecoration(color: Colors.grey, shape: BoxShape.circle),
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Expanded(child: Text(p.product.name, style: const TextStyle(fontSize: 14))),
-                                          Text('x${p.quantity}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                                          const SizedBox(width: 12),
-                                          Text('₹${(p.product.price * p.quantity).toStringAsFixed(0)}', style: const TextStyle(fontSize: 14)),
-                                        ],
-                                      ),
-                                    )),
+                                    ...order.items.map((p) {
+                                      final isMyItem = widget.vendorId == null || p.product.vendorId == widget.vendorId;
+                                      
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 4),
+                                        child: Row(
+                                          children: [
+                                            Container(
+                                              width: 4, height: 4,
+                                              decoration: BoxDecoration(color: isMyItem ? AppColors.brandRed : Colors.grey, shape: BoxShape.circle),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Text(
+                                                p.product.name, 
+                                                style: TextStyle(
+                                                  fontSize: 14, 
+                                                  color: isMyItem ? AppColors.textPrimary : Colors.grey,
+                                                  fontWeight: isMyItem ? FontWeight.bold : FontWeight.normal,
+                                                )
+                                              )
+                                            ),
+                                            Text('x${p.quantity}', style: TextStyle(fontWeight: FontWeight.bold, color: isMyItem ? AppColors.textPrimary : Colors.grey)),
+                                            const SizedBox(width: 12),
+                                            Text('₹${(p.product.price * p.quantity).toStringAsFixed(0)}', style: TextStyle(fontSize: 14, color: isMyItem ? AppColors.textPrimary : Colors.grey)),
+                                          ],
+                                        ),
+                                      );
+                                    }),
                                     const SizedBox(height: 16),
                                     const Text('Update Status', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                                     const SizedBox(height: 12),

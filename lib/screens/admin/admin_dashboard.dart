@@ -18,7 +18,8 @@ import 'package:shopverse/widgets/custom_button.dart';
 import 'package:shopverse/widgets/custom_text_field.dart';
 
 class AdminDashboard extends StatelessWidget {
-  const AdminDashboard({super.key});
+  final String? vendorId; // If null, super-admin. If provided, vendor.
+  const AdminDashboard({super.key, this.vendorId});
 
   @override
   Widget build(BuildContext context) {
@@ -62,15 +63,28 @@ class AdminDashboard extends StatelessWidget {
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         
-        final orders = snapshot.data!;
-        final todayOrders = orders.where((o) => 
+        final bool isVendor = vendorId != null;
+        
+        var scopedOrders = orders;
+        var scopedProducts = productSnapshot.data ?? productProv.products;
+        
+        if (isVendor) {
+          scopedOrders = orders.where((o) => o.items.any((i) => i.product.vendorId == vendorId)).toList();
+          scopedProducts = scopedProducts.where((p) => p.vendorId == vendorId).toList();
+        }
+        
+        final todayOrders = scopedOrders.where((o) => 
           o.createdAt.year == DateTime.now().year &&
           o.createdAt.month == DateTime.now().month &&
           o.createdAt.day == DateTime.now().day
         ).toList();
         
-        final revenue = todayOrders.fold(0.0, (sum, order) => sum + order.totalAmount);
-        final products = productSnapshot.data ?? productProv.products;
+        final revenue = todayOrders.fold(0.0, (sum, order) {
+          if (!isVendor) return sum + order.totalAmount;
+          final vendorItems = order.items.where((i) => i.product.vendorId == vendorId);
+          final vendorSum = vendorItems.fold(0.0, (s, i) => s + (i.product.price * i.quantity));
+          return sum + vendorSum;
+        });
 
                     return Padding(
                       padding: const EdgeInsets.all(16.0),
@@ -90,7 +104,7 @@ class AdminDashboard extends StatelessWidget {
                                 ),
                               );
                             },
-                            child: _buildSummaryGrid(revenue, orders.length, products.length),
+                            child: _buildSummaryGrid(revenue, scopedOrders.length, scopedProducts.length),
                           ),
                           const SizedBox(height: 24),
                           const Text('Inventory Actions', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
@@ -106,7 +120,7 @@ class AdminDashboard extends StatelessWidget {
                               }, index: 1),
                               const SizedBox(width: 12),
                               _QuickAction(label: 'Orders', icon: Icons.local_shipping, color: Colors.orange, onTap: () {
-                                Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminOrdersScreen()));
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => AdminOrdersScreen(vendorId: vendorId)));
                               }, index: 2),
                             ],
                           ),
@@ -124,12 +138,14 @@ class AdminDashboard extends StatelessWidget {
                           _ActionTile(icon: Icons.category_outlined, title: 'Categories', subtitle: 'Organize your products', index: 0, onTap: () {
                              Navigator.push(context, MaterialPageRoute(builder: (_) => const CategoriesScreen()));
                           }),
-                          _ActionTile(icon: Icons.campaign_outlined, title: 'Marketing', subtitle: 'Send push notifications', index: 1, onTap: () {
-                             _sendNotificationDialog(context);
-                          }),
-                          _ActionTile(icon: Icons.people_outline, title: 'Customers', subtitle: 'View user base', index: 2, onTap: () {
-                             _showUserManagement(context);
-                          }),
+                          if (!isVendor) ...[
+                            _ActionTile(icon: Icons.campaign_outlined, title: 'Marketing', subtitle: 'Send push notifications', index: 1, onTap: () {
+                               _sendNotificationDialog(context);
+                            }),
+                            _ActionTile(icon: Icons.people_outline, title: 'Customers', subtitle: 'View user base', index: 2, onTap: () {
+                               _showUserManagement(context);
+                            }),
+                          ],
                           _ActionTile(icon: Icons.chat_bubble_outline, title: 'Support', subtitle: 'Real-time customer Q&A', index: 3, onTap: () {
                              Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminChatListScreen()));
                           }),
