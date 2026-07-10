@@ -17,12 +17,13 @@ class OrdersScreen extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.darkBackground : AppColors.backgroundColor,
-      appBar: AppBar(
-        title: const Text('My Orders'),
-        centerTitle: false,
-      ),
-      body: orders.isEmpty ? _buildEmptyState(isDark) : _buildOrdersList(context, orders, isDark),
+      backgroundColor: isDark
+          ? AppColors.darkBackground
+          : AppColors.backgroundColor,
+      appBar: AppBar(title: const Text('My Orders'), centerTitle: false),
+      body: orders.isEmpty
+          ? _buildEmptyState(isDark)
+          : _buildOrdersList(context, orders, isDark),
     );
   }
 
@@ -33,7 +34,9 @@ class OrdersScreen extends StatelessWidget {
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final order = orders[index];
-        final isLive = index == 0 && DateTime.now().difference(order.createdAt).inMinutes < 15;
+        final isLive =
+            index == 0 &&
+            DateTime.now().difference(order.createdAt).inMinutes < 15;
         return _OrderCard(order: order, isLive: isLive, isDark: isDark);
       },
     );
@@ -50,7 +53,11 @@ class OrdersScreen extends StatelessWidget {
               color: isDark ? AppColors.darkSurface2 : AppColors.surface2,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.receipt_long_outlined, size: 52, color: AppColors.textMuted),
+            child: const Icon(
+              Icons.receipt_long_outlined,
+              size: 52,
+              color: AppColors.textMuted,
+            ),
           ),
           const SizedBox(height: 20),
           const Text(
@@ -71,13 +78,21 @@ class OrdersScreen extends StatelessWidget {
 class _OrderCard extends StatelessWidget {
   final dynamic order;
   final bool isLive, isDark;
-  const _OrderCard({required this.order, required this.isLive, required this.isDark});
+  const _OrderCard({
+    required this.order,
+    required this.isLive,
+    required this.isDark,
+  });
 
   @override
   Widget build(BuildContext context) {
     final statusColor = isLive ? AppColors.success : AppColors.textMuted;
-    final statusBg = isLive ? AppColors.successLight : (isDark ? AppColors.darkSurface2 : AppColors.surface2);
-    final statusLabel = isLive ? '🟢 Live' : order.status.toString().split('.').last.toUpperCase();
+    final statusBg = isLive
+        ? AppColors.successLight
+        : (isDark ? AppColors.darkSurface2 : AppColors.surface2);
+    final statusLabel = isLive
+        ? '🟢 Live'
+        : order.status.toString().split('.').last.toUpperCase();
 
     return Container(
       decoration: BoxDecoration(
@@ -107,27 +122,40 @@ class _OrderCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         'ID: ORD-${order.id.substring(order.id.length - 6).toUpperCase()}',
-                        style: const TextStyle(color: AppColors.textMuted, fontSize: 11.5),
+                        style: const TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 11.5,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
                   decoration: BoxDecoration(
                     color: statusBg,
                     borderRadius: BorderRadius.circular(AppRadius.full),
                   ),
                   child: Text(
                     statusLabel,
-                    style: TextStyle(color: statusColor, fontWeight: FontWeight.w700, fontSize: 10.5),
+                    style: TextStyle(
+                      color: statusColor,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 10.5,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
 
-          Divider(height: 1, color: isDark ? AppColors.borderDark : AppColors.border),
+          Divider(
+            height: 1,
+            color: isDark ? AppColors.borderDark : AppColors.border,
+          ),
 
           // ── Timeline Progress ─────────────────────────────────────────
           if (isLive) _buildDeliveryTimeline(isDark),
@@ -144,7 +172,10 @@ class _OrderCard extends StatelessWidget {
                     color: isDark ? AppColors.darkSurface2 : AppColors.surface2,
                     borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
-                  child: const Icon(Icons.shopping_bag_outlined, color: AppColors.textMuted),
+                  child: const Icon(
+                    Icons.shopping_bag_outlined,
+                    color: AppColors.textMuted,
+                  ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -178,7 +209,9 @@ class _OrderCard extends StatelessWidget {
                     color: AppColors.success,
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => TrackingScreen(orderId: order.id)),
+                      MaterialPageRoute(
+                        builder: (_) => TrackingScreen(orderId: order.id),
+                      ),
                     ),
                   )
                 else
@@ -187,7 +220,10 @@ class _OrderCard extends StatelessWidget {
                     icon: Icons.replay_rounded,
                     color: AppColors.primary,
                     onTap: () {
-                      final cartProv = Provider.of<CartProvider>(context, listen: false);
+                      final cartProv = Provider.of<CartProvider>(
+                        context,
+                        listen: false,
+                      );
                       int added = 0;
                       for (var item in order.items) {
                         try {
@@ -195,11 +231,19 @@ class _OrderCard extends StatelessWidget {
                           added++;
                         } catch (_) {}
                       }
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(added > 0 ? '${added} items added to cart! 🛍️' : 'Cannot reorder legacy items.'),
-                        behavior: SnackBarBehavior.floating,
-                        backgroundColor: added > 0 ? AppColors.success : AppColors.brandRed,
-                      ));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            added > 0
+                                ? '${added} items added to cart! 🛍️'
+                                : 'Cannot reorder legacy items.',
+                          ),
+                          behavior: SnackBarBehavior.floating,
+                          backgroundColor: added > 0
+                              ? AppColors.success
+                              : AppColors.brandRed,
+                        ),
+                      );
                     },
                   ),
               ],
@@ -214,7 +258,11 @@ class _OrderCard extends StatelessWidget {
     final steps = [
       {'label': 'Ordered', 'icon': Icons.check_circle_rounded, 'done': true},
       {'label': 'Packed', 'icon': Icons.inventory_2_rounded, 'done': true},
-      {'label': 'On the way', 'icon': Icons.delivery_dining_rounded, 'done': false},
+      {
+        'label': 'On the way',
+        'icon': Icons.delivery_dining_rounded,
+        'done': false,
+      },
       {'label': 'Delivered', 'icon': Icons.home_rounded, 'done': false},
     ];
 
@@ -234,7 +282,11 @@ class _OrderCard extends StatelessWidget {
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: done ? AppColors.success : (isDark ? AppColors.darkSurface2 : AppColors.surface2),
+                        color: done
+                            ? AppColors.success
+                            : (isDark
+                                  ? AppColors.darkSurface2
+                                  : AppColors.surface2),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -259,7 +311,9 @@ class _OrderCard extends StatelessWidget {
                     child: Container(
                       height: 2,
                       margin: const EdgeInsets.only(bottom: 18),
-                      color: done ? AppColors.success : (isDark ? AppColors.borderDark : AppColors.border),
+                      color: done
+                          ? AppColors.success
+                          : (isDark ? AppColors.borderDark : AppColors.border),
                     ),
                   ),
               ],
@@ -276,7 +330,12 @@ class _ActionButton extends StatelessWidget {
   final IconData icon;
   final Color color;
   final VoidCallback onTap;
-  const _ActionButton({required this.label, required this.icon, required this.color, required this.onTap});
+  const _ActionButton({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -294,7 +353,14 @@ class _ActionButton extends StatelessWidget {
           children: [
             Icon(icon, size: 14, color: color),
             const SizedBox(width: 4),
-            Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 12.5)),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.w700,
+                fontSize: 12.5,
+              ),
+            ),
           ],
         ),
       ),
