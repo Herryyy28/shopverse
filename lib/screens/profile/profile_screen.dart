@@ -812,7 +812,7 @@ class _ThemeToggleItem extends StatelessWidget {
               Switch(
                 value: isDark,
                 onChanged: (v) => themeProvider.toggleTheme(v),
-                activeColor: AppColors.primary,
+                activeThumbColor: AppColors.primary,
               ),
             ],
           ),

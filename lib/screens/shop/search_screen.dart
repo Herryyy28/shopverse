@@ -585,18 +585,6 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildRecentSearchChip(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(100),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Text(text, style: const TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w500, fontSize: 12.5)),
-    );
-  }
-
   Widget _buildRecentItemsGrid() {
     final width = MediaQuery.of(context).size.width;
     final cols = width > 900 ? 5 : (width > 600 ? 3 : 2);

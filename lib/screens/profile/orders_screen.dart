@@ -31,7 +31,7 @@ class OrdersScreen extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: orders.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final order = orders[index];
         final isLive =
@@ -233,11 +233,7 @@ class _OrderCard extends StatelessWidget {
                       }
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text(
-                            added > 0
-                                ? '${added} items added to cart! 🛍️'
-                                : 'Cannot reorder legacy items.',
-                          ),
+                          content: Text(added > 0 ? '$added items added to cart! 🛍️' : 'Cannot reorder legacy items.'),
                           behavior: SnackBarBehavior.floating,
                           backgroundColor: added > 0
                               ? AppColors.success
