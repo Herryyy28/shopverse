@@ -12,6 +12,12 @@ class LiveTrackingScreen extends StatefulWidget {
 
 class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
   GoogleMapController? _mapController;
+
+  @override
+  void dispose() {
+    _mapController?.dispose();
+    super.dispose();
+  }
   
   // Set default coordinates (e.g. Mumbai/Delhi central points for demo)
   static const LatLng _storeLocation = LatLng(19.0760, 72.8777);

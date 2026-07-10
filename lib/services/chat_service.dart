@@ -2,18 +2,18 @@ import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:shopverse/models/chat_message.dart';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart' as io;
 
 class ChatService {
   FirebaseFirestore get _firestore => FirebaseFirestore.instance;
   bool get _isFirebaseReady => Firebase.apps.isNotEmpty;
   
-  IO.Socket? _socket;
+  io.Socket? _socket;
 
   void connectSocket(String userId) {
     try {
       // Connect to Socket.IO backend gateway
-      _socket = IO.io('https://chat-gateway.shopverse.com', IO.OptionBuilder()
+      _socket = io.io('https://chat-gateway.shopverse.com', io.OptionBuilder()
         .setTransports(['websocket'])
         .disableAutoConnect()
         .setQuery({'userId': userId})

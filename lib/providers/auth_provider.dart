@@ -39,8 +39,12 @@ class AuthProvider with ChangeNotifier {
         _isAdmin = cachedRole == 'admin';
         _user = UserModel(
           uid: cachedUid,
-          name: cachedRole == 'admin' ? 'Cached Admin' : (cachedRole == 'seller' ? 'Cached Seller' : 'Cached User'),
-          email: cachedRole == 'admin' ? 'admin@demo.com' : (cachedRole == 'seller' ? 'seller@demo.com' : 'demo@demo.com'),
+          name: cachedRole == 'admin'
+              ? 'Cached Admin'
+              : (cachedRole == 'seller' ? 'Cached Seller' : 'Cached User'),
+          email: cachedRole == 'admin'
+              ? 'admin@demo.com'
+              : (cachedRole == 'seller' ? 'seller@demo.com' : 'demo@demo.com'),
           role: cachedRole,
           createdAt: DateTime.now(),
         );
@@ -90,7 +94,9 @@ class AuthProvider with ChangeNotifier {
 
   Future<String?> signIn(String email, String password) async {
     try {
-      if (email == 'demo@demo.com' || email == 'admin@demo.com' || email == 'seller@demo.com') {
+      if (email == 'demo@demo.com' ||
+          email == 'admin@demo.com' ||
+          email == 'seller@demo.com') {
         _isAuthenticated = true;
         String role = 'customer';
         if (email == 'admin@demo.com') {
@@ -99,8 +105,12 @@ class AuthProvider with ChangeNotifier {
           role = 'seller';
         }
         _user = UserModel(
-          uid: email == 'admin@demo.com' ? 'admin_user' : (email == 'seller@demo.com' ? 'seller_user' : 'demo_user'),
-          name: email == 'admin@demo.com' ? 'Demo Admin' : (email == 'seller@demo.com' ? 'Demo Seller' : 'Demo User'),
+          uid: email == 'admin@demo.com'
+              ? 'admin_user'
+              : (email == 'seller@demo.com' ? 'seller_user' : 'demo_user'),
+          name: email == 'admin@demo.com'
+              ? 'Demo Admin'
+              : (email == 'seller@demo.com' ? 'Demo Seller' : 'Demo User'),
           email: email,
           role: role,
           createdAt: DateTime.now(),
@@ -165,7 +175,10 @@ class AuthProvider with ChangeNotifier {
       final firebaseUser = userCredential.user;
 
       if (firebaseUser != null) {
-        final userDoc = await _firestore.collection('users').doc(firebaseUser.uid).get();
+        final userDoc = await _firestore
+            .collection('users')
+            .doc(firebaseUser.uid)
+            .get();
         if (!userDoc.exists) {
           _user = UserModel(
             uid: firebaseUser.uid,
@@ -175,7 +188,10 @@ class AuthProvider with ChangeNotifier {
             role: 'customer',
             createdAt: DateTime.now(),
           );
-          await _firestore.collection('users').doc(firebaseUser.uid).set(_user!.toJson());
+          await _firestore
+              .collection('users')
+              .doc(firebaseUser.uid)
+              .set(_user!.toJson());
         }
       }
       return null;
@@ -194,7 +210,8 @@ class AuthProvider with ChangeNotifier {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return "Google Sign-In canceled";
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
@@ -204,7 +221,10 @@ class AuthProvider with ChangeNotifier {
       final firebaseUser = userCredential.user;
 
       if (firebaseUser != null) {
-        final userDoc = await _firestore.collection('users').doc(firebaseUser.uid).get();
+        final userDoc = await _firestore
+            .collection('users')
+            .doc(firebaseUser.uid)
+            .get();
         if (!userDoc.exists) {
           _user = UserModel(
             uid: firebaseUser.uid,
@@ -214,7 +234,10 @@ class AuthProvider with ChangeNotifier {
             profileImageUrl: firebaseUser.photoURL,
             createdAt: DateTime.now(),
           );
-          await _firestore.collection('users').doc(firebaseUser.uid).set(_user!.toJson());
+          await _firestore
+              .collection('users')
+              .doc(firebaseUser.uid)
+              .set(_user!.toJson());
         }
       }
       return null;
@@ -226,10 +249,15 @@ class AuthProvider with ChangeNotifier {
   Future<void> linkDevice(String deviceId) async {
     if (_user == null) return;
     try {
-      await _firestore.collection('users').doc(_user!.uid).collection('devices').doc(deviceId).set({
-        'lastUsed': DateTime.now(),
-        'deviceName': 'Mobile Device', // In real app, use device_info_plus
-      });
+      await _firestore
+          .collection('users')
+          .doc(_user!.uid)
+          .collection('devices')
+          .doc(deviceId)
+          .set({
+            'lastUsed': DateTime.now(),
+            'deviceName': 'Mobile Device', // In real app, use device_info_plus
+          });
     } catch (e) {
       debugPrint('Error linking device: $e');
     }
@@ -237,8 +265,10 @@ class AuthProvider with ChangeNotifier {
 
   Future<bool> authenticateBiometric() async {
     try {
-      final bool canAuthenticateWithBiometrics = await _localAuth.canCheckBiometrics;
-      final bool canAuthenticate = canAuthenticateWithBiometrics || await _localAuth.isDeviceSupported();
+      final bool canAuthenticateWithBiometrics =
+          await _localAuth.canCheckBiometrics;
+      final bool canAuthenticate =
+          canAuthenticateWithBiometrics || await _localAuth.isDeviceSupported();
 
       if (!canAuthenticate) return false;
 
@@ -260,7 +290,10 @@ class AuthProvider with ChangeNotifier {
       if (Firebase.apps.isEmpty) {
         return "Sign up requires Firebase. Please log in using a Demo account.";
       }
-      final userCredential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      final userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
       final firebaseUser = userCredential.user;
 
       if (firebaseUser != null) {
@@ -271,7 +304,10 @@ class AuthProvider with ChangeNotifier {
           role: 'customer',
           createdAt: DateTime.now(),
         );
-        await _firestore.collection('users').doc(firebaseUser.uid).set(_user!.toJson());
+        await _firestore
+            .collection('users')
+            .doc(firebaseUser.uid)
+            .set(_user!.toJson());
       }
       return null;
     } on FirebaseAuthException catch (e) {
@@ -281,7 +317,11 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<String?> updateProfile({String? name, String? phone, String? profileImageUrl}) async {
+  Future<String?> updateProfile({
+    String? name,
+    String? phone,
+    String? profileImageUrl,
+  }) async {
     if (_user == null) return "User not logged in";
 
     try {
@@ -290,7 +330,10 @@ class AuthProvider with ChangeNotifier {
         phone: phone,
         profileImageUrl: profileImageUrl,
       );
-      await _firestore.collection('users').doc(_user!.uid).update(_user!.toJson());
+      await _firestore
+          .collection('users')
+          .doc(_user!.uid)
+          .update(_user!.toJson());
       notifyListeners();
       return null;
     } catch (e) {
@@ -300,7 +343,14 @@ class AuthProvider with ChangeNotifier {
 
   void logout() async {
     try {
-      await _auth.signOut();
+      _isAuthenticated = false;
+      _user = null;
+      _isAdmin = false;
+      notifyListeners();
+
+      if (Firebase.apps.isNotEmpty) {
+        await _auth.signOut();
+      }
       await SecureStorageService.deleteAll();
     } catch (e) {
       debugPrint('Logout failed: $e');

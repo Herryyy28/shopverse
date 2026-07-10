@@ -111,12 +111,30 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 ],
               ),
             ),
-            Radio<String>(
-              value: id,
-              groupValue: _selectedMethod,
-              activeColor: AppColors.brandRed,
-              onChanged: (val) => setState(() => _selectedMethod = val!),
-            ),
+            AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isSelected ? AppColors.brandRed : Colors.grey.shade400,
+                    width: 2,
+                  ),
+                ),
+                child: isSelected
+                    ? Center(
+                        child: Container(
+                          width: 12,
+                          height: 12,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.brandRed,
+                          ),
+                        ),
+                      )
+                    : null,
+              ),
           ],
         ),
       ),

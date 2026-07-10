@@ -17,8 +17,8 @@ class FirebaseService {
       
       try {
         await FirebaseAppCheck.instance.activate(
-          androidProvider: AndroidProvider.debug,
-          appleProvider: AppleProvider.deviceCheck,
+          providerAndroid: AndroidDebugProvider(),
+          providerApple: AppleDeviceCheckProvider(),
         );
         debugPrint('Firebase App Check initialized');
       } catch (appCheckError) {
