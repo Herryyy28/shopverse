@@ -13,6 +13,7 @@ import 'package:shopverse/screens/admin/manage_products_screen.dart';
 import 'package:shopverse/screens/shop/categories_screen.dart';
 import 'package:shopverse/screens/profile/notifications_screen.dart';
 import 'package:shopverse/screens/admin/admin_chat_list_screen.dart';
+import 'package:shopverse/providers/auth_provider.dart';
 import 'package:shopverse/utils/app_colors.dart';
 import 'package:shopverse/widgets/custom_button.dart';
 import 'package:shopverse/widgets/custom_text_field.dart';
@@ -23,9 +24,34 @@ class AdminDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authProv = Provider.of<AuthProvider>(context, listen: false);
+    final user = authProv.user;
+    
+    // Guard: Block access if user is not authenticated or lacks correct permissions
+    if (user == null || (user.role != 'admin' && user.role != 'vendor' && user.role != 'seller')) {
+      return const Scaffold(
+        body: Center(
+          child: Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.gpp_bad_outlined, size: 80, color: AppColors.brandRed),
+                SizedBox(height: 16),
+                Text("Access Denied", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                SizedBox(height: 8),
+                Text("You do not have administrative permissions to access this screen.", 
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.textSecondary)),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     final productProv = Provider.of<ProductProvider>(context);
 
-    
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       body: CustomScrollView(
@@ -116,7 +142,7 @@ class AdminDashboard extends StatelessWidget {
                               }, index: 0),
                               const SizedBox(width: 12),
                               _QuickAction(label: 'Manage', icon: Icons.inventory, color: Colors.blue, onTap: () {
-                                Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageProductsScreen()));
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => ManageProductsScreen(vendorId: vendorId)));
                               }, index: 1),
                               const SizedBox(width: 12),
                               _QuickAction(label: 'Orders', icon: Icons.local_shipping, color: Colors.orange, onTap: () {
@@ -135,15 +161,40 @@ class AdminDashboard extends StatelessWidget {
                             child: _buildPerformanceCard(),
                           ),
                           const SizedBox(height: 32),
-                          _ActionTile(icon: Icons.category_outlined, title: 'Categories', subtitle: 'Organize your products', index: 0, onTap: () {
-                             Navigator.push(context, MaterialPageRoute(builder: (_) => const CategoriesScreen()));
-                          }),
-                          if (!isVendor) ...[
+                           if (!isVendor) ...[
+                            _ActionTile(icon: Icons.category_outlined, title: 'Categories', subtitle: 'Organize your products', index: 0, onTap: () {
+                               Navigator.push(context, MaterialPageRoute(builder: (_) => const CategoriesScreen()));
+                            }),
                             _ActionTile(icon: Icons.campaign_outlined, title: 'Marketing', subtitle: 'Send push notifications', index: 1, onTap: () {
                                _sendNotificationDialog(context);
                             }),
                             _ActionTile(icon: Icons.people_outline, title: 'Customers', subtitle: 'View user base', index: 2, onTap: () {
                                _showUserManagement(context);
+                            }),
+                             _ActionTile(icon: Icons.cloud_upload_outlined, title: 'Seed Products Data', subtitle: 'Upload sample products to Firestore', index: 3, onTap: () async {
+                               showDialog(
+                                 context: context,
+                                 barrierDismissible: false,
+                                 builder: (ctx) => const Center(child: CircularProgressIndicator()),
+                               );
+                               try {
+                                 await productProv.seedMockData();
+                                 if (context.mounted) {
+                                   Navigator.pop(context);
+                                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Firestore database seeded successfully!')));
+                                 }
+                               } catch (e) {
+                                 if (context.mounted) {
+                                   Navigator.pop(context);
+                                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Seeding failed: $e')));
+                                 }
+                               }
+                            }),
+                            _ActionTile(icon: Icons.local_shipping_outlined, title: 'Delivery Partners', subtitle: 'Manage riders and assign orders', index: 4, onTap: () {
+                               _showDeliveryPartnerManagement(context);
+                            }),
+                            _ActionTile(icon: Icons.bar_chart_outlined, title: 'Sales Reports', subtitle: 'Detailed revenue & order trends', index: 5, onTap: () {
+                               _showSalesReport(context);
                             }),
                           ],
                           _ActionTile(icon: Icons.chat_bubble_outline, title: 'Support', subtitle: 'Real-time customer Q&A', index: 3, onTap: () {
@@ -356,6 +407,223 @@ class AdminDashboard extends StatelessWidget {
     );
   }
 
+  void _showDeliveryPartnerManagement(BuildContext context) {
+    final partners = [
+      {'name': 'Rahul Sharma', 'status': 'Active', 'deliveries': 14, 'phone': '+91 98765 43210'},
+      {'name': 'Vikram Singh', 'status': 'On Delivery', 'deliveries': 9, 'phone': '+91 99887 76655'},
+      {'name': 'Amit Kumar', 'status': 'Active', 'deliveries': 18, 'phone': '+91 91234 56789'},
+      {'name': 'Priya Patel', 'status': 'Offline', 'deliveries': 0, 'phone': '+91 88776 65544'},
+    ];
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.8,
+        decoration: const BoxDecoration(
+          color: AppColors.surfaceColor,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 16),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+            ),
+            const Text('Delivery Partners', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
+            const SizedBox(height: 16),
+            const Divider(height: 1),
+            Expanded(
+               child: ListView.separated(
+                 itemCount: partners.length,
+                 padding: const EdgeInsets.all(20),
+                 separatorBuilder: (_, _) => const Divider(height: 24),
+                 itemBuilder: (ctx, i) {
+                   final partner = partners[i];
+                   final isActive = partner['status'] == 'Active';
+                   final isOnTrip = partner['status'] == 'On Delivery';
+                   
+                   return Row(
+                     children: [
+                       CircleAvatar(
+                         radius: 24,
+                         backgroundColor: Colors.grey[100],
+                         child: const Icon(Icons.directions_bike, color: AppColors.textPrimary),
+                       ),
+                       const SizedBox(width: 16),
+                       Expanded(
+                         child: Column(
+                           crossAxisAlignment: CrossAxisAlignment.start,
+                           children: [
+                             Text(partner['name'] as String, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+                             const SizedBox(height: 2),
+                             Text('${partner['phone']} • ${partner['deliveries']} trips today', 
+                               style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                           ],
+                         ),
+                       ),
+                       Container(
+                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                         decoration: BoxDecoration(
+                           color: isActive ? Colors.green[50] : (isOnTrip ? Colors.blue[50] : Colors.grey[100]),
+                           borderRadius: BorderRadius.circular(8),
+                         ),
+                         child: Text(
+                           (partner['status'] as String).toUpperCase(),
+                           style: TextStyle(
+                             fontSize: 10,
+                             fontWeight: FontWeight.w900,
+                             color: isActive ? Colors.green[700] : (isOnTrip ? Colors.blue[700] : Colors.grey[600]),
+                           ),
+                         ),
+                       ),
+                     ],
+                   );
+                 },
+               ),
+             ),
+           ],
+         ),
+       ),
+     );
+   }
+
+   void _showSalesReport(BuildContext context) {
+     showModalBottomSheet(
+       context: context,
+       isScrollControlled: true,
+       backgroundColor: Colors.transparent,
+       builder: (context) => Container(
+         height: MediaQuery.of(context).size.height * 0.8,
+         decoration: const BoxDecoration(
+           color: AppColors.surfaceColor,
+           borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+         ),
+         child: Padding(
+           padding: const EdgeInsets.symmetric(horizontal: 24),
+           child: Column(
+             children: [
+               Container(
+                 margin: const EdgeInsets.symmetric(vertical: 16),
+                 width: 40,
+                 height: 4,
+                 decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+               ),
+               const Text('Sales & Revenue Reports', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
+               const SizedBox(height: 24),
+               
+               Container(
+                 padding: const EdgeInsets.all(20),
+                 decoration: BoxDecoration(
+                   color: AppColors.backgroundColor,
+                   borderRadius: BorderRadius.circular(24),
+                 ),
+                 child: Column(
+                   crossAxisAlignment: CrossAxisAlignment.start,
+                   children: [
+                     const Text('WEEKLY PERFORMANCE', 
+                       style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textSecondary, letterSpacing: 0.5)),
+                     const SizedBox(height: 20),
+                     Row(
+                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                       crossAxisAlignment: CrossAxisAlignment.end,
+                       children: [
+                         _buildBar('Mon', 45),
+                         _buildBar('Tue', 65),
+                         _buildBar('Wed', 80),
+                         _buildBar('Thu', 50),
+                         _buildBar('Fri', 95),
+                         _buildBar('Sat', 120),
+                         _buildBar('Sun', 110),
+                       ],
+                     ),
+                   ],
+                 ),
+               ),
+               const SizedBox(height: 24),
+               
+               Row(
+                 children: [
+                   Expanded(
+                     child: _buildReportCard('Average Order', '₹345', Icons.shopping_bag_outlined, Colors.purple),
+                   ),
+                   const SizedBox(width: 12),
+                   Expanded(
+                     child: _buildReportCard('Refund Rate', '1.2%', Icons.assignment_return_outlined, Colors.red),
+                   ),
+                 ],
+               ),
+               const SizedBox(height: 24),
+               
+               SizedBox(
+                 width: double.infinity,
+                 height: 52,
+                 child: CustomButton(
+                   text: 'EXPORT PDF REPORT',
+                   onPressed: () {
+                     Navigator.pop(context);
+                     ScaffoldMessenger.of(context).showSnackBar(
+                       const SnackBar(content: Text('Sales report exported to Documents!'), behavior: SnackBarBehavior.floating),
+                     );
+                   },
+                 ),
+               ),
+               const SizedBox(height: 24),
+             ],
+           ),
+         ),
+       ),
+     );
+   }
+
+   Widget _buildBar(String label, double heightVal) {
+     return Column(
+       children: [
+         Container(
+           width: 18,
+           height: heightVal,
+           decoration: BoxDecoration(
+             gradient: AppColors.primaryGradient,
+             borderRadius: BorderRadius.circular(6),
+           ),
+         ),
+         const SizedBox(height: 8),
+         Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textSecondary)),
+       ],
+     );
+   }
+
+   Widget _buildReportCard(String title, String val, IconData icon, Color color) {
+     return Container(
+       padding: const EdgeInsets.all(18),
+       decoration: BoxDecoration(
+         color: AppColors.backgroundColor,
+         borderRadius: BorderRadius.circular(20),
+         border: Border.all(color: Colors.black.withValues(alpha: 0.03)),
+       ),
+       child: Row(
+         children: [
+           CircleAvatar(
+             radius: 18,
+             backgroundColor: color.withValues(alpha: 0.1),
+             child: Icon(icon, color: color, size: 18),
+           ),
+           const SizedBox(width: 12),
+           Column(
+             crossAxisAlignment: CrossAxisAlignment.start,
+             children: [
+               Text(title, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary, fontWeight: FontWeight.bold)),
+               const SizedBox(height: 2),
+               Text(val, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
+             ],
+           ),
+         ],
+       ),
+     );
+   }
+
   void _sendNotificationDialog(BuildContext context) {
     final titleController = TextEditingController(text: 'Flash Sale! ⚡');
     final bodyController = TextEditingController();
@@ -440,7 +708,7 @@ class _QuickActionState extends State<_QuickAction> {
         curve: Curves.easeOutBack,
         builder: (context, value, child) {
           return Opacity(
-            opacity: value,
+            opacity: value.clamp(0.0, 1.0),
             child: Transform.scale(
               scale: 0.8 + (0.2 * value),
               child: child,

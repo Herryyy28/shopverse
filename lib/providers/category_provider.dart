@@ -97,21 +97,30 @@ class CategoryProvider with ChangeNotifier {
     );
     
     try {
-      await _firestore.collection('categories').doc(newCat.id).set(newCat.toJson());
+      if (Firebase.apps.isNotEmpty) {
+        await _firestore.collection('categories').doc(newCat.id).set(newCat.toJson());
+      }
       _categories.add(newCat);
       notifyListeners();
     } catch (e) {
       debugPrint('Error adding category: $e');
+      // Update local state even if Firestore fails
+      _categories.add(newCat);
+      notifyListeners();
     }
   }
 
   Future<void> deleteCategory(String id) async {
     try {
-      await _firestore.collection('categories').doc(id).delete();
+      if (Firebase.apps.isNotEmpty) {
+        await _firestore.collection('categories').doc(id).delete();
+      }
       _categories.removeWhere((c) => c.id == id);
       notifyListeners();
     } catch (e) {
       debugPrint('Error deleting category: $e');
+      _categories.removeWhere((c) => c.id == id);
+      notifyListeners();
     }
   }
 

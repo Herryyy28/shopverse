@@ -208,66 +208,67 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
+      backgroundColor: isDark ? AppColors.darkBackground : AppColors.backgroundColor,
       appBar: AppBar(
-        title: const Text(
-          'ShopVerse',
-          style: TextStyle(
-            color: AppColors.brandRed,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
+        title: const Text('Browse', style: TextStyle(fontWeight: FontWeight.w800)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.mic, color: AppColors.brandRed),
+            icon: const Icon(Icons.mic_rounded),
             onPressed: _startListening,
+            tooltip: 'Voice Search',
           ),
           IconButton(
-            icon: const Icon(
-              Icons.qr_code_scanner,
-              color: AppColors.textPrimary,
-            ),
+            icon: const Icon(Icons.qr_code_scanner_rounded),
             onPressed: _scanBarcode,
+            tooltip: 'Scan Barcode',
           ),
           IconButton(
-            icon: const Icon(
-              Icons.image_outlined,
-              color: AppColors.textPrimary,
-            ),
+            icon: const Icon(Icons.image_search_rounded),
             onPressed: _pickImage,
+            tooltip: 'Visual Search',
           ),
         ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ── Premium Search Bar ───────────────────────────────────────
           Container(
-            color: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: TextField(
-              controller: _searchController,
-              autofocus: true,
-              onChanged: _onSearchChanged,
-              onSubmitted: _saveSearchHistory,
-              decoration: InputDecoration(
-                hintText: 'Search products, brands...',
-                prefixIcon: const Icon(
-                  Icons.search,
-                  color: AppColors.textMuted,
+            color: isDark ? AppColors.darkBackground : Colors.white,
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: Container(
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkSurface2 : AppColors.surface2,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: TextField(
+                controller: _searchController,
+                autofocus: true,
+                onChanged: _onSearchChanged,
+                onSubmitted: _saveSearchHistory,
+                style: TextStyle(color: isDark ? Colors.white : AppColors.textPrimary, fontSize: 15),
+                decoration: InputDecoration(
+                  hintText: 'Search products, brands, categories...',
+                  prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textMuted),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.cancel_rounded, color: AppColors.textMuted),
+                          onPressed: () {
+                            _searchController.clear();
+                            _onSearchChanged('');
+                          },
+                        )
+                      : IconButton(
+                          icon: const Icon(Icons.mic_rounded, color: AppColors.primary),
+                          onPressed: _startListening,
+                        ),
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          _onSearchChanged('');
-                        },
-                      )
-                    : IconButton(
-                        icon: const Icon(Icons.mic, color: AppColors.textMuted),
-                        onPressed: _startListening,
-                      ),
               ),
             ),
           ),
@@ -435,58 +436,69 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildSearchHistory() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
                 'Recent Searches',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
               ),
-              TextButton(
-                onPressed: () async {
+              GestureDetector(
+                onTap: () async {
                   final prefs = await SharedPreferences.getInstance();
                   await prefs.remove('search_history');
                   setState(() => _searchHistory = []);
                 },
                 child: const Text(
-                  'Clear',
-                  style: TextStyle(fontSize: 12, color: AppColors.brandRed),
+                  'Clear all',
+                  style: TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w600),
                 ),
               ),
             ],
           ),
         ),
         SizedBox(
-          height: 40,
+          height: 44,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             itemCount: _searchHistory.length,
             itemBuilder: (context, i) => Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: ActionChip(
-                label: Text(
-                  _searchHistory[i],
-                  style: const TextStyle(fontSize: 12),
-                ),
-                backgroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(color: Colors.grey[200]!),
-                ),
-                onPressed: () {
+              child: GestureDetector(
+                onTap: () {
                   _searchController.text = _searchHistory[i];
                   _onSearchChanged(_searchHistory[i]);
                 },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.darkSurface2 : AppColors.surface2,
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.history_rounded, size: 14, color: AppColors.textMuted),
+                      const SizedBox(width: 6),
+                      Text(
+                        _searchHistory[i],
+                        style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
         ),
+        const SizedBox(height: 8),
       ],
     );
   }
@@ -523,18 +535,52 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildTrendingSearches() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final trends = [
-      'Wireless Headphones',
-      'Smart Watches',
-      'Gaming Laptops',
-      'Skincare Sets',
+      {'label': 'Wireless Headphones', 'emoji': '🎧'},
+      {'label': 'Smart Watches', 'emoji': '⌚'},
+      {'label': 'Gaming Laptops', 'emoji': '🎮'},
+      {'label': 'Skincare Sets', 'emoji': '✨'},
+      {'label': 'Running Shoes', 'emoji': '👟'},
+      {'label': 'Coffee Makers', 'emoji': '☕'},
     ];
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Wrap(
         spacing: 10,
         runSpacing: 10,
-        children: trends.map((s) => _buildRecentSearchChip(s)).toList(),
+        children: trends.map((t) {
+          return GestureDetector(
+            onTap: () {
+              _searchController.text = t['label']!;
+              _onSearchChanged(t['label']!);
+              _saveSearchHistory(t['label']!);
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkCard : Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: isDark ? AppColors.borderDark : AppColors.border),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(t['emoji']!, style: const TextStyle(fontSize: 14)),
+                  const SizedBox(width: 6),
+                  Text(
+                    t['label']!,
+                    style: TextStyle(
+                      color: isDark ? Colors.white70 : AppColors.textPrimary,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }
@@ -544,16 +590,10 @@ class _SearchScreenState extends State<SearchScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[200]!),
+        borderRadius: BorderRadius.circular(100),
+        border: Border.all(color: AppColors.border),
       ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: Colors.black54,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
+      child: Text(text, style: const TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w500, fontSize: 12.5)),
     );
   }
 
@@ -685,15 +725,23 @@ class _SearchScreenState extends State<SearchScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.search_off, size: 80, color: Colors.grey[300]),
-          const SizedBox(height: 16),
-          const Text(
-            'No products found',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppColors.surface2,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.search_off_rounded, size: 48, color: AppColors.textMuted),
           ),
-          Text(
-            'Try searching for something else',
-            style: TextStyle(color: Colors.grey[600]),
+          const SizedBox(height: 20),
+          const Text(
+            'No results found',
+            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Try a different keyword or check spelling',
+            style: TextStyle(color: AppColors.textMuted, fontSize: 13),
           ),
         ],
       ),
@@ -701,66 +749,98 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildSearchResults() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       itemCount: _filteredProducts.length,
       itemBuilder: (context, index) {
         final product = _filteredProducts[index];
-        return ListTile(
+        return GestureDetector(
           onTap: () => Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (_) => ProductDetailsScreen(product: product),
-            ),
+            MaterialPageRoute(builder: (_) => ProductDetailsScreen(product: product)),
           ),
-          leading: Container(
-            width: 50,
-            height: 50,
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(8),
+              color: isDark ? AppColors.darkCard : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 2)),
+              ],
             ),
-            child: CachedNetworkImage(
-              imageUrl: product.imageUrl,
-              fit: BoxFit.contain,
-            ),
-          ),
-          title: Text(
-            product.name,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          subtitle: Row(
-            children: [
-              Text('${product.unit} • ₹${product.price.toInt()}'),
-              const SizedBox(width: 8),
-              if (product.rating > 0)
+            child: Row(
+              children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 1,
-                  ),
+                  width: 60,
+                  height: 60,
                   decoration: BoxDecoration(
-                    color: Colors.green,
-                    borderRadius: BorderRadius.circular(4),
+                    color: isDark ? AppColors.darkSurface2 : AppColors.surface2,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: CachedNetworkImage(imageUrl: product.imageUrl, fit: BoxFit.contain),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${product.rating}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
+                        product.name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13.5,
+                          color: isDark ? Colors.white : AppColors.textPrimary,
                         ),
                       ),
-                      const Icon(Icons.star, size: 10, color: Colors.white),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Text(
+                            '₹${product.price.toInt()}',
+                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: AppColors.primary),
+                          ),
+                          if (product.oldPrice > product.price) ...[
+                            const SizedBox(width: 6),
+                            Text(
+                              '₹${product.oldPrice.toInt()}',
+                              style: const TextStyle(decoration: TextDecoration.lineThrough, color: AppColors.textMuted, fontSize: 11),
+                            ),
+                          ],
+                          if (product.rating > 0) ...[
+                            const Spacer(),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.success,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text('${product.rating}', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700)),
+                                  const SizedBox(width: 2),
+                                  const Icon(Icons.star_rounded, size: 10, color: Colors.white),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                     ],
                   ),
                 ),
-            ],
+                const SizedBox(width: 8),
+                const Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.textMuted),
+              ],
+            ),
           ),
-          trailing: const Icon(Icons.chevron_right, size: 18),
         );
       },
     );

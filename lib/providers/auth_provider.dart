@@ -7,6 +7,7 @@ import 'dart:io' show Platform;
 
 import 'package:local_auth/local_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shopverse/services/secure_storage_service.dart';
 
 class AuthProvider with ChangeNotifier {
   // Use lazy getters to avoid "No Firebase App" crash during provider initialization
@@ -25,7 +26,29 @@ class AuthProvider with ChangeNotifier {
   bool get isAdmin => _isAdmin;
 
   AuthProvider() {
+    _tryRestoreSession();
     _initAuthListener();
+  }
+
+  Future<void> _tryRestoreSession() async {
+    try {
+      final cachedUid = await SecureStorageService.read('user_uid');
+      final cachedRole = await SecureStorageService.read('user_role');
+      if (cachedUid != null && cachedRole != null) {
+        _isAuthenticated = true;
+        _isAdmin = cachedRole == 'admin';
+        _user = UserModel(
+          uid: cachedUid,
+          name: cachedRole == 'admin' ? 'Cached Admin' : (cachedRole == 'seller' ? 'Cached Seller' : 'Cached User'),
+          email: cachedRole == 'admin' ? 'admin@demo.com' : (cachedRole == 'seller' ? 'seller@demo.com' : 'demo@demo.com'),
+          role: cachedRole,
+          createdAt: DateTime.now(),
+        );
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Session restore failed: $e');
+    }
   }
 
   void _initAuthListener() {
@@ -54,6 +77,8 @@ class AuthProvider with ChangeNotifier {
         _user = UserModel.fromJson(doc.data()!);
         _isAuthenticated = true;
         _isAdmin = _user!.role == 'admin';
+        await SecureStorageService.write('user_uid', _user!.uid);
+        await SecureStorageService.write('user_role', _user!.role);
       } else {
         _isAuthenticated = true;
       }
@@ -65,22 +90,30 @@ class AuthProvider with ChangeNotifier {
 
   Future<String?> signIn(String email, String password) async {
     try {
-      if (email == 'demo@demo.com' || email == 'admin@demo.com') {
+      if (email == 'demo@demo.com' || email == 'admin@demo.com' || email == 'seller@demo.com') {
         _isAuthenticated = true;
+        String role = 'customer';
+        if (email == 'admin@demo.com') {
+          role = 'admin';
+        } else if (email == 'seller@demo.com') {
+          role = 'seller';
+        }
         _user = UserModel(
-          uid: email == 'admin@demo.com' ? 'admin_user' : 'demo_user',
-          name: email == 'admin@demo.com' ? 'Demo Admin' : 'Demo User',
+          uid: email == 'admin@demo.com' ? 'admin_user' : (email == 'seller@demo.com' ? 'seller_user' : 'demo_user'),
+          name: email == 'admin@demo.com' ? 'Demo Admin' : (email == 'seller@demo.com' ? 'Demo Seller' : 'Demo User'),
           email: email,
-          role: email == 'admin@demo.com' ? 'admin' : 'customer',
+          role: role,
           createdAt: DateTime.now(),
         );
         _isAdmin = email == 'admin@demo.com';
+        await SecureStorageService.write('user_uid', _user!.uid);
+        await SecureStorageService.write('user_role', _user!.role);
         notifyListeners();
         return null;
       }
 
       if (Firebase.apps.isEmpty) {
-        return "Firebase is not initialized. Please click 'Demo User' or 'Demo Admin' below to log in.";
+        return "Firebase is not initialized. Please click 'Demo User', 'Demo Seller', or 'Demo Admin' below to log in.";
       }
 
       await _auth.signInWithEmailAndPassword(email: email, password: password);
@@ -268,6 +301,7 @@ class AuthProvider with ChangeNotifier {
   void logout() async {
     try {
       await _auth.signOut();
+      await SecureStorageService.deleteAll();
     } catch (e) {
       debugPrint('Logout failed: $e');
     }

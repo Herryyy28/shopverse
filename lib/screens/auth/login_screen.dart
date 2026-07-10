@@ -316,6 +316,20 @@ class _LoginScreenState extends State<LoginScreen> {
                           const Text('|', style: TextStyle(color: Colors.grey)),
                           TextButton(
                             onPressed: () {
+                              _emailController.text = 'seller@demo.com';
+                              _passwordController.text = '123456';
+                            },
+                            child: const Text(
+                              'Demo Seller',
+                              style: TextStyle(
+                                color: Colors.purple,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const Text('|', style: TextStyle(color: Colors.grey)),
+                          TextButton(
+                            onPressed: () {
                               _emailController.text = 'admin@demo.com';
                               _passwordController.text = '123456';
                             },

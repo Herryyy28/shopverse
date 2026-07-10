@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 
 class FirebaseService {
   static bool _isInitialized = false;
@@ -13,6 +14,17 @@ class FirebaseService {
       // On Windows, this may fail if FirebaseOptions are not provided.
       await Firebase.initializeApp();
       debugPrint('Firebase initialized successfully');
+      
+      try {
+        await FirebaseAppCheck.instance.activate(
+          androidProvider: AndroidProvider.debug,
+          appleProvider: AppleProvider.deviceCheck,
+        );
+        debugPrint('Firebase App Check initialized');
+      } catch (appCheckError) {
+        debugPrint('App Check initialization failed: $appCheckError');
+      }
+
       await _setupFCM();
     } catch (e) {
       debugPrint('Firebase initialization error: $e');

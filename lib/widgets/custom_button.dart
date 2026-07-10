@@ -1,99 +1,129 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shopverse/utils/app_colors.dart';
 
-class CustomButton extends StatelessWidget {
+class CustomButton extends StatefulWidget {
   final String text;
   final VoidCallback? onPressed;
   final bool isLoading;
   final Color? backgroundColor;
-  final Color? foregroundColor;
-  final bool isSoftUI;
+  final Color? textColor;
+  final double? width;
+  final double height;
+  final double borderRadius;
+  final IconData? icon;
+  final bool useGradient;
+  final LinearGradient? gradient;
 
   const CustomButton({
     super.key,
     required this.text,
-    this.onPressed,
+    required this.onPressed,
     this.isLoading = false,
     this.backgroundColor,
-    this.foregroundColor,
-    this.isSoftUI = false,
+    this.textColor,
+    this.width,
+    this.height = 54,
+    this.borderRadius = 16,
+    this.icon,
+    this.useGradient = false,
+    this.gradient,
   });
 
   @override
-  Widget build(BuildContext context) {
-    if (isSoftUI) {
-      return GestureDetector(
-        onTap: isLoading ? null : onPressed,
-        child: Container(
-          width: double.infinity,
-          height: 56,
-          decoration: BoxDecoration(
-            color: AppColors.softBackground,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.softShadowLight,
-                offset: const Offset(-5, -5),
-                blurRadius: 10,
-              ),
-              BoxShadow(
-                color: AppColors.softShadowDark.withValues(alpha: 0.5),
-                offset: const Offset(5, 5),
-                blurRadius: 10,
-              ),
-            ],
-          ),
-          child: Center(
-            child: isLoading
-                ? const SizedBox(
-                    height: 24,
-                    width: 24,
-                    child: CircularProgressIndicator(
-                      color: AppColors.brandRed,
-                      strokeWidth: 3,
-                    ),
-                  )
-                : Text(
-                    text,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w900,
-                      color: foregroundColor ?? AppColors.brandRed,
-                      letterSpacing: 1.1,
-                    ),
-                  ),
-          ),
-        ),
-      );
-    }
+  State<CustomButton> createState() => _CustomButtonState();
+}
 
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor,
-          foregroundColor: foregroundColor,
-          elevation: 0,
+class _CustomButtonState extends State<CustomButton> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 100));
+    _scale = Tween<double>(begin: 1.0, end: 0.97).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isDisabled = widget.onPressed == null || widget.isLoading;
+    final effective = widget.gradient ?? AppColors.primaryGradient;
+
+    return GestureDetector(
+      onTapDown: isDisabled ? null : (_) => _controller.forward(),
+      onTapUp: isDisabled
+          ? null
+          : (_) {
+              _controller.reverse();
+              HapticFeedback.lightImpact();
+              widget.onPressed?.call();
+            },
+      onTapCancel: () => _controller.reverse(),
+      child: ScaleTransition(
+        scale: _scale,
+        child: AnimatedOpacity(
+          opacity: isDisabled ? 0.6 : 1.0,
+          duration: const Duration(milliseconds: 150),
+          child: Container(
+            width: widget.width ?? double.infinity,
+            height: widget.height,
+            decoration: BoxDecoration(
+              gradient: widget.useGradient || widget.gradient != null ? effective : null,
+              color: widget.useGradient || widget.gradient != null
+                  ? null
+                  : (widget.backgroundColor ?? AppColors.primary),
+              borderRadius: BorderRadius.circular(widget.borderRadius),
+              boxShadow: isDisabled
+                  ? []
+                  : [
+                      BoxShadow(
+                        color: (widget.backgroundColor ?? AppColors.primary).withValues(alpha: 0.3),
+                        blurRadius: 16,
+                        spreadRadius: -2,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+            ),
+            child: Center(
+              child: widget.isLoading
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2.5,
+                      ),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (widget.icon != null) ...[
+                          Icon(widget.icon, color: widget.textColor ?? Colors.white, size: 18),
+                          const SizedBox(width: 8),
+                        ],
+                        Text(
+                          widget.text,
+                          style: TextStyle(
+                            color: widget.textColor ?? Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          ),
         ),
-        child: isLoading
-            ? const SizedBox(
-                height: 24,
-                width: 24,
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 3,
-                ),
-              )
-            : Text(
-                text,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 1.1,
-                ),
-              ),
       ),
     );
   }

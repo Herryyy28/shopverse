@@ -185,6 +185,28 @@ class ProductProvider with ChangeNotifier {
     }
   }
 
+  Future<void> seedMockData() async {
+    try {
+      if (Firebase.apps.isEmpty) {
+        throw Exception("Firebase is not initialized");
+      }
+      // Populate local list with mock products
+      _loadMockData();
+      
+      final batch = _firestore.batch();
+      for (var product in _products) {
+        final docRef = _firestore.collection('products').doc(product.id);
+        batch.set(docRef, product.toJson());
+      }
+      await batch.commit();
+      debugPrint('Database seeded successfully!');
+      await fetchProducts();
+    } catch (e) {
+      debugPrint('Seeding failed: $e');
+      rethrow;
+    }
+  }
+
   Future<void> addProduct(Product product) async {
     try {
       await _firestore.collection('products').doc(product.id).set(product.toJson());

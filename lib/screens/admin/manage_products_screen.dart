@@ -6,7 +6,8 @@ import 'package:shopverse/screens/admin/add_product_screen.dart';
 import 'package:shopverse/utils/app_colors.dart';
 
 class ManageProductsScreen extends StatelessWidget {
-  const ManageProductsScreen({super.key});
+  final String? vendorId;
+  const ManageProductsScreen({super.key, this.vendorId});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +15,10 @@ class ManageProductsScreen extends StatelessWidget {
     return StreamBuilder<List<Product>>(
       stream: productProv.productsStream,
       builder: (context, snapshot) {
-        final products = snapshot.data ?? productProv.products;
+        var products = snapshot.data ?? productProv.products;
+        if (vendorId != null) {
+          products = products.where((p) => p.vendorId == vendorId).toList();
+        }
 
         return Scaffold(
           backgroundColor: AppColors.backgroundColor,
