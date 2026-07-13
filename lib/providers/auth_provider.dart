@@ -15,7 +15,9 @@ class AuthProvider with ChangeNotifier {
   FirebaseAuth get _auth => FirebaseAuth.instance;
   FirebaseFirestore get _firestore => FirebaseFirestore.instance;
   final LocalAuthentication _localAuth = LocalAuthentication();
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    clientId: '132949386578-oh1h1l1bibl1k7lf5fsl59iiqrlls7vu.apps.googleusercontent.com',
+  );
 
   bool _isAuthenticated = false;
   UserModel? _user;
