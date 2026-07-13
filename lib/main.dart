@@ -1,3 +1,5 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -25,13 +27,23 @@ import 'package:shopverse/services/firebase_service.dart';
 import 'package:shopverse/utils/app_theme.dart';
 
 void main() async {
-  try {
-    WidgetsFlutterBinding.ensureInitialized();
-    await FirebaseService.initialize();
-  } catch (e) {
-    debugPrint("Firebase initialization failed: $e");
+  WidgetsFlutterBinding.ensureInitialized();
+  if (kIsWeb) {
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: "AIzaSyDvk5r0Kde9tfWlMBm_nnNdBrBPn3fmX2o",
+        authDomain: "shopverse-e2b30.firebaseapp.com",
+        projectId: "shopverse-e2b30",
+        storageBucket: "shopverse-e2b30.firebasestorage.app",
+        messagingSenderId: "132949386578",
+        appId: "1:132949386578:web:6f832e7394687151c7468b",
+        measurementId: "G-N9YP26KH9Y",
+      ),
+    );
+  } else {
+    await Firebase.initializeApp();
   }
-  
+
   runApp(
     MultiProvider(
       providers: [
@@ -94,14 +106,16 @@ class _ShopVerseAppState extends State<ShopVerseApp> {
           darkTheme: AppTheme.darkTheme,
           themeMode: themeProvider.themeMode,
           home: _loading
-            ? const Scaffold(body: Center(child: CircularProgressIndicator()))
-            : !_onboardingComplete
+              ? const Scaffold(body: Center(child: CircularProgressIndicator()))
+              : !_onboardingComplete
               ? OnboardingScreen(
                   onComplete: () => setState(() => _onboardingComplete = true),
                 )
               : Consumer<AuthProvider>(
                   builder: (context, auth, _) {
-                    return auth.isAuthenticated ? const MainScreen() : const LoginScreen();
+                    return auth.isAuthenticated
+                        ? const MainScreen()
+                        : const LoginScreen();
                   },
                 ),
         );

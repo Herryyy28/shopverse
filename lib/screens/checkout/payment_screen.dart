@@ -5,6 +5,7 @@ import 'package:shopverse/providers/order_provider.dart';
 import 'package:shopverse/screens/checkout/tracking_screen.dart';
 import 'package:shopverse/utils/app_colors.dart';
 import 'package:shopverse/widgets/custom_button.dart';
+import 'package:shopverse/services/payment_checkout_service.dart';
 
 class PaymentScreen extends StatefulWidget {
   final double amount;
@@ -160,10 +161,30 @@ class _PaymentScreenState extends State<PaymentScreen> {
   void _processPayment() async {
     setState(() => _isProcessing = true);
     
-    // Simulate network delay
-    await Future.delayed(const Duration(seconds: 2));
+    bool paymentSuccess = true;
+    if (_selectedMethod == 'card') {
+      paymentSuccess = await PaymentCheckoutService.startCardPayment(
+        context: context,
+        amount: widget.amount,
+        currency: 'inr',
+      );
+    } else {
+      // Simulate network delay for other methods
+      await Future.delayed(const Duration(seconds: 2));
+    }
 
     if (!mounted) return;
+
+    if (!paymentSuccess) {
+      setState(() => _isProcessing = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Payment failed or was cancelled.'),
+          backgroundColor: AppColors.brandRed,
+        ),
+      );
+      return;
+    }
 
     final cart = Provider.of<CartProvider>(context, listen: false);
     final orderProv = Provider.of<OrderProvider>(context, listen: false);

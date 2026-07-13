@@ -13,6 +13,9 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+    dependencies{
+        classpath 'com.google.gms:google-services:4.4.4'
+    }
 
 plugins {
     id("dev.flutter.flutter-gradle-plugin") version "1.0.0" apply false

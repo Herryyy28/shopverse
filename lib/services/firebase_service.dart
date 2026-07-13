@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FirebaseService {
   static bool _isInitialized = false;
@@ -65,6 +66,16 @@ class FirebaseService {
   }
 
   static Future<Map<String, dynamic>> getUserData(String uid) async {
+    if (Firebase.apps.isNotEmpty) {
+      try {
+        final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+        if (doc.exists && doc.data() != null) {
+          return doc.data()!;
+        }
+      } catch (e) {
+        debugPrint('Firestore getUserData error: $e');
+      }
+    }
     await Future.delayed(const Duration(milliseconds: 500));
     return {
       'uid': uid,
@@ -81,18 +92,49 @@ class FirebaseService {
   }
 
   static Future<void> saveProduct(Map<String, dynamic> productData) async {
+    if (Firebase.apps.isNotEmpty) {
+      try {
+        await FirebaseFirestore.instance.collection('products').doc(productData['id']).set(productData);
+        return;
+      } catch (e) {
+        debugPrint('Firestore saveProduct error: $e');
+      }
+    }
     await Future.delayed(const Duration(seconds: 1));
     debugPrint('Product saved to Firestore: ${productData['name']}');
   }
 
   static Future<List<Map<String, dynamic>>> fetchProducts() async {
+    if (Firebase.apps.isNotEmpty) {
+      try {
+        final snapshot = await FirebaseFirestore.instance.collection('products').get();
+        return snapshot.docs.map((doc) => doc.data()).toList();
+      } catch (e) {
+        debugPrint('Firestore fetchProducts error: $e');
+      }
+    }
     await Future.delayed(const Duration(milliseconds: 800));
     return [];
   }
 
   static Stream<DateTime> getFlashSaleEndTime() {
-    // In a real app, this would be:
-    // return FirebaseFirestore.instance.collection('settings').doc('flash_sale').snapshots().map((doc) => (doc['endTime'] as Timestamp).toDate());
+    if (Firebase.apps.isNotEmpty) {
+      try {
+        return FirebaseFirestore.instance
+            .collection('settings')
+            .doc('flash_sale')
+            .snapshots()
+            .map((doc) {
+              if (doc.exists && doc.data() != null && doc.data()!['endTime'] != null) {
+                final timestamp = doc.data()!['endTime'] as Timestamp;
+                return timestamp.toDate();
+              }
+              return DateTime.now().add(const Duration(hours: 3, minutes: 15));
+            });
+      } catch (e) {
+        debugPrint('Firestore getFlashSaleEndTime error: $e');
+      }
+    }
     
     // Mocking real-time sync for demo purposes
     return Stream.value(DateTime.now().add(const Duration(hours: 3, minutes: 15)));
