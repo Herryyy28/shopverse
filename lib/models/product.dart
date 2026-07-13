@@ -16,9 +16,9 @@ class ProductVariant {
   };
 
   factory ProductVariant.fromJson(Map<String, dynamic> json) => ProductVariant(
-    id: json['id'],
-    name: json['name'],
-    options: List<String>.from(json['options']),
+    id: json['id'] ?? '',
+    name: json['name'] ?? '',
+    options: (json['options'] is List) ? List<String>.from(json['options']) : [],
   );
 }
 
@@ -98,21 +98,28 @@ class Product {
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
-      id: json['id'],
-      name: json['name'],
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
       brand: json['brand'] ?? 'ShopVerse',
-      description: json['description'],
-      price: json['price'].toDouble(),
-      oldPrice: (json['oldPrice'] ?? 0).toDouble(),
-      imageUrl: json['imageUrl'],
-      images: List<String>.from(json['images'] ?? []),
-      category: json['category'],
+      description: json['description'] ?? '',
+      price: (json['price'] ?? 0.0).toDouble(),
+      oldPrice: (json['oldPrice'] ?? 0.0).toDouble(),
+      imageUrl: json['imageUrl'] ?? '',
+      images: (json['images'] is List) ? List<String>.from(json['images']) : [],
+      category: json['category'] ?? '',
       rating: (json['rating'] ?? 4.5).toDouble(),
       reviews: json['reviews'] ?? 100,
       isVeg: json['isVeg'] ?? true,
       unit: json['unit'] ?? 'unit',
-      variants: (json['variants'] as List?)?.map((v) => ProductVariant.fromJson(v)).toList() ?? [],
-      specifications: Map<String, String>.from(json['specifications'] ?? {}),
+      variants: (json['variants'] is List)
+          ? (json['variants'] as List)
+              .whereType<Map>()
+              .map((v) => ProductVariant.fromJson(Map<String, dynamic>.from(v)))
+              .toList()
+          : [],
+      specifications: (json['specifications'] is Map)
+          ? Map<String, String>.from(json['specifications'])
+          : {},
       videoUrl: json['videoUrl'],
       arModelUrl: json['arModelUrl'],
       view360Url: json['view360Url'],

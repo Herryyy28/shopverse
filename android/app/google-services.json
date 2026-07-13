@@ -12,7 +12,12 @@
           "package_name": "com.example.shopverse"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "132949386578-oh1h1l1bibl1k7lf5fsl59iiqrlls7vu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyByt602bEO09UWovw3SwAQpitYLJM_VctU"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "132949386578-oh1h1l1bibl1k7lf5fsl59iiqrlls7vu.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "132949386578-6vflu4rf5v0k0ih8502ekmaircr0takp.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.shopverse"
+              }
+            }
+          ]
         }
       }
     }

@@ -28,7 +28,7 @@ import 'package:shopverse/utils/app_theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
-    if (kIsWeb) {
+    if (kIsWeb || defaultTargetPlatform == TargetPlatform.windows) {
       await Firebase.initializeApp(
         options: const FirebaseOptions(
           apiKey: "AIzaSyDvk5r0Kde9tfWlMBm_nnNdBrBPn3fmX2o",

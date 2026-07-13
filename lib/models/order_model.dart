@@ -58,20 +58,27 @@ class OrderModel {
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
     return OrderModel(
-      id: json['id'],
-      userId: json['userId'],
-      items: List<CartItem>.from(json['items']?.map((x) => CartItem.fromJson(x))),
-      totalAmount: json['totalAmount'].toDouble(),
+      id: json['id'] ?? '',
+      userId: json['userId'] ?? '',
+      items: (json['items'] is List)
+          ? (json['items'] as List)
+              .whereType<Map>()
+              .map((x) => CartItem.fromJson(Map<String, dynamic>.from(x)))
+              .toList()
+          : [],
+      totalAmount: (json['totalAmount'] ?? 0.0).toDouble(),
       deliveryFee: (json['deliveryFee'] ?? 0.0).toDouble(),
       tax: (json['tax'] ?? 0.0).toDouble(),
       discount: (json['discount'] ?? 0.0).toDouble(),
-      deliveryAddress: json['deliveryAddress'],
+      deliveryAddress: json['deliveryAddress'] ?? '',
       status: OrderStatus.values.firstWhere(
         (e) => e.toString().split('.').last == json['status'],
         orElse: () => OrderStatus.pending,
       ),
-      paymentMethod: json['paymentMethod'],
-      createdAt: DateTime.parse(json['createdAt']),
+      paymentMethod: json['paymentMethod'] ?? '',
+      createdAt: json['createdAt'] != null
+          ? (DateTime.tryParse(json['createdAt']) ?? DateTime.now())
+          : DateTime.now(),
       trackingId: json['trackingId'],
     );
   }

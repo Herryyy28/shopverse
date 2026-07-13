@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:shopverse/models/user_model.dart';
 import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'package:local_auth/local_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -206,6 +207,9 @@ class AuthProvider with ChangeNotifier {
     try {
       if (Firebase.apps.isEmpty) {
         return "Google login requires Firebase. Please log in using a Demo account.";
+      }
+      if (!kIsWeb && Platform.isWindows) {
+        return "Google Sign-In is not supported on Windows Desktop. Please run on Android, iOS, or Chrome Web, or use the Demo Login below.";
       }
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return "Google Sign-In canceled";

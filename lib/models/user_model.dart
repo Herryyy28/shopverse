@@ -43,15 +43,17 @@ class UserModel {
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      uid: json['uid'],
-      name: json['name'],
-      email: json['email'],
+      uid: json['uid'] ?? '',
+      name: json['name'] ?? '',
+      email: json['email'] ?? '',
       phone: json['phone'],
       profileImageUrl: json['profileImageUrl'],
       role: json['role'] ?? 'customer',
       walletBalance: (json['walletBalance'] ?? 0.0).toDouble(),
-      wishlist: List<String>.from(json['wishlist'] ?? []),
-      createdAt: DateTime.parse(json['createdAt']),
+      wishlist: (json['wishlist'] is List) ? List<String>.from(json['wishlist']) : [],
+      createdAt: json['createdAt'] != null
+          ? (DateTime.tryParse(json['createdAt']) ?? DateTime.now())
+          : DateTime.now(),
       storeName: json['storeName'],
       storeBannerUrl: json['storeBannerUrl'],
     );
