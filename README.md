@@ -1,1 +1,1 @@
-# shopverse
+shopverse Application (Flutter)
