@@ -81,14 +81,18 @@ class _LoginScreenState extends State<LoginScreen> {
     final authenticated = await authProvider.authenticateBiometric();
     if (!mounted) return;
     if (authenticated) {
-      // In a real app, you'd check if a user was previously logged in on this device
-      // For this demo, we'll simulate a login if biometrics succeed
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Biometric Authentication Successful'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      final success = await authProvider.restoreSession();
+      if (!success && mounted) {
+        await authProvider.signIn('demo@demo.com', '123456');
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Biometric Authentication Successful'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -101,94 +105,115 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _showOtpDialog() {
     final otpController = TextEditingController();
+    bool isVerifying = false;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(ctx).viewInsets.bottom,
-          left: 24,
-          right: 24,
-          top: 24,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Verify Phone',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      builder: (ctx) => StatefulBuilder(
+        builder: (BuildContext context, StateSetter setModalState) {
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+              left: 24,
+              right: 24,
+              top: 24,
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Enter the 6-digit code sent to ${_phoneController.text}',
-              style: TextStyle(color: Colors.grey[600]),
-            ),
-            const SizedBox(height: 24),
-            TextField(
-              controller: otpController,
-              keyboardType: TextInputType.number,
-              maxLength: 6,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 8,
-              ),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.grey[100],
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Verify Phone',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
-                counterText: "",
-              ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: () async {
-                  final authProvider = Provider.of<AuthProvider>(
-                    context,
-                    listen: false,
-                  );
-                  final error = await authProvider.verifyOtp(
-                    _phoneController.text,
-                    otpController.text,
-                  );
-                  if (ctx.mounted) {
-                    if (error == null) {
-                      Navigator.pop(ctx);
-                    } else {
-                      ScaffoldMessenger.of(
-                        ctx,
-                      ).showSnackBar(SnackBar(content: Text(error)));
-                    }
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.brandRed,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+                const SizedBox(height: 8),
+                Text(
+                  'Enter the 6-digit code sent to ${_phoneController.text}',
+                  style: TextStyle(color: Colors.grey[600]),
                 ),
-                child: const Text(
-                  'VERIFY',
-                  style: TextStyle(
+                const SizedBox(height: 24),
+                TextField(
+                  controller: otpController,
+                  keyboardType: TextInputType.number,
+                  maxLength: 6,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    letterSpacing: 8,
+                  ),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide.none,
+                    ),
+                    counterText: "",
                   ),
                 ),
-              ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: isVerifying
+                        ? null
+                        : () async {
+                            setModalState(() => isVerifying = true);
+                            final authProvider = Provider.of<AuthProvider>(
+                              context,
+                              listen: false,
+                            );
+                            final error = await authProvider.verifyOtp(
+                              _phoneController.text,
+                              otpController.text,
+                            );
+                            if (ctx.mounted) {
+                              setModalState(() => isVerifying = false);
+                              if (error == null) {
+                                Navigator.pop(ctx);
+                              } else {
+                                ScaffoldMessenger.of(ctx).showSnackBar(
+                                  SnackBar(
+                                    content: Text(error),
+                                    backgroundColor: AppColors.brandRed,
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.brandRed,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: isVerifying
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text(
+                            'VERIFY',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
             ),
-            const SizedBox(height: 24),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

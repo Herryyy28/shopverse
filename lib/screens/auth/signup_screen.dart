@@ -52,7 +52,7 @@ class _SignupScreenState extends State<SignupScreen> {
         if (error == null) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Account created successfully! Please login.'),
+              content: Text('Account created successfully! Welcome to ShopVerse.'),
               backgroundColor: Colors.green,
             ),
           );

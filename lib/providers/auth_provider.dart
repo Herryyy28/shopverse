@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth_platform_interface/firebase_auth_platform_interface.dart';
 import 'package:shopverse/models/user_model.dart';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -23,6 +25,7 @@ class AuthProvider with ChangeNotifier {
   UserModel? _user;
   bool _isAdmin = false;
   String? _verificationId;
+  ConfirmationResult? _webConfirmationResult;
 
   bool get isAuthenticated => _isAuthenticated;
   UserModel? get user => _user;
@@ -58,10 +61,47 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> restoreSession() async {
+    try {
+      final cachedUid = await SecureStorageService.read('user_uid');
+      final cachedRole = await SecureStorageService.read('user_role');
+      if (cachedUid != null && cachedRole != null) {
+        _isAuthenticated = true;
+        _isAdmin = cachedRole == 'admin';
+        _user = UserModel(
+          uid: cachedUid,
+          name: cachedRole == 'admin'
+              ? 'Cached Admin'
+              : (cachedRole == 'seller' ? 'Cached Seller' : 'Cached User'),
+          email: cachedRole == 'admin'
+              ? 'admin@demo.com'
+              : (cachedRole == 'seller' ? 'seller@demo.com' : 'demo@demo.com'),
+          role: cachedRole,
+          createdAt: DateTime.now(),
+        );
+        notifyListeners();
+        return true;
+      }
+    } catch (e) {
+      debugPrint('Session restore failed: $e');
+    }
+    return false;
+  }
+
   void _initAuthListener() {
     try {
       if (Firebase.apps.isNotEmpty) {
         _auth.authStateChanges().listen((User? firebaseUser) async {
+          // If a demo or mock user is currently logged in, ignore null updates from Firebase Auth
+          if (_user != null &&
+              (_user!.uid == 'demo_user' ||
+               _user!.uid == 'seller_user' ||
+               _user!.uid == 'admin_user' ||
+               _user!.uid == 'google_mock_user_123' ||
+               _user!.email.endsWith('@demo.com'))) {
+            return;
+          }
+
           if (firebaseUser != null) {
             await _fetchUserData(firebaseUser.uid);
           } else {
@@ -87,7 +127,49 @@ class AuthProvider with ChangeNotifier {
         await SecureStorageService.write('user_uid', _user!.uid);
         await SecureStorageService.write('user_role', _user!.role);
       } else {
-        _isAuthenticated = true;
+        final firebaseUser = _auth.currentUser;
+        if (firebaseUser != null) {
+          // If registration is active, we might already have _user populated locally
+          if (_user != null && _user!.uid == firebaseUser.uid) {
+            _isAuthenticated = true;
+            _isAdmin = _user!.role == 'admin';
+            await SecureStorageService.write('user_uid', _user!.uid);
+            await SecureStorageService.write('user_role', _user!.role);
+          } else {
+            // Wait 1000ms and try to fetch one more time in case of slower Firestore writes
+            await Future.delayed(const Duration(milliseconds: 1000));
+            final retryDoc = await _firestore.collection('users').doc(uid).get();
+            if (retryDoc.exists) {
+              _user = UserModel.fromJson(retryDoc.data()!);
+              _isAuthenticated = true;
+              _isAdmin = _user!.role == 'admin';
+              await SecureStorageService.write('user_uid', _user!.uid);
+              await SecureStorageService.write('user_role', _user!.role);
+            } else {
+              // Fallback to create a default profile so the app does not crash
+              _user = UserModel(
+                uid: firebaseUser.uid,
+                name: firebaseUser.displayName ?? 
+                    (firebaseUser.email != null ? firebaseUser.email!.split('@')[0] : 'User'),
+                email: firebaseUser.email ?? '',
+                phone: firebaseUser.phoneNumber,
+                role: 'customer',
+                createdAt: DateTime.now(),
+              );
+              await _firestore
+                  .collection('users')
+                  .doc(firebaseUser.uid)
+                  .set(_user!.toJson());
+              _isAuthenticated = true;
+              _isAdmin = false;
+              await SecureStorageService.write('user_uid', _user!.uid);
+              await SecureStorageService.write('user_role', _user!.role);
+            }
+          }
+        } else {
+          _isAuthenticated = false;
+          _user = null;
+        }
       }
       notifyListeners();
     } catch (e) {
@@ -143,32 +225,91 @@ class AuthProvider with ChangeNotifier {
       if (Firebase.apps.isEmpty) {
         return "Phone verification requires Firebase. Please log in using a Demo account.";
       }
+      
+      if (kIsWeb) {
+        _webConfirmationResult = await _auth.signInWithPhoneNumber(
+          phone,
+          RecaptchaVerifier(
+            auth: FirebaseAuthPlatform.instance,
+          ),
+        );
+        notifyListeners();
+        return null; // Proceed to OTP dialog
+      }
+      
+      final completer = Completer<String?>();
+      
       await _auth.verifyPhoneNumber(
         phoneNumber: phone,
         verificationCompleted: (PhoneAuthCredential credential) async {
-          await _auth.signInWithCredential(credential);
+          try {
+            await _auth.signInWithCredential(credential);
+            if (!completer.isCompleted) {
+              completer.complete(null);
+            }
+          } catch (e) {
+            if (!completer.isCompleted) {
+              completer.complete(e.toString());
+            }
+          }
         },
         verificationFailed: (FirebaseAuthException e) {
           debugPrint('Phone verification failed: ${e.message}');
+          if (!completer.isCompleted) {
+            completer.complete(e.message ?? 'Verification failed');
+          }
         },
         codeSent: (String verificationId, int? resendToken) {
           _verificationId = verificationId;
           notifyListeners();
+          if (!completer.isCompleted) {
+            completer.complete(null); // Proceed to OTP dialog
+          }
         },
         codeAutoRetrievalTimeout: (String verificationId) {
           _verificationId = verificationId;
         },
       );
-      return null;
+      
+      return completer.future;
     } catch (e) {
       return e.toString();
     }
   }
 
   Future<String?> verifyOtp(String phone, String otp) async {
-    if (_verificationId == null) return "Verification ID is missing";
-
     try {
+      if (kIsWeb) {
+        if (_webConfirmationResult == null) {
+          return "Verification session not started. Please request an OTP first.";
+        }
+        final userCredential = await _webConfirmationResult!.confirm(otp);
+        final firebaseUser = userCredential.user;
+        if (firebaseUser != null) {
+          final userDoc = await _firestore
+              .collection('users')
+              .doc(firebaseUser.uid)
+              .get();
+          if (!userDoc.exists) {
+            _user = UserModel(
+              uid: firebaseUser.uid,
+              name: 'User ${phone.substring(phone.length - 4)}',
+              email: firebaseUser.email ?? '',
+              phone: phone,
+              role: 'customer',
+              createdAt: DateTime.now(),
+            );
+            await _firestore
+                .collection('users')
+                .doc(firebaseUser.uid)
+                .set(_user!.toJson());
+          }
+        }
+        return null;
+      }
+
+      if (_verificationId == null) return "Verification ID is missing";
+
       PhoneAuthCredential credential = PhoneAuthProvider.credential(
         verificationId: _verificationId!,
         smsCode: otp,
@@ -185,7 +326,9 @@ class AuthProvider with ChangeNotifier {
         if (!userDoc.exists) {
           _user = UserModel(
             uid: firebaseUser.uid,
-            name: 'User ${phone.substring(phone.length - 4)}',
+            name: phone.length >= 4 
+                ? 'User ${phone.substring(phone.length - 4)}' 
+                : 'Phone User',
             email: firebaseUser.email ?? '',
             phone: phone,
             role: 'customer',
@@ -195,7 +338,14 @@ class AuthProvider with ChangeNotifier {
               .collection('users')
               .doc(firebaseUser.uid)
               .set(_user!.toJson());
+        } else {
+          _user = UserModel.fromJson(userDoc.data()!);
         }
+        _isAuthenticated = true;
+        _isAdmin = _user!.role == 'admin';
+        await SecureStorageService.write('user_uid', _user!.uid);
+        await SecureStorageService.write('user_role', _user!.role);
+        notifyListeners();
       }
       return null;
     } on FirebaseAuthException catch (e) {
@@ -207,12 +357,24 @@ class AuthProvider with ChangeNotifier {
 
   Future<String?> signInWithGoogle() async {
     try {
-      if (Firebase.apps.isEmpty) {
-        return "Google login requires Firebase. Please log in using a Demo account.";
+      // Mock Google Login on Windows Desktop or when Firebase is uninitialized
+      if ((!kIsWeb && Platform.isWindows) || Firebase.apps.isEmpty) {
+        _isAuthenticated = true;
+        _user = UserModel(
+          uid: 'google_mock_user_123',
+          name: 'Mock Google User',
+          email: 'mock_google@gmail.com',
+          role: 'customer',
+          profileImageUrl: 'https://ui-avatars.com/api/?name=Mock+Google+User&background=5B61F4&color=fff',
+          createdAt: DateTime.now(),
+        );
+        _isAdmin = false;
+        await SecureStorageService.write('user_uid', _user!.uid);
+        await SecureStorageService.write('user_role', _user!.role);
+        notifyListeners();
+        return null;
       }
-      if (!kIsWeb && Platform.isWindows) {
-        return "Google Sign-In is not supported on Windows Desktop. Please run on Android, iOS, or Chrome Web, or use the Demo Login below.";
-      }
+
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return "Google Sign-In canceled";
 
@@ -244,7 +406,14 @@ class AuthProvider with ChangeNotifier {
               .collection('users')
               .doc(firebaseUser.uid)
               .set(_user!.toJson());
+        } else {
+          _user = UserModel.fromJson(userDoc.data()!);
         }
+        _isAuthenticated = true;
+        _isAdmin = _user!.role == 'admin';
+        await SecureStorageService.write('user_uid', _user!.uid);
+        await SecureStorageService.write('user_role', _user!.role);
+        notifyListeners();
       }
       return null;
     } catch (e) {
@@ -314,6 +483,11 @@ class AuthProvider with ChangeNotifier {
             .collection('users')
             .doc(firebaseUser.uid)
             .set(_user!.toJson());
+        _isAuthenticated = true;
+        _isAdmin = false;
+        await SecureStorageService.write('user_uid', _user!.uid);
+        await SecureStorageService.write('user_role', _user!.role);
+        notifyListeners();
       }
       return null;
     } on FirebaseAuthException catch (e) {

@@ -22,6 +22,7 @@ dependencies:
   firebase_messaging: ^16.3.0
   cloud_firestore: ^6.5.0
   firebase_auth: ^6.5.2
+  firebase_auth_platform_interface: ^9.0.2
   local_auth: ^2.1.8
   google_sign_in: ^6.2.1
   video_player: ^2.8.1
