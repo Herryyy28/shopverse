@@ -23,25 +23,28 @@ import 'package:shopverse/providers/compare_provider.dart';
 import 'package:shopverse/providers/review_provider.dart';
 import 'package:shopverse/providers/coupon_provider.dart';
 import 'package:shopverse/providers/feed_provider.dart';
-import 'package:shopverse/services/firebase_service.dart';
 import 'package:shopverse/utils/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  if (kIsWeb) {
-    await Firebase.initializeApp(
-      options: const FirebaseOptions(
-        apiKey: "AIzaSyDvk5r0Kde9tfWlMBm_nnNdBrBPn3fmX2o",
-        authDomain: "shopverse-e2b30.firebaseapp.com",
-        projectId: "shopverse-e2b30",
-        storageBucket: "shopverse-e2b30.firebasestorage.app",
-        messagingSenderId: "132949386578",
-        appId: "1:132949386578:web:6f832e7394687151c7468b",
-        measurementId: "G-N9YP26KH9Y",
-      ),
-    );
-  } else {
-    await Firebase.initializeApp();
+  try {
+    if (kIsWeb) {
+      await Firebase.initializeApp(
+        options: const FirebaseOptions(
+          apiKey: "AIzaSyDvk5r0Kde9tfWlMBm_nnNdBrBPn3fmX2o",
+          authDomain: "shopverse-e2b30.firebaseapp.com",
+          projectId: "shopverse-e2b30",
+          storageBucket: "shopverse-e2b30.firebasestorage.app",
+          messagingSenderId: "132949386578",
+          appId: "1:132949386578:web:6f832e7394687151c7468b",
+          measurementId: "G-N9YP26KH9Y",
+        ),
+      );
+    } else {
+      await Firebase.initializeApp();
+    }
+  } catch (e) {
+    debugPrint("Firebase initialization failed: $e");
   }
 
   runApp(

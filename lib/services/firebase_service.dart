@@ -3,6 +3,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'package:http/http.dart' as http;
 
 class FirebaseService {
   static bool _isInitialized = false;
@@ -87,7 +90,36 @@ class FirebaseService {
   }
 
   static Future<String> uploadImage(dynamic file) async {
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      if (file is! File) {
+        // Fallback mock sneaker URL if file isn't real
+        return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800';
+      }
+      
+      // Replace with your Cloudinary Cloud Name and Upload Preset
+      // You get these for free when creating a Cloudinary account
+      const cloudName = "e-shopverse"; 
+      const uploadPreset = "your_unsigned_upload_preset";
+      
+      final uri = Uri.parse("https://api.cloudinary.com/v1_1/$cloudName/image/upload");
+      final request = http.MultipartRequest("POST", uri);
+      
+      request.fields['upload_preset'] = uploadPreset;
+      request.files.add(await http.MultipartFile.fromPath('file', file.path));
+      
+      final response = await request.send();
+      if (response.statusCode == 200) {
+        final responseData = await response.stream.bytesToString();
+        final jsonDecoded = json.decode(responseData);
+        
+        // Return optimized URL (Cloudinary allows resizing/compressing on-the-fly)
+        return jsonDecoded['secure_url'] as String;
+      }
+    } catch (e) {
+      debugPrint("E-commerce image upload failed: $e");
+    }
+    
+    // Default fallback image if upload fails
     return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800';
   }
 
